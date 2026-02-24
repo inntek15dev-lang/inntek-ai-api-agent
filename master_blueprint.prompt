@@ -1,0 +1,44 @@
+# Master Blueprint: AI Agent Integrations (Sincronizado)
+
+## Project Overview
+A monorepo for managing and generating AI tools via API.
+Status: Implementado
+
+## Core Modules
+1. **Auth**: User authentication and session management. [STATUS: DONE]
+2. **AI_Tool_Maker**: CRUD for AI tools and dynamic tool generation. [STATUS: DONE]
+3. **AI_Tool_Catalog**: View of all available tools. [STATUS: DONE]
+4. **AI_Tool_Execution**: Running tool instances (FileUpload + IA Response). [STATUS: DONE]
+5. **Config**: Global settings (Gemini API Key). [STATUS: DONE]
+
+## Roles & Privileges
+### [Backend]
+Summary: Express.js server with REST API, Sequelize (MySQL), Swagger, and JWT auth.
+### SuperAdmin (User: inntek)
+- **Privileges**:
+    - `*`: Read/Write/Exec
+
+### Admin
+- **Privileges**:
+    - `Auth`: Read/Write/Exec
+    - `AI_Tool_Maker`: Read/Write/Exec
+    - `AI_Tool_Catalog`: Read/Write/Exec
+    - `AI_Tool_Execution`: Read/Write/Exec
+    - `Config`: Read/Write/Exec
+
+### User
+- **Privileges**:
+    - `AI_Tool_Catalog`: Read
+    - `AI_Tool_Execution`: Read/Exec
+
+## Endpoints
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `GET /api/tools`
+- `POST /api/tools`
+- `GET /api/tools/:id`
+- `PUT /api/tools/:id`
+- `DELETE /api/tools/:id`
+- `POST /api/tools/:id/execute`
+- `GET /api/config`
+- `POST /api/config`

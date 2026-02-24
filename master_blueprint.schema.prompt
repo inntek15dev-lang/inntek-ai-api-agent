@@ -1,0 +1,36 @@
+# Master Blueprint: Schema (Sincronizado)
+
+## Tables & Fields
+
+### Roles
+- `id` (UUID, PK)
+- `nombre` (String, Unique)
+
+### Privilegios
+- `id` (UUID, PK)
+- `ref_modulo` (String)
+- `read` (Boolean)
+- `write` (Boolean)
+- `excec` (Boolean)
+- `role_id` (FK -> Roles.id)
+
+### Users
+- `id` (UUID, PK)
+- `nombre` (String)
+- `email` (String, Unique)
+- `password` (String)
+- `role_id` (FK -> Roles.id)
+
+### Tools
+- `id` (UUID, PK)
+- `nombre` (String)
+- `descripcion` (Text)
+- `logo_herramienta` (String)
+- `training_prompt` (Text)
+- `behavior_prompt` (Text)
+- `response_format` (String)
+
+### Configs
+- `id` (UUID, PK)
+- `key` (String, Unique)
+- `value` (Text)
