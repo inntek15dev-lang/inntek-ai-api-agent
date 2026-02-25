@@ -19,13 +19,15 @@ A robust monorepo platform for managing and executing AI tools via official APIs
 - **Status**: Implementado
 - **Default Tools**: Validador de CI Chile (Pre-built neural unit).
 5. **Config**: Global configuration management (API Keys).
+6. **Json_Schemas**: Centralized management of JSON data contracts for strict validation.
 
 ## Technical Specifications
 ### Database Schema (MySQL: `inntek_ai_tools`)
 - `Roles`: Authority levels (`id`, `nombre`).
 - `Privilegios`: Granular access control (`id`, `ref_modulo`, `read`, `write`, `exec` (Boolean)).
 - `Users`: Auth entities with role association.
-- `Tools`: AI Unit configurations (`nombre`, `descripcion`, `logo_herramienta`, `training_prompt`, `behavior_prompt`, `response_format`).
+- `Tools`: AI Unit configurations (`nombre`, `descripcion`, `logo_herramienta`, `training_prompt`, `behavior_prompt`, `response_format`, `output_format_id`, `json_schema_id`).
+- `JsonSchemas`: JSON data contracts (`nombre`, `descripcion`, `schema`).
 - `Config`: Key-Value system parameters.
 
 ## API Endpoints (Swagger @ `/api-docs`)
@@ -39,11 +41,24 @@ A robust monorepo platform for managing and executing AI tools via official APIs
 - `GET /api/tools/:id`: Detailed unit data.
 - `PUT /api/tools/:id`: Logic adjustment.
 - `DELETE /api/tools/:id`: Unit decommissioning.
-- `POST /api/tools/:id/execute`: Neural protocol execution. Accepts `multipart/form-data` with `prompt` (text) and `imagen` (file). Chains training + behavior + user prompt.
+- `POST /api/tools/:id/execute`: Neural protocol execution. Accepts `multipart/form-data` with `prompt` (text) and `imagen` (file). Chains training + behavior + user prompt. Supports strict schema validation if `json_schema_id` is present.
 
 ### Config
 - `GET /api/config`: Global parameter retrieval.
 - `POST /api/config`: Parameter synchronization.
+
+### Outputs
+- `GET /api/output-categories`: List output categories.
+- `POST /api/output-categories`: Create output category.
+- `GET /api/output-formats`: List output templates.
+- `POST /api/output-formats`: Create output template with HTML structure.
+
+### JSON Schemas
+- `GET /api/json-schemas`: List all schemas.
+- `POST /api/json-schemas`: Create a new schema.
+- `GET /api/json-schemas/:id`: Retrieve specific schema.
+- `PUT /api/json-schemas/:id`: Update schema definition.
+- `DELETE /api/json-schemas/:id`: Remove schema.
 
 ## Security (Privilegios Engine)
 - **SuperAdmin**: `*` -> `read: true, write: true, exec: true`.

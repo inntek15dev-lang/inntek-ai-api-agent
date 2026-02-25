@@ -3,6 +3,8 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const toolController = require('../controllers/toolController');
 const configController = require('../controllers/configController');
+const outputController = require('../controllers/outputController');
+const jsonSchemaController = require('../controllers/jsonSchemaController');
 const { authMiddleware, requirePrivilege } = require('../middleware/auth');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
@@ -28,6 +30,48 @@ const upload = multer({ dest: 'uploads/' });
  *         behavior_prompt:
  *           type: string
  *         response_format:
+ *           type: string
+ *         output_format_id:
+ *           type: string
+ *           format: uuid
+ *         json_schema_id:
+ *           type: string
+ *           format: uuid
+ *     OutputCategory:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         nombre:
+ *           type: string
+ *     OutputFormat:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         nombre:
+ *           type: string
+ *         tipo:
+ *           type: string
+ *           enum: [reporte, accionable, generativo]
+ *         estructura:
+ *           type: string
+ *         category_id:
+ *           type: string
+ *           format: uuid
+ *     JsonSchema:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         nombre:
+ *           type: string
+ *         descripcion:
+ *           type: string
+ *         schema:
  *           type: string
  */
 
@@ -211,5 +255,137 @@ router.get('/config', authMiddleware, requirePrivilege('Config', 'read'), config
  *         description: Config saved
  */
 router.post('/config', authMiddleware, requirePrivilege('Config', 'write'), configController.saveConfig);
+
+// Outputs Maker
+/**
+ * @swagger
+ * /output-categories:
+ *   get:
+ *     summary: Get all output categories
+ *     tags: [Outputs]
+ *     responses:
+ *       200:
+ *         description: List of categories
+ */
+router.get('/output-categories', authMiddleware, outputController.getCategories);
+
+/**
+ * @swagger
+ * /output-categories:
+ *   post:
+ *     summary: Create a new output category
+ *     tags: [Outputs]
+ *     responses:
+ *       201:
+ *         description: Category created
+ */
+router.post('/output-categories', authMiddleware, requirePrivilege('Outputs_Maker', 'write'), outputController.createCategory);
+router.put('/output-categories/:id', authMiddleware, requirePrivilege('Outputs_Maker', 'write'), outputController.updateCategory);
+router.delete('/output-categories/:id', authMiddleware, requirePrivilege('Outputs_Maker', 'write'), outputController.deleteCategory);
+
+/**
+ * @swagger
+ * /output-formats:
+ *   get:
+ *     summary: Get all output formats
+ *     tags: [Outputs]
+ *     responses:
+ *       200:
+ *         description: List of formats
+ */
+router.get('/output-formats', authMiddleware, outputController.getFormats);
+
+/**
+ * @swagger
+ * /output-formats:
+ *   post:
+ *     summary: Create a new output format
+ *     tags: [Outputs]
+ *     responses:
+ *       201:
+ *         description: Format created
+ */
+router.post('/output-formats', authMiddleware, requirePrivilege('Outputs_Maker', 'write'), outputController.createFormat);
+router.put('/output-formats/:id', authMiddleware, requirePrivilege('Outputs_Maker', 'write'), outputController.updateFormat);
+router.delete('/output-formats/:id', authMiddleware, requirePrivilege('Outputs_Maker', 'write'), outputController.deleteFormat);
+
+// JSON Schemas
+/**
+ * @swagger
+ * /json-schemas:
+ *   get:
+ *     summary: Get all JSON schemas
+ *     tags: [Schemas]
+ *     responses:
+ *       200:
+ *         description: List of schemas
+ */
+router.get('/json-schemas', authMiddleware, requirePrivilege('AI_Tool_Maker', 'read'), jsonSchemaController.getSchemas);
+
+/**
+ * @swagger
+ * /json-schemas:
+ *   post:
+ *     summary: Create a new JSON schema
+ *     tags: [Schemas]
+ *     responses:
+ *       201:
+ *         description: Schema created
+ */
+router.post('/json-schemas', authMiddleware, requirePrivilege('AI_Tool_Maker', 'write'), jsonSchemaController.createSchema);
+
+/**
+ * @swagger
+ * /json-schemas/{id}:
+ *   get:
+ *     summary: Get a single schema
+ *     tags: [Schemas]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Schema data
+ */
+router.get('/json-schemas/:id', authMiddleware, requirePrivilege('AI_Tool_Maker', 'read'), jsonSchemaController.getSchema);
+
+/**
+ * @swagger
+ * /json-schemas/{id}:
+ *   put:
+ *     summary: Update a JSON schema
+ *     tags: [Schemas]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Schema updated
+ */
+router.put('/json-schemas/:id', authMiddleware, requirePrivilege('AI_Tool_Maker', 'write'), jsonSchemaController.updateSchema);
+
+/**
+ * @swagger
+ * /json-schemas/{id}:
+ *   delete:
+ *     summary: Delete a JSON schema
+ *     tags: [Schemas]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Schema deleted
+ */
+router.delete('/json-schemas/:id', authMiddleware, requirePrivilege('AI_Tool_Maker', 'write'), jsonSchemaController.deleteSchema);
 
 module.exports = router;

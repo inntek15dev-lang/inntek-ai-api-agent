@@ -1,4 +1,4 @@
-const { Tool } = require('../models');
+const { Tool, JsonSchema, OutputFormat } = require('../models');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs = require('fs');
 
@@ -24,7 +24,12 @@ exports.createTool = async (req, res) => {
 
 exports.getTool = async (req, res) => {
     try {
-        const tool = await Tool.findByPk(req.params.id);
+        const tool = await Tool.findByPk(req.params.id, {
+            include: [
+                { model: OutputFormat },
+                { model: JsonSchema }
+            ]
+        });
         if (!tool) return res.status(404).json({ success: false, message: 'Tool not found' });
         res.json({ success: true, data: tool });
     } catch (error) {
@@ -64,14 +69,55 @@ const fileToGenerativePart = (path, mimeType) => {
     };
 };
 
+// Helper to remove unsupported Gemini JSON Schema keywords
+const cleanSchema = (schema) => {
+    if (!schema || typeof schema !== 'object') return schema;
+
+    const cleaned = { ...schema };
+    const unsupported = ['$schema', '$ref', 'definitions', '$id', 'additionalProperties', 'default', 'examples', 'title', 'description'];
+
+    unsupported.forEach(key => delete cleaned[key]);
+
+    if (cleaned.properties) {
+        const cleanedProps = {};
+        for (const [key, value] of Object.entries(cleaned.properties)) {
+            cleanedProps[key] = cleanSchema(value);
+        }
+        cleaned.properties = cleanedProps;
+    }
+
+    if (cleaned.items) {
+        cleaned.items = cleanSchema(cleaned.items);
+    }
+
+    return cleaned;
+};
+
 exports.executeTool = async (req, res) => {
     try {
-        const tool = await Tool.findByPk(req.params.id);
+        const tool = await Tool.findByPk(req.params.id, {
+            include: [{ model: JsonSchema }]
+        });
+
         if (!tool) return res.status(404).json({ success: false, message: 'Tool not found' });
 
-        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+        const generationConfig = {};
+        if (tool.JsonSchema) {
+            generationConfig.responseMimeType = "application/json";
+            try {
+                const rawSchema = JSON.parse(tool.JsonSchema.schema);
+                generationConfig.responseSchema = cleanSchema(rawSchema);
+            } catch (e) {
+                console.warn('Invalid JSON Schema in database, falling back to basic prompt constraint.');
+            }
+        }
 
-        const fullTextPrompt = `
+        const model = genAI.getGenerativeModel({
+            model: "gemini-flash-latest",
+            generationConfig
+        });
+
+        let fullTextPrompt = `
 SYSTEM TRAINING:
 ${tool.training_prompt}
 
@@ -80,10 +126,13 @@ ${tool.behavior_prompt}
 
 USER INSTRUCTION:
 ${req.body.prompt || "Analyze the attached content."}
-
-RESPONSE FORMAT:
-${tool.response_format || "Text"}
 `.trim();
+
+        if (tool.JsonSchema) {
+            fullTextPrompt += `\n\nCRITICAL: Respond strictly following this JSON Schema structure:\n${tool.JsonSchema.schema}`;
+        } else {
+            fullTextPrompt += `\n\nRESPONSE FORMAT:\n${tool.response_format || "Text"}`;
+        }
 
         const promptParts = [fullTextPrompt];
 
@@ -104,11 +153,15 @@ ${tool.response_format || "Text"}
         res.json({
             success: true,
             data: {
-                response: text
+                response: tool.JsonSchema ? JSON.parse(text) : text
             }
         });
     } catch (error) {
-        console.error('Gemini Execution Error:', error);
-        res.status(500).json({ success: false, message: error.message });
+        console.error('Gemini Execution Error:', error.message);
+        // Do not leak internal error details to the client
+        res.status(500).json({
+            success: false,
+            message: 'Neural Processing Failure. Please check system logs for audit trail.'
+        });
     }
 };

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { NAV_ITEMS, getVisibleNavItems } from '../config/navigation';
 import {
     LayoutDashboard,
     Library,
@@ -20,12 +21,7 @@ const Layout = () => {
     const { user, logout, canRead, isAdmin } = useAuth();
     const location = useLocation();
 
-    const navItems = [
-        { path: '/', label: 'Dashboard', icon: LayoutDashboard, module: 'Dashboard' },
-        { path: '/catalog', label: 'Catálogo', icon: Library, module: 'AI_Tool_Catalog' },
-        { path: '/tool-maker', label: 'AI Tool Maker', icon: Grid, module: 'AI_Tool_Maker' },
-        { path: '/config', label: 'Configuración', icon: Settings, module: 'Config' },
-    ];
+    const navItems = getVisibleNavItems(canRead, isAdmin);
 
     const secondaryNav = [
         { label: 'Documentos', icon: FileText },
@@ -72,16 +68,14 @@ const Layout = () => {
             {/* Main Navigation Bar */}
             <nav className="guardian-nav">
                 {navItems.map((item) => (
-                    (item.path === '/' || canRead(item.module) || isAdmin) && (
-                        <Link
-                            key={item.path}
-                            to={item.path}
-                            className={`guardian-nav-item ${isLinkActive(item.path) ? 'guardian-nav-item--active' : ''}`}
-                        >
-                            <item.icon size={18} />
-                            <span>{item.label}</span>
-                        </Link>
-                    )
+                    <Link
+                        key={item.path}
+                        to={item.path}
+                        className={`guardian-nav-item ${isLinkActive(item.path) ? 'guardian-nav-item--active' : ''}`}
+                    >
+                        <item.icon size={18} />
+                        <span>{item.label}</span>
+                    </Link>
                 ))}
 
                 {/* Placeholder for visual consistency with image */}
