@@ -34,7 +34,6 @@ const JsonSchemaMaker = () => {
     const [editMode, setEditMode] = useState('visual'); // 'visual' or 'code'
     const [isSaving, setIsSaving] = useState(false);
 
-    // Schema State
     const [currentSchema, setCurrentSchema] = useState({
         nombre: '',
         descripcion: '',
@@ -44,6 +43,14 @@ const JsonSchemaMaker = () => {
             required: []
         }
     });
+
+    const [rawJson, setRawJson] = useState('');
+
+    useEffect(() => {
+        if (editMode === 'code') {
+            setRawJson(JSON.stringify(currentSchema.schema, null, 4));
+        }
+    }, [editMode]);
 
     useEffect(() => {
         fetchSchemas();
@@ -296,14 +303,17 @@ const JsonSchemaMaker = () => {
                                 <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Valid JSON Required</span>
                             </div>
                             <textarea
-                                value={JSON.stringify(currentSchema.schema, null, 4)}
+                                value={rawJson}
                                 onChange={(e) => {
+                                    setRawJson(e.target.value);
                                     try {
                                         const parsed = JSON.parse(e.target.value);
                                         setCurrentSchema({ ...currentSchema, schema: parsed });
-                                    } catch (err) { }
+                                    } catch (err) {
+                                        // Allow typing invalid JSON temporarily
+                                    }
                                 }}
-                                className="flex-1 w-full bg-slate-900 text-emerald-500 font-mono text-xs p-6 rounded-2xl resize-none focus:ring-2 ring-guardian-blue/50"
+                                className="flex-1 w-full bg-slate-900 text-emerald-500 font-mono text-xs p-6 rounded-2xl resize-none focus:ring-2 ring-guardian-blue/50 outline-none"
                                 spellCheck="false"
                             />
                         </div>
