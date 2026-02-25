@@ -15,7 +15,11 @@ exports.getTools = async (req, res) => {
 
 exports.createTool = async (req, res) => {
     try {
-        const tool = await Tool.create(req.body);
+        const data = { ...req.body };
+        if (data.output_format_id === '') data.output_format_id = null;
+        if (data.json_schema_id === '') data.json_schema_id = null;
+
+        const tool = await Tool.create(data);
         res.json({ success: true, data: tool });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -41,7 +45,12 @@ exports.updateTool = async (req, res) => {
     try {
         const tool = await Tool.findByPk(req.params.id);
         if (!tool) return res.status(404).json({ success: false, message: 'Tool not found' });
-        await tool.update(req.body);
+
+        const data = { ...req.body };
+        if (data.output_format_id === '') data.output_format_id = null;
+        if (data.json_schema_id === '') data.json_schema_id = null;
+
+        await tool.update(data);
         res.json({ success: true, data: tool });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -74,7 +83,18 @@ const cleanSchema = (schema) => {
     if (!schema || typeof schema !== 'object') return schema;
 
     const cleaned = { ...schema };
-    const unsupported = ['$schema', '$ref', 'definitions', '$id', 'additionalProperties', 'default', 'examples', 'title', 'description'];
+
+    // Gemini only supports single types, no arrays like ["string", "null"]
+    if (Array.isArray(cleaned.type)) {
+        cleaned.type = cleaned.type[0];
+    }
+
+    // ENFORCE STRING TYPE FOR ENUMS (Mandatory for Gemini API)
+    if (cleaned.enum && (!cleaned.type || cleaned.type !== 'string')) {
+        cleaned.type = 'string';
+    }
+
+    const unsupported = ['$schema', '$ref', 'definitions', '$id', 'additionalProperties', 'default', 'examples', 'title', 'description', 'format'];
 
     unsupported.forEach(key => delete cleaned[key]);
 
