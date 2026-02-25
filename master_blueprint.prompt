@@ -1,44 +1,50 @@
 # Master Blueprint: AI Agent Integrations (Sincronizado)
 
 ## Project Overview
-A monorepo for managing and generating AI tools via API.
-Status: Implementado
+A robust monorepo platform for managing and executing AI tools via official APIs.
+- **Backend Port**: 3333
+- **Frontend Port**: 5173
+- **Primary AI Engine**: Gemini 1.5 Flash (Multimodal)
+
+## Tech Stack
+- **Backend**: Node.js (Express 5), Sequelize ORM, MySQL 8, Multer (File Handling), JWT, Swagger JSDoc.
+- **Frontend**: React 18 (Vite), Tailwind CSS, Axios, Lucide Icons.
 
 ## Core Modules
-1. **Auth**: User authentication and session management. [STATUS: DONE]
-2. **AI_Tool_Maker**: CRUD for AI tools and dynamic tool generation. [STATUS: DONE]
-3. **AI_Tool_Catalog**: View of all available tools. [STATUS: DONE]
-4. **AI_Tool_Execution**: Running tool instances (FileUpload + IA Response). [STATUS: DONE]
-5. **Config**: Global settings (Gemini API Key). [STATUS: DONE]
+1. **Auth**: JWT-based authentication with role/privilege scoping.
+2. **AI_Tool_Maker**: Advanced CRUD for AI tools including System Instruction (Context & Behavior) definition.
+3. **AI_Tool_Catalog**: Visual repository of available neural units.
+4. **AI_Tool_Execution**: Real-time multimodal execution hub (TexStatus: Implementado
+4. **AI_Tool_Execution**: Real-time multimodal execution hub (Text, Image, Audio, Video).
+- **Status**: Implementado
+- **Default Tools**: Validador de CI Chile (Pre-built neural unit).
+5. **Config**: Global configuration management (API Keys).
 
-## Roles & Privileges
-### [Backend]
-Summary: Express.js server with REST API, Sequelize (MySQL), Swagger, and JWT auth.
-### SuperAdmin (User: inntek)
-- **Privileges**:
-    - `*`: Read/Write/Exec
+## Technical Specifications
+### Database Schema (MySQL: `inntek_ai_tools`)
+- `Roles`: Authority levels (`id`, `nombre`).
+- `Privilegios`: Granular access control (`id`, `ref_modulo`, `read`, `write`, `exec` (Boolean)).
+- `Users`: Auth entities with role association.
+- `Tools`: AI Unit configurations (`nombre`, `descripcion`, `logo_herramienta`, `training_prompt`, `behavior_prompt`, `response_format`).
+- `Config`: Key-Value system parameters.
 
-### Admin
-- **Privileges**:
-    - `Auth`: Read/Write/Exec
-    - `AI_Tool_Maker`: Read/Write/Exec
-    - `AI_Tool_Catalog`: Read/Write/Exec
-    - `AI_Tool_Execution`: Read/Write/Exec
-    - `Config`: Read/Write/Exec
+## API Endpoints (Swagger @ `/api-docs`)
+### Auth
+- `POST /api/auth/login`: Authentication entry point.
+- `GET /api/auth/me`: Clearance verification.
 
-### User
-- **Privileges**:
-    - `AI_Tool_Catalog`: Read
-    - `AI_Tool_Execution`: Read/Exec
+### AI Tools
+- `GET /api/tools`: Catalog retrieval.
+- `POST /api/tools`: Unit creation.
+- `GET /api/tools/:id`: Detailed unit data.
+- `PUT /api/tools/:id`: Logic adjustment.
+- `DELETE /api/tools/:id`: Unit decommissioning.
+- `POST /api/tools/:id/execute`: Neural protocol execution. Accepts `multipart/form-data` with `prompt` (text) and `imagen` (file). Chains training + behavior + user prompt.
 
-## Endpoints
-- `POST /api/auth/login`
-- `GET /api/auth/me`
-- `GET /api/tools`
-- `POST /api/tools`
-- `GET /api/tools/:id`
-- `PUT /api/tools/:id`
-- `DELETE /api/tools/:id`
-- `POST /api/tools/:id/execute`
-- `GET /api/config`
-- `POST /api/config`
+### Config
+- `GET /api/config`: Global parameter retrieval.
+- `POST /api/config`: Parameter synchronization.
+
+## Security (Privilegios Engine)
+- **SuperAdmin**: `*` -> `read: true, write: true, exec: true`.
+- **Default Port Strategy**: Port 3001 collision avoided by migrating to **3333**.

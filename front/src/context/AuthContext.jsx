@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = 'http://localhost:3333/api';
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
 
     const canRead = (module) => checkPrivilege(module, 'read');
     const canWrite = (module) => checkPrivilege(module, 'write');
-    const canExec = (module) => checkPrivilege(module, 'excec');
+    const canExec = (module) => checkPrivilege(module, 'exec');
 
     const isAdmin = privileges.some(p => p.ref_modulo === '*' && p.read);
 

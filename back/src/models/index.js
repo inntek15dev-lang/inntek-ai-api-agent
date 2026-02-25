@@ -11,7 +11,7 @@ const Privilegio = sequelize.define('Privilegio', {
     ref_modulo: { type: DataTypes.STRING, allowNull: false }, // '*' or module name
     read: { type: DataTypes.BOOLEAN, defaultValue: false },
     write: { type: DataTypes.BOOLEAN, defaultValue: false },
-    excec: { type: DataTypes.BOOLEAN, defaultValue: false }
+    exec: { type: DataTypes.BOOLEAN, defaultValue: false }
 });
 
 const User = sequelize.define('User', {

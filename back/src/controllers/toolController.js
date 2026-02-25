@@ -1,4 +1,8 @@
 const { Tool } = require('../models');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const fs = require('fs');
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 exports.getTools = async (req, res) => {
     try {
@@ -50,19 +54,61 @@ exports.deleteTool = async (req, res) => {
     }
 };
 
+// Helper to convert file to GoogleGenerativeAI.Part
+const fileToGenerativePart = (path, mimeType) => {
+    return {
+        inlineData: {
+            data: Buffer.from(fs.readFileSync(path)).toString("base64"),
+            mimeType
+        },
+    };
+};
+
 exports.executeTool = async (req, res) => {
-    // This will eventually call Gemini. For now, it's a mock.
     try {
         const tool = await Tool.findByPk(req.params.id);
         if (!tool) return res.status(404).json({ success: false, message: 'Tool not found' });
 
+        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+
+        const fullTextPrompt = `
+SYSTEM TRAINING:
+${tool.training_prompt}
+
+BEHAVIOR PROTOCOL:
+${tool.behavior_prompt}
+
+USER INSTRUCTION:
+${req.body.prompt || "Analyze the attached content."}
+
+RESPONSE FORMAT:
+${tool.response_format || "Text"}
+`.trim();
+
+        const promptParts = [fullTextPrompt];
+
+        // Handle multimodal file if present
+        if (req.file) {
+            promptParts.push(fileToGenerativePart(req.file.path, req.file.mimetype));
+        }
+
+        const result = await model.generateContent(promptParts);
+        const response = await result.response;
+        const text = response.text();
+
+        // Cleanup temp file
+        if (req.file) {
+            fs.unlinkSync(req.file.path);
+        }
+
         res.json({
             success: true,
             data: {
-                response: `[Simulación IA] Herramienta "${tool.nombre}" procesando: ${req.body.prompt || 'Sin prompt'}.`
+                response: text
             }
         });
     } catch (error) {
+        console.error('Gemini Execution Error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 };

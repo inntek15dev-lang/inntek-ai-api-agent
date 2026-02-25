@@ -1,87 +1,105 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, Terminal } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        setIsLoading(true);
+        setLoading(true);
         try {
-            await login(email, password);
-            navigate('/');
+            const data = await login(email, password);
+            if (data?.success) {
+                navigate('/catalog');
+            } else {
+                setError('Invalid credentials');
+            }
         } catch (err) {
-            setError('Credenciales inválidas o error de conexión');
+            setError('System connection error');
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-            <div className="max-w-md w-full glass p-10 rounded-3xl">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-guardian-bg">
+            <div className="w-full max-w-[480px] guardian-card animate-in zoom-in-95 duration-700">
+                {/* Logo and Title */}
                 <div className="text-center mb-10">
-                    <div className="w-16 h-16 bg-primary rounded-2xl mx-auto flex items-center justify-center text-white mb-4 shadow-lg shadow-blue-200">
-                        <Terminal size={32} />
+                    <div className="inline-flex items-center justify-center w-20 h-20 bg-guardian-blue/10 rounded-2xl mb-6 border border-guardian-blue/20">
+                        <ShieldCheck size={48} className="text-guardian-blue" />
                     </div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Bienvenido</h1>
-                    <p className="text-slate-500">Ingresa a tu cuenta de agente IA</p>
+                    <h2 className="text-3xl font-black text-guardian-text tracking-tight mb-2 uppercase">Inntek AI Tools Manager</h2>
+                    <p className="guardian-text-sm font-bold uppercase tracking-[0.2em] text-[10px]">Ai Agents Tools Management using Api</p>
                 </div>
 
                 {error && (
-                    <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 text-sm flex items-center">
-                        {error}
+                    <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg flex items-center space-x-3 text-red-600">
+                        <AlertCircle size={20} />
+                        <span className="text-sm font-bold uppercase tracking-tight">{error}</span>
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">Correo / Usuario</label>
-                        <input
-                            type="text"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 bg-slate-100 border-none rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all"
-                            placeholder="Ej: inntek"
-                            required
-                        />
+                    <div className="guardian-input-group">
+                        <label className="guardian-label">Email Corporativo</label>
+                        <div className="relative">
+                            <Mail className="guardian-input-icon" size={18} />
+                            <input
+                                type="text"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="guardian-input"
+                                placeholder="ejemplo@guardian.com"
+                                required
+                            />
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">Contraseña</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 bg-slate-100 border-none rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all"
-                            placeholder="••••••••"
-                            required
-                        />
+
+                    <div className="guardian-input-group">
+                        <label className="guardian-label">Contraseña</label>
+                        <div className="relative">
+                            <Lock className="guardian-input-icon" size={18} />
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="guardian-input"
+                                placeholder="••••••••"
+                                required
+                            />
+                        </div>
                     </div>
+
                     <button
                         type="submit"
-                        disabled={isLoading}
-                        className="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-600 transition-all flex items-center justify-center space-x-2"
+                        disabled={loading}
+                        className="guardian-btn-primary group"
                     >
-                        {isLoading ? <span>Cargando...</span> : (
-                            <>
-                                <LogIn size={20} />
-                                <span>Iniciar Sesión</span>
-                            </>
+                        {loading ? (
+                            <div className="flex items-center justify-center space-x-3">
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                <span>Securing Environment...</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center space-x-2">
+                                <span>Iniciar Sesión Securely</span>
+                            </div>
                         )}
                     </button>
                 </form>
 
-                <div className="mt-8 text-center text-xs text-slate-400">
-                    <p>© 2026 Inntek AI Agent API Agent Project</p>
-                </div>
+                <p className="mt-12 text-center text-[10px] font-bold text-guardian-muted italic uppercase leading-relaxed max-w-[280px] mx-auto">
+                    Acceso restringido a personal autorizado conforme a la política A.5.15
+                </p>
             </div>
         </div>
     );

@@ -11,7 +11,7 @@
 - `ref_modulo` (String)
 - `read` (Boolean)
 - `write` (Boolean)
-- `excec` (Boolean)
+- `exec` (Boolean)
 - `role_id` (FK -> Roles.id)
 
 ### Users

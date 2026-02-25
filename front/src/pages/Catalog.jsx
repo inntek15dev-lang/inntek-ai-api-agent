@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { Play, Plus, Box } from 'lucide-react';
+import { Plus, Search, Cpu, Zap, Activity, Info, ArrowRight, Settings } from 'lucide-react';
 
 const Catalog = () => {
     const [tools, setTools] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
 
     useEffect(() => {
         fetchTools();
@@ -14,7 +14,7 @@ const Catalog = () => {
 
     const fetchTools = async () => {
         try {
-            const res = await axios.get('http://localhost:3001/api/tools');
+            const res = await axios.get('http://localhost:3333/api/tools');
             setTools(res.data.data);
         } catch (err) {
             console.error(err);
@@ -23,63 +23,102 @@ const Catalog = () => {
         }
     };
 
+    const filteredTools = tools.filter(tool =>
+        tool.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tool.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
-        <div className="space-y-8">
-            <div className="flex justify-between items-center">
+        <div className="space-y-10">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900">Catálogo de Herramientas</h1>
-                    <p className="text-slate-500">Explora y ejecuta tus agentes de inteligencia artificial</p>
+                    <p className="guardian-label">Innovation Hub</p>
+                    <h1 className="guardian-h1 !mb-0">Agent <span className="text-guardian-blue">Catalog</span></h1>
+                    <p className="guardian-text-sm mt-2">Explora y ejecuta unidades de procesamiento de inteligencia artificial.</p>
                 </div>
-                <button
-                    onClick={() => navigate('/tool-maker')}
-                    className="btn-primary flex items-center space-x-2 shadow-lg shadow-blue-200"
-                >
+                <Link to="/tool-maker" className="guardian-btn-primary !w-auto h-12">
                     <Plus size={20} />
-                    <span>Crear Nueva</span>
-                </button>
+                    <span>New Agent</span>
+                </Link>
+            </div>
+
+            {/* Search Header */}
+            <div className="guardian-card !p-4 flex items-center space-x-4">
+                <Search className="text-guardian-muted ml-2" size={20} />
+                <input
+                    type="text"
+                    placeholder="Filter modules by name or function..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="bg-transparent border-none outline-none w-full text-sm font-medium placeholder:text-slate-400"
+                />
+                <div className="h-6 w-[1px] bg-slate-200 mx-2"></div>
+                <span className="text-[10px] font-black text-guardian-muted uppercase tracking-widest px-4 whitespace-nowrap">
+                    {filteredTools.length} Units Found
+                </span>
             </div>
 
             {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
-                    {[1, 2, 3].map(i => <div key={i} className="h-48 bg-slate-100 rounded-xl" />)}
-                </div>
-            ) : tools.length === 0 ? (
-                <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-slate-200">
-                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
-                        <Box size={32} />
-                    </div>
-                    <h3 className="text-xl font-semibold text-slate-700">No hay herramientas creadas</h3>
-                    <p className="text-slate-500 mb-6">Comienza creando tu primera herramienta en el Tool Maker</p>
-                    <button onClick={() => navigate('/tool-maker')} className="btn-primary">
-                        Crear herramienta
-                    </button>
+                <div className="h-64 flex flex-col items-center justify-center space-y-4">
+                    <div className="w-10 h-10 border-4 border-guardian-blue border-t-transparent rounded-full animate-spin"></div>
+                    <p className="guardian-text-sm font-bold animate-pulse">Scanning Neural Nodes...</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {tools.map((tool) => (
-                        <div key={tool.id} className="card group relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-2 h-full bg-primary" />
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-2xl">
-                                    {tool.logo_herramienta || '🤖'}
+                    {filteredTools.map((tool) => (
+                        <div key={tool.id} className="guardian-tool-card flex flex-col">
+                            <div className="flex items-start justify-between mb-6">
+                                <div className="w-14 h-14 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-3xl shadow-sm">
+                                    {tool.logo_herramienta}
                                 </div>
-                                <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold uppercase tracking-wider">
-                                    {tool.response_format}
-                                </span>
+                                <div className="flex flex-col items-end">
+                                    <span className="guardian-badge guardian-badge--blue mb-1">{tool.response_format}</span>
+                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">v1.2.0</span>
+                                </div>
                             </div>
-                            <h3 className="text-xl font-bold text-slate-800 mb-2 truncate">{tool.nombre}</h3>
-                            <p className="text-slate-500 text-sm line-clamp-3 mb-6 h-15">
-                                {tool.descripcion || 'Sin descripción disponible.'}
-                            </p>
-                            <button
-                                onClick={() => navigate(`/tool/${tool.id}`)}
-                                className="w-full flex items-center justify-center space-x-2 py-3 bg-slate-50 text-primary font-bold rounded-xl hover:bg-primary hover:text-white transition-all"
-                            >
-                                <Play size={18} />
-                                <span>Abrir Herramienta</span>
-                            </button>
+
+                            <div className="flex-1 mb-8">
+                                <h3 className="guardian-h3 mb-2">{tool.nombre}</h3>
+                                <p className="guardian-text-sm line-clamp-3 leading-relaxed">
+                                    {tool.descripcion}
+                                </p>
+                            </div>
+
+                            <div className="pt-6 border-t border-slate-50 flex items-center justify-between">
+                                <div className="flex -space-x-2">
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="w-6 h-6 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center">
+                                            <Cpu size={10} className="text-slate-400" />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <Link
+                                        to={`/tool-maker/${tool.id}`}
+                                        className="guardian-btn-outline !p-2"
+                                        title="Edit Tool"
+                                    >
+                                        <Settings size={16} />
+                                    </Link>
+                                    <Link
+                                        to={`/tool/${tool.id}`}
+                                        className="guardian-btn-outline group"
+                                    >
+                                        <span>Launch</span>
+                                        <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                    </Link>
+                                </div>
+                            </div>
                         </div>
                     ))}
+
+                    {filteredTools.length === 0 && (
+                        <div className="col-span-full guardian-card !bg-slate-50 !border-dashed flex flex-col items-center justify-center py-20 text-center">
+                            <Zap size={48} className="text-slate-300 mb-6" />
+                            <h3 className="guardian-h3 text-slate-400">No Intelligence Units Matched</h3>
+                            <p className="guardian-text-sm text-slate-400 mt-2">Adjust your search parameters or initialize a new sequence.</p>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

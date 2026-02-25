@@ -1,4 +1,4 @@
-const { sequelize, Role, Privilegio, User } = require('./models');
+const { sequelize, Role, Privilegio, User, Tool } = require('./models');
 require('dotenv').config();
 
 const seed = async () => {
@@ -15,7 +15,7 @@ const seed = async () => {
             ref_modulo: '*',
             read: true,
             write: true,
-            excec: true,
+            exec: true,
             role_id: superAdminRole.id
         });
 
@@ -26,21 +26,31 @@ const seed = async () => {
                 ref_modulo: mod,
                 read: true,
                 write: true,
-                excec: true,
+                exec: true,
                 role_id: adminRole.id
             });
         }
 
         // User Privileges
         await Privilegio.create({ ref_modulo: 'AI_Tool_Catalog', read: true, role_id: userRole.id });
-        await Privilegio.create({ ref_modulo: 'AI_Tool_Execution', read: true, excec: true, role_id: userRole.id });
+        await Privilegio.create({ ref_modulo: 'AI_Tool_Execution', read: true, exec: true, role_id: userRole.id });
 
         // 3. Create SuperAdmin User
-        await User.create({
+        const user = await User.create({
             nombre: 'Inntek System',
             email: 'inntek', // As per privilegios-engine requirement
             password: 'admin', // Simplification
             role_id: superAdminRole.id
+        });
+
+        // 4. Create Sample AI Tool: Validador de CI Chile
+        await Tool.create({
+            nombre: 'Validador de CI Chile',
+            descripcion: 'Experto Validador de CI Chilenas extraterrestrisimo',
+            logo_herramienta: '🆔',
+            training_prompt: 'actua como experto validador y analista de cedulas de identidad chilena, analiza la imagen adjunta identifica la data textual y numerica que se indica en #DATA# comparala con la data encontrada e3n la imagen y ejecuta un proceso de validacion de documentacion.',
+            behavior_prompt: 'responde siempre con un JSON estructurado que represente el analisis del documento y su match de validacion punto por punto y su nota final.',
+            response_format: 'JSON'
         });
 
         console.log('Database seeded successfully!');

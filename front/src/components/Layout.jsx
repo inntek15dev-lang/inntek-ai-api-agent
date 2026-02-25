@@ -1,77 +1,118 @@
 import React from 'react';
-import { NavLink, useNavigate, Outlet } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getVisibleNavItems } from '../config/navigation';
-import { LogOut, User as UserIcon } from 'lucide-react';
+import {
+    LayoutDashboard,
+    Library,
+    Settings,
+    LogOut,
+    ShieldCheck,
+    User,
+    FileText,
+    ClipboardCheck,
+    Search,
+    AlertTriangle,
+    FileBarChart,
+    Grid
+} from 'lucide-react';
 
 const Layout = () => {
     const { user, logout, canRead, isAdmin } = useAuth();
-    const navigate = useNavigate();
-    const navItems = getVisibleNavItems(canRead, isAdmin);
+    const location = useLocation();
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
+    const navItems = [
+        { path: '/', label: 'Dashboard', icon: LayoutDashboard, module: 'Dashboard' },
+        { path: '/catalog', label: 'Catálogo', icon: Library, module: 'AI_Tool_Catalog' },
+        { path: '/tool-maker', label: 'AI Tool Maker', icon: Grid, module: 'AI_Tool_Maker' },
+        { path: '/config', label: 'Configuración', icon: Settings, module: 'Config' },
+    ];
+
+    const secondaryNav = [
+        { label: 'Documentos', icon: FileText },
+        { label: 'Controles', icon: ShieldCheck },
+        { label: 'Auditorías', icon: ClipboardCheck },
+        { label: 'No Conformidades', icon: AlertTriangle },
+        { label: 'Reportes', icon: FileBarChart },
+    ];
+
+    const isLinkActive = (path) => location.pathname === path;
 
     return (
-        <div className="flex h-screen bg-background">
-            {/* Sidebar */}
-            <aside className="w-64 bg-surface border-r border-slate-200 flex flex-col">
-                <div className="p-6 border-b border-slate-100">
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                        AI Integrator
-                    </h1>
+        <div className="min-h-screen flex flex-col">
+            {/* Top Header */}
+            <header className="guardian-header">
+                <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-white/20 rounded-lg">
+                        <ShieldCheck size={24} className="text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-lg font-bold leading-tight">Inntek Ai Tools</h1>
+                        <p className="text-[10px] font-medium opacity-80 uppercase tracking-wider">Inntek AI Tools Manager</p>
+                    </div>
                 </div>
 
-                <nav className="flex-1 p-4 space-y-2">
-                    {navItems.map((item) => (
-                        <NavLink
-                            key={item.path}
-                            to={item.path}
-                            className={({ isActive }) =>
-                                `flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive
-                                    ? 'bg-primary text-white shadow-lg shadow-blue-200'
-                                    : 'text-slate-600 hover:bg-slate-50'
-                                }`
-                            }
-                        >
-                            <item.icon size={20} />
-                            <span className="font-medium">{item.label}</span>
-                        </NavLink>
-                    ))}
-                </nav>
-
-                <div className="p-4 border-t border-slate-100">
-                    <div className="flex items-center space-x-3 px-4 py-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-primary">
-                            <UserIcon size={20} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold truncate">{user?.nombre}</p>
-                            <p className="text-xs text-slate-500 truncate">{user?.role}</p>
-                        </div>
+                <div className="flex items-center space-x-6">
+                    <div className="hidden md:flex flex-col items-end">
+                        <span className="text-xs font-bold">{user?.nombre || 'User'}</span>
+                        <span className="text-[10px] opacity-70 uppercase font-black">{user?.Role?.nombre}</span>
+                    </div>
+                    <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/20">
+                        <User size={20} />
                     </div>
                     <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center space-x-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-lg transition-all mt-2"
+                        onClick={logout}
+                        className="text-white/70 hover:text-white transition-colors"
+                        title="Disconnect"
                     >
                         <LogOut size={20} />
-                        <span className="font-medium">Cerrar Sesión</span>
                     </button>
                 </div>
-            </aside>
+            </header>
 
-            {/* Main Content */}
-            <main className="flex-1 flex flex-col overflow-hidden">
-                <header className="h-16 bg-surface border-b border-slate-100 flex items-center justify-between px-8">
-                    <h2 className="text-lg font-semibold text-slate-700">Sistema de Agentes IA</h2>
-                    <div className="text-sm text-slate-500">v1.0.0</div>
-                </header>
-                <div className="flex-1 overflow-y-auto p-8">
+            {/* Main Navigation Bar */}
+            <nav className="guardian-nav">
+                {navItems.map((item) => (
+                    (item.path === '/' || canRead(item.module) || isAdmin) && (
+                        <Link
+                            key={item.path}
+                            to={item.path}
+                            className={`guardian-nav-item ${isLinkActive(item.path) ? 'guardian-nav-item--active' : ''}`}
+                        >
+                            <item.icon size={18} />
+                            <span>{item.label}</span>
+                        </Link>
+                    )
+                ))}
+
+                {/* Placeholder for visual consistency with image */}
+                {secondaryNav.map((item, i) => (
+                    <div key={i} className="guardian-nav-item opacity-50 cursor-not-allowed hidden lg:flex">
+                        <item.icon size={18} />
+                        <span>{item.label}</span>
+                    </div>
+                ))}
+            </nav>
+
+            {/* Main Content Area */}
+            <main className="guardian-main-container flex-1">
+                <div className="animate-in fade-in duration-500">
                     <Outlet />
                 </div>
             </main>
+
+            {/* Footer */}
+            <footer className="border-t border-guardian-border py-6 bg-white/50">
+                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-[10px] font-bold text-guardian-muted uppercase tracking-[0.2em]">
+                    <span>© 2026 INNTEK AI API AGENT</span>
+                    <div className="flex items-center space-x-4 mt-4 md:mt-0">
+                        <span className="flex items-center space-x-1">
+                            <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                            <span>System Online</span>
+                        </span>
+                        <span>Ver: 4.0.5-Guardian</span>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 };

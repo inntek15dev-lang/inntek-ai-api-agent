@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { Save, ChevronLeft, Info, Cpu, PenTool } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Save, ChevronLeft, Info, Cpu, Zap, Activity, Grid, Edit } from 'lucide-react';
 
 const ToolMaker = () => {
     const [formData, setFormData] = useState({
@@ -12,8 +12,25 @@ const ToolMaker = () => {
         behavior_prompt: '',
         response_format: 'Markdown'
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { id } = useParams();
     const navigate = useNavigate();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const isEdit = !!id;
+
+    useEffect(() => {
+        if (isEdit) {
+            fetchTool();
+        }
+    }, [id]);
+
+    const fetchTool = async () => {
+        try {
+            const res = await axios.get(`http://localhost:3333/api/tools/${id}`);
+            setFormData(res.data.data);
+        } catch (err) {
+            console.error('Error fetching tool:', err);
+        }
+    };
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -23,133 +40,148 @@ const ToolMaker = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await axios.post('http://localhost:3001/api/tools', formData);
+            if (isEdit) {
+                await axios.put(`http://localhost:3333/api/tools/${id}`, formData);
+            } else {
+                await axios.post('http://localhost:3333/api/tools', formData);
+            }
             navigate('/catalog');
         } catch (err) {
             console.error(err);
-            alert('Error al crear la herramienta');
         } finally {
             setIsSubmitting(false);
         }
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 pb-20">
-            <div className="flex items-center space-x-4">
-                <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-full transition-all">
+        <div className="space-y-10">
+            <div className="flex items-center space-x-6">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="guardian-btn-outline !p-3 !rounded-xl"
+                >
                     <ChevronLeft size={24} />
                 </button>
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900">AI Tool Maker</h1>
-                    <p className="text-slate-500">Diseña nuevas capacidades para tu agente</p>
+                    <p className="guardian-label">Development Lab</p>
+                    <h1 className="guardian-h1 !mb-0">
+                        AI <span className="text-guardian-blue">{isEdit ? 'Tool Editor' : 'Tool Maker'}</span>
+                    </h1>
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
                 {/* Basic Info */}
-                <div className="card space-y-6">
-                    <div className="flex items-center space-x-2 text-primary font-bold text-sm uppercase">
-                        <Info size={18} />
-                        <span>Información Básica</span>
-                    </div>
+                <div className="lg:col-span-1">
+                    <div className="guardian-card">
+                        <div className="flex items-center space-x-3 mb-8">
+                            <div className="p-2 bg-slate-50 border border-slate-100 rounded-lg text-guardian-muted">
+                                <Info size={20} />
+                            </div>
+                            <span className="guardian-h3 tracking-tight">Core Identity</span>
+                        </div>
 
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-1">Nombre de la Herramienta</label>
-                            <input
-                                name="nombre"
-                                value={formData.nombre}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary"
-                                placeholder="Ej: Analizador de Contratos"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-1">Descripción</label>
-                            <textarea
-                                name="descripcion"
-                                value={formData.descripcion}
-                                onChange={handleChange}
-                                rows={3}
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary resize-none"
-                                placeholder="¿Qué hace esta herramienta?"
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-1">Logo / Emoji</label>
+                        <div className="space-y-6">
+                            <div className="guardian-input-group !mb-0">
+                                <label className="guardian-label">Tool Designation</label>
                                 <input
-                                    name="logo_herramienta"
-                                    value={formData.logo_herramienta}
+                                    name="nombre"
+                                    value={formData.nombre}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary"
-                                    placeholder="🤖, 📄, 🔍"
+                                    className="guardian-input !pl-4"
+                                    placeholder="Unit ID..."
+                                    required
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-1">Formato Respuesta</label>
-                                <select
-                                    name="response_format"
-                                    value={formData.response_format}
+                            <div className="guardian-input-group !mb-0">
+                                <label className="guardian-label">Operational Brief</label>
+                                <textarea
+                                    name="descripcion"
+                                    value={formData.descripcion}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary"
-                                >
-                                    <option>Markdown</option>
-                                    <option>JSON</option>
-                                    <option>Plain Text</option>
-                                </select>
+                                    rows={4}
+                                    className="guardian-input !pl-4 resize-none"
+                                    placeholder="Primary function parameters..."
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="guardian-input-group !mb-0">
+                                    <label className="guardian-label">Icon</label>
+                                    <input
+                                        name="logo_herramienta"
+                                        value={formData.logo_herramienta}
+                                        onChange={handleChange}
+                                        className="guardian-input !pl-4 text-center text-xl"
+                                        placeholder="🤖"
+                                    />
+                                </div>
+                                <div className="guardian-input-group !mb-0">
+                                    <label className="guardian-label">Response</label>
+                                    <select
+                                        name="response_format"
+                                        value={formData.response_format}
+                                        onChange={handleChange}
+                                        className="guardian-input !pl-4 appearance-none"
+                                    >
+                                        <option>Markdown</option>
+                                        <option>JSON</option>
+                                        <option>Plain Text</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* AI Logic */}
-                <div className="card space-y-6">
-                    <div className="flex items-center space-x-2 text-primary font-bold text-sm uppercase">
-                        <Cpu size={18} />
-                        <span>Lógica IA & Comportamiento</span>
-                    </div>
-
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-1">Prompt de Entrenamiento</label>
-                            <textarea
-                                name="training_prompt"
-                                value={formData.training_prompt}
-                                onChange={handleChange}
-                                rows={4}
-                                className="w-full px-4 py-3 bg-slate-800 text-blue-400 font-mono text-xs rounded-xl outline-none border border-slate-700 focus:ring-2 focus:ring-blue-500"
-                                placeholder="Define el conocimiento base..."
-                            />
+                <div className="lg:col-span-2">
+                    <div className="guardian-card border-t-4 border-t-guardian-blue">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center space-x-3 text-guardian-text">
+                                <div className="p-2 bg-slate-50 border border-slate-100 rounded-lg text-guardian-muted">
+                                    <Cpu size={20} />
+                                </div>
+                                <span className="guardian-h3 tracking-tight">Neural Configuration</span>
+                            </div>
+                            <span className="guardian-badge guardian-badge--slate">G-Sequence-1.5</span>
                         </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-1">Prompt de Comportamiento</label>
-                            <textarea
-                                name="behavior_prompt"
-                                value={formData.behavior_prompt}
-                                onChange={handleChange}
-                                rows={4}
-                                className="w-full px-4 py-3 bg-slate-800 text-green-400 font-mono text-xs rounded-xl outline-none border border-slate-700 focus:ring-2 focus:ring-green-500"
-                                placeholder="¿Cómo debe actuar la IA?"
-                            />
+
+                        <div className="space-y-8">
+                            <div className="guardian-input-group !mb-0">
+                                <label className="guardian-label">Training Vector (Context)</label>
+                                <textarea
+                                    name="training_prompt"
+                                    value={formData.training_prompt}
+                                    onChange={handleChange}
+                                    rows={6}
+                                    className="guardian-input !pl-4 font-mono text-xs leading-relaxed"
+                                    placeholder="Initialize base knowledge sequence..."
+                                />
+                            </div>
+                            <div className="guardian-input-group !mb-0">
+                                <label className="guardian-label">Behavior Filter (Persona)</label>
+                                <textarea
+                                    name="behavior_prompt"
+                                    value={formData.behavior_prompt}
+                                    onChange={handleChange}
+                                    rows={6}
+                                    className="guardian-input !pl-4 font-mono text-xs leading-relaxed"
+                                    placeholder="Define interaction protocols..."
+                                />
+                            </div>
+
+                            <div className="flex justify-end pt-4">
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="guardian-btn-primary !w-auto min-w-[200px]"
+                                >
+                                    {isEdit ? <Edit size={20} /> : <Save size={20} />}
+                                    <span>{isEdit ? 'Actualizar Unidad' : 'Sincronizar Unidad'}</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                <div className="md:col-span-2 flex justify-end pt-4">
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="btn-primary w-full md:w-auto px-12 py-4 text-lg shadow-xl shadow-blue-200 flex items-center justify-center space-x-3"
-                    >
-                        {isSubmitting ? <span>Guardando...</span> : (
-                            <>
-                                <Save size={24} />
-                                <span>Guardar Herramienta</span>
-                            </>
-                        )}
-                    </button>
                 </div>
             </form>
         </div>

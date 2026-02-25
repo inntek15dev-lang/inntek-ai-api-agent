@@ -27,7 +27,7 @@ const authMiddleware = async (req, res, next) => {
 
         req.user.canRead = (module) => hasPrivilege(module, 'read');
         req.user.canWrite = (module) => hasPrivilege(module, 'write');
-        req.user.canExec = (module) => hasPrivilege(module, 'excec');
+        req.user.canExec = (module) => hasPrivilege(module, 'exec');
 
         next();
     } catch (error) {
