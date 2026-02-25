@@ -158,6 +158,20 @@ ${req.body.prompt || "Analyze the attached content."}
 
         // Handle multimodal file if present
         if (req.file) {
+            const supportedMimeTypes = [
+                'image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif',
+                'application/pdf', 'text/plain', 'text/javascript', 'text/python',
+                'text/x-python', 'text/markdown', 'text/html', 'text/css', 'text/csv'
+            ];
+
+            if (!supportedMimeTypes.includes(req.file.mimetype)) {
+                // Cleanup temp file before returning
+                fs.unlinkSync(req.file.path);
+                return res.status(400).json({
+                    success: false,
+                    message: `Unsupported file type: ${req.file.mimetype}. Gemini only supports Images, PDFs, and Plain Text files directly. Please convert documents to PDF.`
+                });
+            }
             promptParts.push(fileToGenerativePart(req.file.path, req.file.mimetype));
         }
 
@@ -178,10 +192,17 @@ ${req.body.prompt || "Analyze the attached content."}
         });
     } catch (error) {
         console.error('Gemini Execution Error:', error.message);
-        // Do not leak internal error details to the client
-        res.status(500).json({
+
+        // Handle specific Gemini 400 errors (like overloaded models or safety filters)
+        const isClientError = error.message.includes('400') || error.message.includes('403');
+        const status = isClientError ? 400 : 500;
+        const userMessage = isClientError
+            ? `Neural Protocol Failed: ${error.message}. This is usually due to an invalid JSON Schema or a safety filter trigger.`
+            : 'Neural Processing Failure. Please check system logs for audit trail.';
+
+        res.status(status).json({
             success: false,
-            message: 'Neural Processing Failure. Please check system logs for audit trail.'
+            message: userMessage
         });
     }
 };

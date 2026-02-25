@@ -12,6 +12,7 @@ const ToolView = () => {
     const [response, setResponse] = useState('');
     const [isExecuting, setIsExecuting] = useState(false);
     const [file, setFile] = useState(null);
+    const [execError, setExecError] = useState(null);
 
     useEffect(() => {
         fetchTool();
@@ -166,8 +167,10 @@ const ToolView = () => {
                 }
             });
             setResponse(res.data.data.response);
+            setExecError(null);
         } catch (err) {
             console.error(err);
+            setExecError(err.response?.data?.message || err.message || 'Unknown Execution Error');
         } finally {
             setIsExecuting(false);
         }
@@ -298,6 +301,16 @@ const ToolView = () => {
                         </div>
 
                         <div className="flex-1 p-8 overflow-y-auto font-mono text-[13px] leading-relaxed text-slate-700 bg-slate-50/30">
+                            {execError && (
+                                <div className="mb-6 p-4 bg-cyber-pink/10 border border-cyber-pink/20 rounded-xl text-cyber-pink animate-in zoom-in-95 duration-300">
+                                    <div className="flex items-center space-x-2 mb-2 font-black uppercase tracking-tighter text-[10px]">
+                                        <Activity size={14} />
+                                        <span>System Alert: Neural Execution Fault</span>
+                                    </div>
+                                    <p className="font-bold">{execError}</p>
+                                </div>
+                            )}
+
                             {response ? (
                                 tool.OutputFormat ? (
                                     (() => {
