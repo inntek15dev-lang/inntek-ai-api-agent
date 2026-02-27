@@ -16,9 +16,11 @@ const app = express();
 const PORT = process.env.PORT || 3333;
 
 // Middleware
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 app.use(cors({
-    origin: [FRONTEND_URL, 'http://localhost:5173'],
+    origin: [
+        'https://inntek-ai-api-agent-client.onrender.com',
+        'http://localhost:5173'
+    ],
     credentials: true
 }));
 app.use(express.json());
