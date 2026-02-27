@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_URL from '../config/api';
 import { Save, Key, AlertCircle, ShieldAlert, Wifi, Globe, Smartphone, Lock } from 'lucide-react';
 
 const Config = () => {
@@ -15,7 +16,7 @@ const Config = () => {
 
     const fetchConfig = async () => {
         try {
-            const res = await axios.get('http://localhost:3333/api/config');
+            const res = await axios.get(`${API_URL}/config`);
             const configData = res.data.data;
             const mapped = {};
             configData.forEach(item => {
@@ -33,7 +34,7 @@ const Config = () => {
         setMessage(null);
         try {
             const payload = Object.entries(configs).map(([key, value]) => ({ key, value }));
-            await axios.post('http://localhost:3333/api/config', { configs: payload });
+            await axios.post(`${API_URL}/config`, { configs: payload });
             setMessage({ type: 'success', text: 'SYSTEM_SYNC: Configuration successfully archived.' });
         } catch (err) {
             setMessage({ type: 'error', text: 'SYS_ERR: Failed to sync configuration.' });

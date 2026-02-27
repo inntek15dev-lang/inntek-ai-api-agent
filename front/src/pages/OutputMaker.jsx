@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_URL from '../config/api';
 import {
     Plus,
     Save,
@@ -53,8 +54,8 @@ const OutputMaker = () => {
     const fetchData = async () => {
         try {
             const [catRes, formatRes] = await Promise.all([
-                axios.get('http://localhost:3333/api/output-categories'),
-                axios.get('http://localhost:3333/api/output-formats')
+                axios.get(`${API_URL}/output-categories`),
+                axios.get(`${API_URL}/output-formats`)
             ]);
             setCategories(catRes.data.data);
             setFormats(formatRes.data.data);
@@ -119,9 +120,9 @@ const OutputMaker = () => {
                 estructura: JSON.stringify(currentFormat.estructura)
             };
             if (currentFormat.id) {
-                await axios.put(`http://localhost:3333/api/output-formats/${currentFormat.id}`, payload);
+                await axios.put(`${API_URL}/output-formats/${currentFormat.id}`, payload);
             } else {
-                await axios.post('http://localhost:3333/api/output-formats', payload);
+                await axios.post(`${API_URL}/output-formats`, payload);
             }
             fetchData();
             setView('catalog');

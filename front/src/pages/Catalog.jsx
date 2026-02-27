@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import API_URL from '../config/api';
 import { Plus, Search, Cpu, Zap, Activity, Info, ArrowRight, Settings } from 'lucide-react';
 
 const Catalog = () => {
@@ -14,7 +15,7 @@ const Catalog = () => {
 
     const fetchTools = async () => {
         try {
-            const res = await axios.get('http://localhost:3333/api/tools');
+            const res = await axios.get(`${API_URL}/tools`);
             setTools(res.data.data);
         } catch (err) {
             console.error(err);

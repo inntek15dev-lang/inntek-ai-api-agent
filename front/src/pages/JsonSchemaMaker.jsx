@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_URL from '../config/api';
 import {
     Plus,
     Save,
@@ -58,7 +59,7 @@ const JsonSchemaMaker = () => {
 
     const fetchSchemas = async () => {
         try {
-            const res = await axios.get('http://localhost:3333/api/json-schemas');
+            const res = await axios.get(`${API_URL}/json-schemas`);
             setSchemas(res.data.data);
         } catch (err) {
             console.error(err);
@@ -74,9 +75,9 @@ const JsonSchemaMaker = () => {
                 schema: JSON.stringify(currentSchema.schema)
             };
             if (currentSchema.id) {
-                await axios.put(`http://localhost:3333/api/json-schemas/${currentSchema.id}`, payload);
+                await axios.put(`${API_URL}/json-schemas/${currentSchema.id}`, payload);
             } else {
-                await axios.post('http://localhost:3333/api/json-schemas', payload);
+                await axios.post(`${API_URL}/json-schemas`, payload);
             }
             fetchSchemas();
             setView('catalog');
