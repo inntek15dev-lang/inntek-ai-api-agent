@@ -7,7 +7,7 @@ A robust monorepo platform for managing and executing AI tools via official APIs
 - **Primary AI Engine**: Gemini 1.5 Flash (Multimodal)
 
 ## Tech Stack
-- **Backend**: Node.js (Express 5), Sequelize ORM, MySQL 8, Multer (File Handling), JWT, Swagger JSDoc.
+- **Backend**: Node.js (Express 5), Sequelize ORM, MySQL 8 (Aiven Cloud, SSL Required), Multer (File Handling), JWT, Swagger JSDoc.
 - **Frontend**: React 18 (Vite), Tailwind CSS, Axios, Lucide Icons.
 
 ## Core Modules
@@ -22,7 +22,7 @@ A robust monorepo platform for managing and executing AI tools via official APIs
 6. **Json_Schemas**: Centralized management of JSON data contracts for strict validation.
 
 ## Technical Specifications
-### Database Schema (MySQL: `inntek_ai_tools`)
+### Database Schema (Aiven MySQL: `inntek-ai-api-agent-manager-db`, Port: 26213, SSL: Required)
 - `Roles`: Authority levels (`id`, `nombre`).
 - `Privilegios`: Granular access control (`id`, `ref_modulo`, `read`, `write`, `exec` (Boolean)).
 - `Users`: Auth entities with role association.
