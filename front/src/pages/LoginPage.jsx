@@ -34,7 +34,7 @@ const LoginPage = () => {
             <div className="w-full max-w-[480px] guardian-card animate-in zoom-in-95 duration-700">
                 {/* Logo and Title */}
                 <div className="text-center mb-10">
-                    <div className="inline-flex items-center justify-center w-24 h-24 bg-slate-900 rounded-2xl mb-6 border border-slate-700 shadow-lg shadow-slate-900/50 p-2">
+                    <div className="inline-flex items-center justify-center bg-slate-900 rounded-2xl mb-6 border border-slate-700 shadow-lg shadow-slate-900/50 p-2" style={{ width: '100%', height: '100%' }}>
                         <img src="/logo-agentx.png" alt="INNTEK AI Orchestrator" className="w-full h-full object-contain" />
                     </div>
                     <h2 className="text-3xl font-black text-guardian-text tracking-tight mb-2 uppercase">INNTEK AI Orchestrator</h2>
