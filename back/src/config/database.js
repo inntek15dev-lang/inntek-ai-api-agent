@@ -6,8 +6,20 @@ require('dotenv').config();
 const dialectOptions = {};
 
 if (process.env.DB_SSL === 'true') {
+  let ca;
+  // Priority 1: env var (for cloud deploy like Render)
+  if (process.env.DB_SSL_CA) {
+    ca = process.env.DB_SSL_CA;
+  } else {
+    // Priority 2: local file
+    const caPath = path.join(__dirname, 'ca.pem');
+    if (fs.existsSync(caPath)) {
+      ca = fs.readFileSync(caPath);
+    }
+  }
+
   dialectOptions.ssl = {
-    ca: fs.readFileSync(path.join(__dirname, 'ca.pem')),
+    ...(ca && { ca }),
     rejectUnauthorized: true
   };
 }
