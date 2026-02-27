@@ -29,6 +29,25 @@
 - `training_prompt` (Text)
 - `behavior_prompt` (Text)
 - `response_format` (String)
+- `output_format_id` (FK -> OutputFormats.id)
+- `json_schema_id` (FK -> JsonSchemas.id)
+
+### JsonSchemas
+- `id` (UUID, PK)
+- `nombre` (String)
+- `descripcion` (Text)
+- `schema` (Text - JSON Schema)
+
+### OutputCategories
+- `id` (UUID, PK)
+- `nombre` (String, Unique)
+
+### OutputFormats
+- `id` (UUID, PK)
+- `nombre` (String)
+- `tipo` (Enum: reporte, accionable, generativo)
+- `estructura` (Text - JSON/HTML template)
+- `category_id` (FK -> OutputCategories.id)
 
 ### Configs
 - `id` (UUID, PK)

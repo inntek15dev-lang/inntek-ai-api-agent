@@ -1,0 +1,27 @@
+# System Dependencies
+node_modules/
+
+# Credentials and Secrets
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# Backend Specific
+back/.env
+back/uploads/*
+!back/uploads/.gitkeep
+back/database.sqlite
+back/database.sqlite-journal
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -10,23 +10,52 @@ const ToolMaker = () => {
         logo_herramienta: '🤖',
         training_prompt: '',
         behavior_prompt: '',
-        response_format: 'Markdown'
+        response_format: 'JSON',
+        output_format_id: '',
+        json_schema_id: ''
     });
+    const [outputs, setOutputs] = useState([]);
+    const [schemas, setSchemas] = useState([]);
     const { id } = useParams();
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const isEdit = !!id;
 
     useEffect(() => {
+        fetchOutputs();
+        fetchSchemas();
         if (isEdit) {
             fetchTool();
         }
     }, [id]);
 
+    const fetchOutputs = async () => {
+        try {
+            const res = await axios.get('http://localhost:3333/api/output-formats');
+            setOutputs(res.data.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const fetchSchemas = async () => {
+        try {
+            const res = await axios.get('http://localhost:3333/api/json-schemas');
+            setSchemas(res.data.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const fetchTool = async () => {
         try {
             const res = await axios.get(`http://localhost:3333/api/tools/${id}`);
-            setFormData(res.data.data);
+            const tool = res.data.data;
+            setFormData({
+                ...tool,
+                output_format_id: tool.output_format_id || '',
+                json_schema_id: tool.json_schema_id || ''
+            });
         } catch (err) {
             console.error('Error fetching tool:', err);
         }
@@ -115,17 +144,32 @@ const ToolMaker = () => {
                                         placeholder="🤖"
                                     />
                                 </div>
-                                <div className="guardian-input-group !mb-0">
-                                    <label className="guardian-label">Response</label>
+                                <div className="guardian-input-group !mb-0 col-span-2">
+                                    <label className="guardian-label">Visual Output Link</label>
                                     <select
-                                        name="response_format"
-                                        value={formData.response_format}
+                                        name="output_format_id"
+                                        value={formData.output_format_id || ''}
                                         onChange={handleChange}
                                         className="guardian-input !pl-4 appearance-none"
                                     >
-                                        <option>Markdown</option>
-                                        <option>JSON</option>
-                                        <option>Plain Text</option>
+                                        <option value="">Raw Text (Default)</option>
+                                        {outputs.map(out => (
+                                            <option key={out.id} value={out.id}>{out.nombre} ({out.tipo})</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="guardian-input-group !mb-0 col-span-2">
+                                    <label className="guardian-label">Validation JSON Schema</label>
+                                    <select
+                                        name="json_schema_id"
+                                        value={formData.json_schema_id || ''}
+                                        onChange={handleChange}
+                                        className="guardian-input !pl-4 appearance-none"
+                                    >
+                                        <option value="">No Strict Validation</option>
+                                        {schemas.map(sch => (
+                                            <option key={sch.id} value={sch.id}>{sch.nombre}</option>
+                                        ))}
                                     </select>
                                 </div>
                             </div>

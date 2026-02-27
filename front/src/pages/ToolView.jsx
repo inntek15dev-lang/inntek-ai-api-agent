@@ -12,6 +12,7 @@ const ToolView = () => {
     const [response, setResponse] = useState('');
     const [isExecuting, setIsExecuting] = useState(false);
     const [file, setFile] = useState(null);
+    const [execError, setExecError] = useState(null);
 
     useEffect(() => {
         fetchTool();
@@ -20,6 +21,7 @@ const ToolView = () => {
     const fetchTool = async () => {
         try {
             const res = await axios.get(`http://localhost:3333/api/tools/${id}`);
+            // The backend returns Tool with OutputFormat nested if associated
             setTool(res.data.data);
         } catch (err) {
             console.error(err);
@@ -27,6 +29,125 @@ const ToolView = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const resolvePath = (obj, path) => {
+        if (!path) return null;
+        return path.split('.').reduce((prev, curr) => prev?.[curr], obj);
+    };
+
+    const DynamicRenderer = ({ data, structure }) => {
+        if (!structure) return null;
+
+        let elements = null;
+        let isHtmlTemplate = false;
+
+        try {
+            // Try to parse as JSON element array (New format)
+            const parsed = typeof structure === 'string' ? JSON.parse(structure) : structure;
+            if (Array.isArray(parsed)) {
+                elements = parsed;
+            } else {
+                isHtmlTemplate = true;
+            }
+        } catch (e) {
+            // If parsing fails, it's likely a raw HTML template (Legacy/Seed format)
+            isHtmlTemplate = true;
+        }
+
+        if (isHtmlTemplate) {
+            // Regex-based template engine for HTML templates
+            const renderedHtml = structure.replace(/\{\{(.*?)\}\}/g, (match, path) => {
+                const value = resolvePath(data, path.trim());
+                return value !== undefined && value !== null ? value : match;
+            });
+
+            return (
+                <div
+                    className="animate-in fade-in slide-in-from-bottom-4"
+                    dangerouslySetInnerHTML={{ __html: renderedHtml }}
+                />
+            );
+        }
+
+        if (!elements) return null;
+
+        return (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                {elements.map((el, i) => {
+                    const value = resolvePath(data, el.data.param) || el.data.text;
+
+                    switch (el.type) {
+                        case 'heading':
+                            return <h2 key={i} className="text-2xl font-black text-guardian-text">{value}</h2>;
+                        case 'subheading':
+                            return <h3 key={i} className="text-lg font-bold text-guardian-text/80 mt-4">{value}</h3>;
+                        case 'label':
+                            return (
+                                <div key={i} className="flex flex-col space-y-1">
+                                    <span className="text-[10px] font-black uppercase tracking-tighter text-slate-400">
+                                        {el.data.text}
+                                    </span>
+                                    <span className="text-base font-bold text-guardian-text">
+                                        {value}
+                                    </span>
+                                </div>
+                            );
+                        case 'text':
+                            return <p key={i} className="text-sm text-slate-500 leading-relaxed">{value}</p>;
+                        case 'image':
+                            return <img key={i} src={value} alt="AI Generated" className="w-full rounded-2xl shadow-lg" />;
+                        case 'table':
+                            return (
+                                <div key={i} className="overflow-x-auto rounded-xl border border-slate-100">
+                                    <table className="w-full text-xs text-left">
+                                        <thead className="bg-slate-50 text-slate-400 uppercase font-black">
+                                            <tr>
+                                                {Array.isArray(value) && Object.keys(value[0] || {}).map(k => (
+                                                    <th key={k} className="px-4 py-3">{k}</th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {Array.isArray(value) && value.map((row, ri) => (
+                                                <tr key={ri} className="border-t border-slate-50">
+                                                    {Object.values(row).map((v, ci) => (
+                                                        <td key={ci} className="px-4 py-3 font-bold text-guardian-text">{v}</td>
+                                                    ))}
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            );
+                        case 'boton_accionable':
+                            return (
+                                <button
+                                    key={i}
+                                    onClick={async () => {
+                                        try {
+                                            const payload = el.data.param ? resolvePath(data, el.data.param) : data;
+                                            await axios({
+                                                method: el.data.method,
+                                                url: el.data.api_url,
+                                                data: payload
+                                            });
+                                            alert('Action executed successfully');
+                                        } catch (err) {
+                                            alert('Action failed: ' + err.message);
+                                        }
+                                    }}
+                                    className="w-full py-4 bg-guardian-blue rounded-xl text-white font-bold text-sm shadow-lg shadow-guardian-blue/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                >
+                                    {el.data.label}
+                                </button>
+                            );
+                        default:
+                            return null;
+                    }
+                })}
+            </div>
+        );
     };
 
     const handleExecute = async (e) => {
@@ -46,8 +167,10 @@ const ToolView = () => {
                 }
             });
             setResponse(res.data.data.response);
+            setExecError(null);
         } catch (err) {
             console.error(err);
+            setExecError(err.response?.data?.message || err.message || 'Unknown Execution Error');
         } finally {
             setIsExecuting(false);
         }
@@ -57,6 +180,14 @@ const ToolView = () => {
         <div className="h-[60vh] flex flex-col items-center justify-center space-y-4">
             <div className="w-10 h-10 border-4 border-guardian-blue border-t-transparent rounded-full animate-spin"></div>
             <p className="guardian-text-sm font-bold animate-pulse">Syncing Host...</p>
+        </div>
+    );
+
+    if (!tool) return (
+        <div className="h-[60vh] flex flex-col items-center justify-center space-y-4">
+            <Activity size={48} className="text-cyber-pink animate-pulse" />
+            <p className="guardian-text-sm font-bold text-cyber-pink uppercase font-black tracking-widest">Protocol Retrieval Failed</p>
+            <button onClick={() => navigate('/catalog')} className="guardian-btn-outline">Return to Catalog</button>
         </div>
     );
 
@@ -170,15 +301,49 @@ const ToolView = () => {
                         </div>
 
                         <div className="flex-1 p-8 overflow-y-auto font-mono text-[13px] leading-relaxed text-slate-700 bg-slate-50/30">
-                            {response ? (
-                                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-                                    {response.split('\n').map((line, i) => (
-                                        <p key={i}>
-                                            <span className="text-guardian-blue/40 mr-4 font-bold">{String(i + 1).padStart(2, '0')}</span>
-                                            {line}
-                                        </p>
-                                    ))}
+                            {execError && (
+                                <div className="mb-6 p-4 bg-cyber-pink/10 border border-cyber-pink/20 rounded-xl text-cyber-pink animate-in zoom-in-95 duration-300">
+                                    <div className="flex items-center space-x-2 mb-2 font-black uppercase tracking-tighter text-[10px]">
+                                        <Activity size={14} />
+                                        <span>System Alert: Neural Execution Fault</span>
+                                    </div>
+                                    <p className="font-bold">{execError}</p>
                                 </div>
+                            )}
+
+                            {response ? (
+                                tool.OutputFormat ? (
+                                    (() => {
+                                        try {
+                                            const jsonData = typeof response === 'string' ? JSON.parse(response) : response;
+                                            return <DynamicRenderer data={jsonData} structure={tool.OutputFormat.estructura} />;
+                                        } catch (e) {
+                                            const displayLines = typeof response === 'string' ? response.split('\n') : [JSON.stringify(response, null, 2)];
+                                            return (
+                                                <div className="space-y-4">
+                                                    <div className="p-4 bg-cyber-pink/5 border border-cyber-pink/20 rounded-xl text-cyber-pink text-xs font-bold mb-4">
+                                                        Protocol Error: Visual Link expects JSON but received raw data. Rendering fallback stream:
+                                                    </div>
+                                                    {displayLines.map((line, i) => (
+                                                        <p key={i}>
+                                                            <span className="text-guardian-blue/40 mr-4 font-bold">{String(i + 1).padStart(2, '0')}</span>
+                                                            {line}
+                                                        </p>
+                                                    ))}
+                                                </div>
+                                            );
+                                        }
+                                    })()
+                                ) : (
+                                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+                                        {(typeof response === 'string' ? response.split('\n') : JSON.stringify(response, null, 2).split('\n')).map((line, i) => (
+                                            <p key={i}>
+                                                <span className="text-guardian-blue/40 mr-4 font-bold">{String(i + 1).padStart(2, '0')}</span>
+                                                {line}
+                                            </p>
+                                        ))}
+                                    </div>
+                                )
                             ) : isExecuting ? (
                                 <div className="flex flex-col items-center justify-center h-full space-y-6">
                                     <div className="w-16 h-16 border-4 border-guardian-blue/10 border-t-guardian-blue rounded-full animate-spin"></div>

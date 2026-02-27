@@ -1,4 +1,4 @@
-const { Tool } = require('../models');
+const { Tool, JsonSchema, OutputFormat } = require('../models');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs = require('fs');
 
@@ -15,7 +15,11 @@ exports.getTools = async (req, res) => {
 
 exports.createTool = async (req, res) => {
     try {
-        const tool = await Tool.create(req.body);
+        const data = { ...req.body };
+        if (data.output_format_id === '') data.output_format_id = null;
+        if (data.json_schema_id === '') data.json_schema_id = null;
+
+        const tool = await Tool.create(data);
         res.json({ success: true, data: tool });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -24,7 +28,12 @@ exports.createTool = async (req, res) => {
 
 exports.getTool = async (req, res) => {
     try {
-        const tool = await Tool.findByPk(req.params.id);
+        const tool = await Tool.findByPk(req.params.id, {
+            include: [
+                { model: OutputFormat },
+                { model: JsonSchema }
+            ]
+        });
         if (!tool) return res.status(404).json({ success: false, message: 'Tool not found' });
         res.json({ success: true, data: tool });
     } catch (error) {
@@ -36,7 +45,12 @@ exports.updateTool = async (req, res) => {
     try {
         const tool = await Tool.findByPk(req.params.id);
         if (!tool) return res.status(404).json({ success: false, message: 'Tool not found' });
-        await tool.update(req.body);
+
+        const data = { ...req.body };
+        if (data.output_format_id === '') data.output_format_id = null;
+        if (data.json_schema_id === '') data.json_schema_id = null;
+
+        await tool.update(data);
         res.json({ success: true, data: tool });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -64,14 +78,66 @@ const fileToGenerativePart = (path, mimeType) => {
     };
 };
 
+// Helper to remove unsupported Gemini JSON Schema keywords
+const cleanSchema = (schema) => {
+    if (!schema || typeof schema !== 'object') return schema;
+
+    const cleaned = { ...schema };
+
+    // Gemini only supports single types, no arrays like ["string", "null"]
+    if (Array.isArray(cleaned.type)) {
+        cleaned.type = cleaned.type[0];
+    }
+
+    // ENFORCE STRING TYPE FOR ENUMS (Mandatory for Gemini API)
+    if (cleaned.enum && (!cleaned.type || cleaned.type !== 'string')) {
+        cleaned.type = 'string';
+    }
+
+    const unsupported = ['$schema', '$ref', 'definitions', '$id', 'additionalProperties', 'default', 'examples', 'title', 'description', 'format'];
+
+    unsupported.forEach(key => delete cleaned[key]);
+
+    if (cleaned.properties) {
+        const cleanedProps = {};
+        for (const [key, value] of Object.entries(cleaned.properties)) {
+            cleanedProps[key] = cleanSchema(value);
+        }
+        cleaned.properties = cleanedProps;
+    }
+
+    if (cleaned.items) {
+        cleaned.items = cleanSchema(cleaned.items);
+    }
+
+    return cleaned;
+};
+
 exports.executeTool = async (req, res) => {
     try {
-        const tool = await Tool.findByPk(req.params.id);
+        const tool = await Tool.findByPk(req.params.id, {
+            include: [{ model: JsonSchema }]
+        });
+
         if (!tool) return res.status(404).json({ success: false, message: 'Tool not found' });
 
-        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+        const generationConfig = {};
+        if (tool.JsonSchema) {
+            generationConfig.responseMimeType = "application/json";
+            try {
+                const rawSchema = JSON.parse(tool.JsonSchema.schema);
+                generationConfig.responseSchema = cleanSchema(rawSchema);
+            } catch (e) {
+                console.warn('Invalid JSON Schema in database, falling back to basic prompt constraint.');
+            }
+        }
 
-        const fullTextPrompt = `
+        const model = genAI.getGenerativeModel({
+            model: "gemini-flash-lite-latest",
+            generationConfig
+        });
+
+        let fullTextPrompt = `
 SYSTEM TRAINING:
 ${tool.training_prompt}
 
@@ -80,15 +146,32 @@ ${tool.behavior_prompt}
 
 USER INSTRUCTION:
 ${req.body.prompt || "Analyze the attached content."}
-
-RESPONSE FORMAT:
-${tool.response_format || "Text"}
 `.trim();
+
+        if (tool.JsonSchema) {
+            fullTextPrompt += `\n\nCRITICAL: Respond strictly following this JSON Schema structure:\n${tool.JsonSchema.schema}`;
+        } else {
+            fullTextPrompt += `\n\nRESPONSE FORMAT:\n${tool.response_format || "Text"}`;
+        }
 
         const promptParts = [fullTextPrompt];
 
         // Handle multimodal file if present
         if (req.file) {
+            const supportedMimeTypes = [
+                'image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif',
+                'application/pdf', 'text/plain', 'text/javascript', 'text/python',
+                'text/x-python', 'text/markdown', 'text/html', 'text/css', 'text/csv'
+            ];
+
+            if (!supportedMimeTypes.includes(req.file.mimetype)) {
+                // Cleanup temp file before returning
+                fs.unlinkSync(req.file.path);
+                return res.status(400).json({
+                    success: false,
+                    message: `Unsupported file type: ${req.file.mimetype}. Gemini only supports Images, PDFs, and Plain Text files directly. Please convert documents to PDF.`
+                });
+            }
             promptParts.push(fileToGenerativePart(req.file.path, req.file.mimetype));
         }
 
@@ -104,11 +187,22 @@ ${tool.response_format || "Text"}
         res.json({
             success: true,
             data: {
-                response: text
+                response: tool.JsonSchema ? JSON.parse(text) : text
             }
         });
     } catch (error) {
-        console.error('Gemini Execution Error:', error);
-        res.status(500).json({ success: false, message: error.message });
+        console.error('Gemini Execution Error:', error.message);
+
+        // Handle specific Gemini 400 errors (like overloaded models or safety filters)
+        const isClientError = error.message.includes('400') || error.message.includes('403');
+        const status = isClientError ? 400 : 500;
+        const userMessage = isClientError
+            ? `Neural Protocol Failed: ${error.message}. This is usually due to an invalid JSON Schema or a safety filter trigger.`
+            : 'Neural Processing Failure. Please check system logs for audit trail.';
+
+        res.status(status).json({
+            success: false,
+            message: userMessage
+        });
     }
 };
