@@ -33,7 +33,7 @@ const swaggerOptions = {
             description: 'API for managing AI agents and tools'
         },
         servers: [
-            ...(process.env.API_URL ? [{ url: `${process.env.API_URL}/api`, description: 'Production (Render)' }] : []),
+            { url: 'https://inntek-ai-api-agent-api.onrender.com/api', description: 'Production (Render)' },
             { url: `http://localhost:${PORT}/api`, description: 'Local Development' }
         ],
         components: {
