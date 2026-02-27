@@ -5,6 +5,8 @@ A robust monorepo platform for managing and executing AI tools via official APIs
 - **Backend Port**: 3333
 - **Frontend Port**: 5173
 - **Primary AI Engine**: Gemini 1.5 Flash (Multimodal)
+- **Production Backend**: https://inntek-ai-api-agent-api.onrender.com/
+- **Production Frontend**: https://inntek-ai-api-agent-client.onrender.com/
 
 ## Tech Stack
 - **Backend**: Node.js (Express 5), Sequelize ORM, MySQL 8 (Aiven Cloud, SSL Required), Multer (File Handling), JWT, Swagger JSDoc.
@@ -63,3 +65,9 @@ A robust monorepo platform for managing and executing AI tools via official APIs
 ## Security (Privilegios Engine)
 - **SuperAdmin**: `*` -> `read: true, write: true, exec: true`.
 - **Default Port Strategy**: Port 3001 collision avoided by migrating to **3333**.
+
+## Deployment (Render)
+- **Backend**: `API_URL` env var defines public URL. Swagger dual-server (prod + local).
+- **Frontend**: `VITE_API_URL` env var overrides API base. Centralized in `front/src/config/api.js`.
+- **CORS**: Whitelist via `FRONTEND_URL` env var.
+- **Database**: Aiven Cloud MySQL with SSL (`DB_SSL=true`, `DB_SSL_CA` env var for cert).

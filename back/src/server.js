@@ -16,7 +16,11 @@ const app = express();
 const PORT = process.env.PORT || 3333;
 
 // Middleware
-app.use(cors());
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+app.use(cors({
+    origin: [FRONTEND_URL, 'http://localhost:5173'],
+    credentials: true
+}));
 app.use(express.json());
 
 // Swagger Setup
@@ -28,7 +32,10 @@ const swaggerOptions = {
             version: '1.0.0',
             description: 'API for managing AI agents and tools'
         },
-        servers: [{ url: `http://localhost:${PORT}/api` }],
+        servers: [
+            ...(process.env.API_URL ? [{ url: `${process.env.API_URL}/api`, description: 'Production (Render)' }] : []),
+            { url: `http://localhost:${PORT}/api`, description: 'Local Development' }
+        ],
         components: {
             securitySchemes: {
                 bearerAuth: {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_URL from '../config/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ChevronLeft, Info, Cpu, Zap, Activity, Grid, Edit } from 'lucide-react';
 
@@ -31,7 +32,7 @@ const ToolMaker = () => {
 
     const fetchOutputs = async () => {
         try {
-            const res = await axios.get('http://localhost:3333/api/output-formats');
+            const res = await axios.get(`${API_URL}/output-formats`);
             setOutputs(res.data.data);
         } catch (err) {
             console.error(err);
@@ -40,7 +41,7 @@ const ToolMaker = () => {
 
     const fetchSchemas = async () => {
         try {
-            const res = await axios.get('http://localhost:3333/api/json-schemas');
+            const res = await axios.get(`${API_URL}/json-schemas`);
             setSchemas(res.data.data);
         } catch (err) {
             console.error(err);
@@ -49,7 +50,7 @@ const ToolMaker = () => {
 
     const fetchTool = async () => {
         try {
-            const res = await axios.get(`http://localhost:3333/api/tools/${id}`);
+            const res = await axios.get(`${API_URL}/tools/${id}`);
             const tool = res.data.data;
             setFormData({
                 ...tool,
@@ -70,9 +71,9 @@ const ToolMaker = () => {
         setIsSubmitting(true);
         try {
             if (isEdit) {
-                await axios.put(`http://localhost:3333/api/tools/${id}`, formData);
+                await axios.put(`${API_URL}/tools/${id}`, formData);
             } else {
-                await axios.post('http://localhost:3333/api/tools', formData);
+                await axios.post(`${API_URL}/tools`, formData);
             }
             navigate('/catalog');
         } catch (err) {
