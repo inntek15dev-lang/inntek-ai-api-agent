@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_URL from '../config/api';
 import { ChevronLeft, Upload, Send, MessageSquare, FileText, CheckCircle, Cpu, Zap, Activity } from 'lucide-react';
 
 const ToolView = () => {
@@ -20,7 +21,7 @@ const ToolView = () => {
 
     const fetchTool = async () => {
         try {
-            const res = await axios.get(`http://localhost:3333/api/tools/${id}`);
+            const res = await axios.get(`${API_URL}/tools/${id}`);
             // The backend returns Tool with OutputFormat nested if associated
             setTool(res.data.data);
         } catch (err) {
@@ -161,7 +162,7 @@ const ToolView = () => {
                 formData.append('imagen', file);
             }
 
-            const res = await axios.post(`http://localhost:3333/api/tools/${id}/execute`, formData, {
+            const res = await axios.post(`${API_URL}/tools/${id}/execute`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }

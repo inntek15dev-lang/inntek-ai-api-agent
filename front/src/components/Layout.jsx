@@ -38,12 +38,10 @@ const Layout = () => {
             {/* Top Header */}
             <header className="guardian-header">
                 <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-white/20 rounded-lg">
-                        <ShieldCheck size={24} className="text-white" />
-                    </div>
+                    <img src="/logo-agentx.png" alt="INNTEK AI Orchestrator" className="h-10 w-10 rounded-lg object-contain" />
                     <div>
-                        <h1 className="text-lg font-bold leading-tight">Inntek Ai Tools</h1>
-                        <p className="text-[10px] font-medium opacity-80 uppercase tracking-wider">Inntek AI Tools Manager</p>
+                        <h1 className="text-lg font-bold leading-tight">INNTEK AI</h1>
+                        <p className="text-[10px] font-medium opacity-80 uppercase tracking-wider">AI Orchestrator</p>
                     </div>
                 </div>
 
