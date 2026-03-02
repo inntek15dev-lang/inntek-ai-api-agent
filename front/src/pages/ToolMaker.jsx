@@ -13,10 +13,12 @@ const ToolMaker = () => {
         behavior_prompt: '',
         response_format: 'JSON',
         output_format_id: '',
-        json_schema_id: ''
+        json_schema_id: '',
+        ai_provider_id: ''
     });
     const [outputs, setOutputs] = useState([]);
     const [schemas, setSchemas] = useState([]);
+    const [providers, setProviders] = useState([]);
     const { id } = useParams();
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,6 +27,7 @@ const ToolMaker = () => {
     useEffect(() => {
         fetchOutputs();
         fetchSchemas();
+        fetchProviders();
         if (isEdit) {
             fetchTool();
         }
@@ -48,6 +51,15 @@ const ToolMaker = () => {
         }
     };
 
+    const fetchProviders = async () => {
+        try {
+            const res = await axios.get(`${API_URL}/ai-providers`);
+            setProviders(res.data.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const fetchTool = async () => {
         try {
             const res = await axios.get(`${API_URL}/tools/${id}`);
@@ -55,7 +67,8 @@ const ToolMaker = () => {
             setFormData({
                 ...tool,
                 output_format_id: tool.output_format_id || '',
-                json_schema_id: tool.json_schema_id || ''
+                json_schema_id: tool.json_schema_id || '',
+                ai_provider_id: tool.ai_provider_id || ''
             });
         } catch (err) {
             console.error('Error fetching tool:', err);
@@ -170,6 +183,22 @@ const ToolMaker = () => {
                                         <option value="">No Strict Validation</option>
                                         {schemas.map(sch => (
                                             <option key={sch.id} value={sch.id}>{sch.nombre}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="guardian-input-group !mb-0 col-span-2">
+                                    <label className="guardian-label">AI Provider</label>
+                                    <select
+                                        name="ai_provider_id"
+                                        value={formData.ai_provider_id || ''}
+                                        onChange={handleChange}
+                                        className="guardian-input !pl-4 appearance-none"
+                                    >
+                                        <option value="">🌐 System Default</option>
+                                        {providers.map(p => (
+                                            <option key={p.id} value={p.id}>
+                                                {p.tipo === 'google_native' ? '🔷' : '🟢'} {p.nombre} ({p.modelo})
+                                            </option>
                                         ))}
                                     </select>
                                 </div>

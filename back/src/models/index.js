@@ -56,6 +56,19 @@ const Config = sequelize.define('Config', {
     value: { type: DataTypes.TEXT }
 });
 
+const AiProvider = sequelize.define('AiProvider', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    nombre: { type: DataTypes.STRING, allowNull: false },
+    slug: { type: DataTypes.STRING, unique: true, allowNull: false },
+    tipo: { type: DataTypes.ENUM('google_native', 'openai_compatible'), allowNull: false },
+    api_key: { type: DataTypes.STRING },
+    base_url: { type: DataTypes.STRING }, // null for google_native
+    modelo: { type: DataTypes.STRING, allowNull: false },
+    is_default: { type: DataTypes.BOOLEAN, defaultValue: false },
+    activo: { type: DataTypes.BOOLEAN, defaultValue: true },
+    extra_headers: { type: DataTypes.TEXT } // JSON string for additional headers
+});
+
 // Associations
 Role.hasMany(Privilegio, { foreignKey: 'role_id' });
 Privilegio.belongsTo(Role, { foreignKey: 'role_id' });
@@ -72,4 +85,7 @@ OutputFormat.hasMany(Tool, { foreignKey: 'output_format_id' });
 Tool.belongsTo(JsonSchema, { foreignKey: 'json_schema_id' });
 JsonSchema.hasMany(Tool, { foreignKey: 'json_schema_id' });
 
-module.exports = { sequelize, Role, Privilegio, User, Tool, Config, OutputCategory, OutputFormat, JsonSchema };
+Tool.belongsTo(AiProvider, { foreignKey: 'ai_provider_id' });
+AiProvider.hasMany(Tool, { foreignKey: 'ai_provider_id' });
+
+module.exports = { sequelize, Role, Privilegio, User, Tool, Config, OutputCategory, OutputFormat, JsonSchema, AiProvider };

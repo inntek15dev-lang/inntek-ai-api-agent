@@ -5,6 +5,7 @@ const toolController = require('../controllers/toolController');
 const configController = require('../controllers/configController');
 const outputController = require('../controllers/outputController');
 const jsonSchemaController = require('../controllers/jsonSchemaController');
+const aiProviderController = require('../controllers/aiProviderController');
 const { authMiddleware, requirePrivilege } = require('../middleware/auth');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
@@ -37,6 +38,10 @@ const upload = multer({ dest: 'uploads/' });
  *         json_schema_id:
  *           type: string
  *           format: uuid
+ *         ai_provider_id:
+ *           type: string
+ *           format: uuid
+ *           description: Optional. If null, uses system default provider.
  *     OutputCategory:
  *       type: object
  *       properties:
@@ -73,6 +78,32 @@ const upload = multer({ dest: 'uploads/' });
  *           type: string
  *         schema:
  *           type: string
+ *     AiProvider:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         nombre:
+ *           type: string
+ *         slug:
+ *           type: string
+ *         tipo:
+ *           type: string
+ *           enum: [google_native, openai_compatible]
+ *         api_key:
+ *           type: string
+ *         base_url:
+ *           type: string
+ *         modelo:
+ *           type: string
+ *         is_default:
+ *           type: boolean
+ *         activo:
+ *           type: boolean
+ *         extra_headers:
+ *           type: string
+ *           description: JSON string with additional HTTP headers
  */
 
 // Auth
@@ -255,6 +286,121 @@ router.get('/config', authMiddleware, requirePrivilege('Config', 'read'), config
  *         description: Config saved
  */
 router.post('/config', authMiddleware, requirePrivilege('Config', 'write'), configController.saveConfig);
+
+// AI Providers
+/**
+ * @swagger
+ * /ai-providers:
+ *   get:
+ *     summary: Get all AI providers
+ *     tags: [AI Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of AI providers (API keys masked)
+ */
+router.get('/ai-providers', authMiddleware, requirePrivilege('AI_Providers', 'read'), aiProviderController.getProviders);
+
+/**
+ * @swagger
+ * /ai-providers:
+ *   post:
+ *     summary: Create a new AI provider
+ *     tags: [AI Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AiProvider'
+ *     responses:
+ *       200:
+ *         description: Provider created
+ */
+router.post('/ai-providers', authMiddleware, requirePrivilege('AI_Providers', 'write'), aiProviderController.createProvider);
+
+/**
+ * @swagger
+ * /ai-providers/{id}:
+ *   get:
+ *     summary: Get a single AI provider
+ *     tags: [AI Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Provider data (API key masked)
+ */
+router.get('/ai-providers/:id', authMiddleware, requirePrivilege('AI_Providers', 'read'), aiProviderController.getProvider);
+
+/**
+ * @swagger
+ * /ai-providers/{id}:
+ *   put:
+ *     summary: Update an AI provider
+ *     tags: [AI Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Provider updated
+ */
+router.put('/ai-providers/:id', authMiddleware, requirePrivilege('AI_Providers', 'write'), aiProviderController.updateProvider);
+
+/**
+ * @swagger
+ * /ai-providers/{id}:
+ *   delete:
+ *     summary: Delete an AI provider
+ *     tags: [AI Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Provider deleted
+ */
+router.delete('/ai-providers/:id', authMiddleware, requirePrivilege('AI_Providers', 'write'), aiProviderController.deleteProvider);
+
+/**
+ * @swagger
+ * /ai-providers/{id}/set-default:
+ *   put:
+ *     summary: Set an AI provider as the system default
+ *     tags: [AI Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Provider set as default
+ */
+router.put('/ai-providers/:id/set-default', authMiddleware, requirePrivilege('AI_Providers', 'write'), aiProviderController.setDefault);
 
 // Outputs Maker
 /**

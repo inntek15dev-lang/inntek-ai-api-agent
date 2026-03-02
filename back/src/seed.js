@@ -1,4 +1,4 @@
-const { sequelize, Role, Privilegio, User, Tool, OutputCategory, OutputFormat, JsonSchema } = require('./models');
+const { sequelize, Role, Privilegio, User, Tool, OutputCategory, OutputFormat, JsonSchema, AiProvider } = require('./models');
 require('dotenv').config();
 
 const seed = async () => {
@@ -20,7 +20,7 @@ const seed = async () => {
         });
 
         // Admin Privileges
-        const modules = ['Auth', 'AI_Tool_Maker', 'AI_Tool_Catalog', 'AI_Tool_Execution', 'Config', 'Outputs_Maker', 'Json_Schemas'];
+        const modules = ['Auth', 'AI_Tool_Maker', 'AI_Tool_Catalog', 'AI_Tool_Execution', 'Config', 'Outputs_Maker', 'Json_Schemas', 'AI_Providers'];
         for (const mod of modules) {
             await Privilegio.create({
                 ref_modulo: mod,
@@ -248,7 +248,38 @@ const seed = async () => {
         });
 
         // ═══════════════════════════════════════════════════════════════
-        // 7. AI Tools
+        // 7. AI Providers
+        // ═══════════════════════════════════════════════════════════════
+
+        const providerGoogle = await AiProvider.create({
+            nombre: 'Google Gemini',
+            slug: 'google',
+            tipo: 'google_native',
+            api_key: null, // Set via Config UI
+            base_url: null,
+            modelo: 'gemini-2.0-flash',
+            is_default: true,
+            activo: true,
+            extra_headers: null
+        });
+
+        const providerOpenRouter = await AiProvider.create({
+            nombre: 'OpenRouter',
+            slug: 'openrouter',
+            tipo: 'openai_compatible',
+            api_key: null, // Set via Config UI
+            base_url: 'https://openrouter.ai/api/v1',
+            modelo: 'google/gemini-2.0-flash-exp:free',
+            is_default: false,
+            activo: true,
+            extra_headers: JSON.stringify({
+                'HTTP-Referer': 'https://inntek-ai-api-agent-client.onrender.com',
+                'X-Title': 'Inntek AI Agent'
+            })
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // 8. AI Tools
         // ═══════════════════════════════════════════════════════════════
 
         // 7a. Validador de CI Chile
