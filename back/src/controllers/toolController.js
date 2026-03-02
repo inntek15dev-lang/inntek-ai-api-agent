@@ -133,7 +133,7 @@ exports.executeTool = async (req, res) => {
         }
 
         const model = genAI.getGenerativeModel({
-            model: "gemini-flash-lite-latest",
+            model: "gemini-2.0-flash",
             generationConfig
         });
 

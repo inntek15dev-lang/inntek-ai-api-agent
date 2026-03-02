@@ -19,7 +19,10 @@ A robust monorepo platform for managing and executing AI tools via official APIs
 4. **AI_Tool_Execution**: Real-time multimodal execution hub (TexStatus: Implementado
 4. **AI_Tool_Execution**: Real-time multimodal execution hub (Text, Image, Audio, Video).
 - **Status**: Implementado
-- **Default Tools**: Validador de CI Chile (Pre-built neural unit).
+- **Default Tools (Seeders Base)**:
+  - 🆔 Validador de CI Chile (OutputFormat: Reporte Validacion Cedula Chilena, JsonSchema: Esquema de Identidad Avanzado V2)
+  - 🎨 CSS EXTRACTOR (Sin OutputFormat/JsonSchema)
+  - 💵 Check de Liquidaciones Chile (OutputFormat: Reporte Check Liquidacion Chile, JsonSchema: Reporte Check Liqui Chile)
 5. **Config**: Global configuration management (API Keys).
 6. **Json_Schemas**: Centralized management of JSON data contracts for strict validation.
 
