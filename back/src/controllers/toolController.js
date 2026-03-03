@@ -113,6 +113,15 @@ const cleanSchema = (schema) => {
     return cleaned;
 };
 
+// Sanitize AI response: strip markdown code fences
+const sanitizeResponse = (text) => {
+    if (!text || typeof text !== 'string') return text;
+    return text
+        .replace(/```json\s*/gi, '')
+        .replace(/```\s*/g, '')
+        .trim();
+};
+
 // Supported MIME types for multimodal uploads
 const SUPPORTED_MIME_TYPES = [
     'image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif',
@@ -280,6 +289,9 @@ ${req.body.prompt || "Analyze the attached content."}
         if (req.file) {
             fs.unlinkSync(req.file.path);
         }
+
+        // Sanitize response: remove markdown code fences from AI output
+        text = sanitizeResponse(text);
 
         // Parse JSON if schema is present
         let responseData;
