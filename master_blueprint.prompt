@@ -47,7 +47,7 @@ A robust monorepo platform for managing and executing AI tools via official APIs
 - `GET /api/tools/:id`: Detailed unit data.
 - `PUT /api/tools/:id`: Logic adjustment.
 - `DELETE /api/tools/:id`: Unit decommissioning.
-- `POST /api/tools/:id/execute`: Neural protocol execution. Accepts `multipart/form-data` with `prompt` (text) and `imagen` (file). Chains training + behavior + user prompt. Supports strict schema validation if `json_schema_id` is present.
+- `POST /api/tools/:id/execute`: Neural protocol execution. Accepts `multipart/form-data` with `prompt` (text) and `imagen` (file). Chains training + behavior + user prompt. Supports strict schema validation if `json_schema_id` is present. Response is sanitized via `sanitizeResponse()` to strip markdown code fences (` ```json `, ` ``` `) before parsing.
 
 ### Config
 - `GET /api/config`: Global parameter retrieval.
