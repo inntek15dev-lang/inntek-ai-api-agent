@@ -16,7 +16,7 @@ import {
     MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Save, ArrowLeft, Cpu, Cog, GripVertical, Workflow, ChevronDown, ChevronRight, Check, Trash2, X } from 'lucide-react';
+import { Save, ArrowLeft, Cpu, Cog, GripVertical, Workflow, ChevronDown, ChevronRight, Check, Trash2, X, Play } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
 // Custom Node: Tool (Blue)
@@ -316,6 +316,11 @@ const MachineEditor = () => {
                         <div className="text-[9px] font-black text-slate-700 uppercase tracking-widest mr-2">
                             {nodes.length}N · {edges.length}C
                         </div>
+                        <button onClick={() => navigate(`/machines/${id}/execute`)}
+                            className="flex items-center space-x-1.5 px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-wider transition-all bg-violet-500/10 text-violet-400 border border-violet-500/20 hover:bg-violet-500/20">
+                            <Play size={12} />
+                            <span>Run</span>
+                        </button>
                         <button onClick={handleSave} disabled={saving}
                             className={`flex items-center space-x-1.5 px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-wider transition-all ${saved
                                 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
