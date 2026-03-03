@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config/api';
@@ -13,56 +13,62 @@ import {
     Panel,
     Handle,
     Position,
+    MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Save, ArrowLeft, Cpu, Cog, GripVertical, Workflow, ChevronDown, ChevronRight, Check } from 'lucide-react';
+import { Save, ArrowLeft, Cpu, Cog, GripVertical, Workflow, ChevronDown, ChevronRight, Check, Trash2, X } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
-// Custom Node Components
+// Custom Node: Tool (Blue)
 // ═══════════════════════════════════════════════════════════════
-
-const ToolNode = ({ data }) => (
-    <div className="bg-white border-2 border-blue-300 rounded-xl shadow-lg min-w-[200px] overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2 flex items-center space-x-2">
-            <span className="text-lg">{data.icon || '🔧'}</span>
-            <span className="text-white text-xs font-bold uppercase tracking-wider truncate">{data.label}</span>
+const ToolNode = ({ data, selected }) => (
+    <div className={`rounded-lg shadow-2xl min-w-[180px] border transition-all ${selected ? 'border-cyan-400 shadow-cyan-500/30 ring-2 ring-cyan-400/40' : 'border-slate-600'}`}
+        style={{ background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)' }}>
+        <div className="px-3 py-2 flex items-center space-x-2 border-b border-slate-700/60">
+            <span className="text-base leading-none">{data.icon || '🔧'}</span>
+            <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest truncate flex-1">{data.label}</span>
+            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
         </div>
-        <div className="px-4 py-3">
-            <p className="text-[10px] text-slate-500 line-clamp-2">{data.description || 'AI Tool'}</p>
-            <div className="mt-2 flex items-center space-x-1">
-                <Cpu size={10} className="text-blue-400" />
-                <span className="text-[9px] font-bold text-blue-500 uppercase">Tool</span>
-            </div>
+        <div className="px-3 py-2">
+            <p className="text-[9px] text-slate-500 line-clamp-2 leading-relaxed">{data.description || 'AI Tool'}</p>
         </div>
-        <Handle type="target" position={Position.Left} className="!w-3 !h-3 !bg-blue-500 !border-2 !border-white" />
-        <Handle type="source" position={Position.Right} className="!w-3 !h-3 !bg-blue-500 !border-2 !border-white" />
+        <Handle type="target" position={Position.Left} className="!w-2.5 !h-2.5 !bg-cyan-400 !border-[2px] !border-slate-900 !-left-[6px]" />
+        <Handle type="source" position={Position.Right} className="!w-2.5 !h-2.5 !bg-cyan-400 !border-[2px] !border-slate-900 !-right-[6px]" />
     </div>
 );
 
-const EngineNode = ({ data }) => (
-    <div className="bg-white border-2 border-purple-300 rounded-xl shadow-lg min-w-[200px] overflow-hidden">
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-2 flex items-center space-x-2">
-            <span className="text-lg">{data.icon || '⚙️'}</span>
-            <span className="text-white text-xs font-bold uppercase tracking-wider truncate">{data.label}</span>
+// ═══════════════════════════════════════════════════════════════
+// Custom Node: Engine (Purple)
+// ═══════════════════════════════════════════════════════════════
+const EngineNode = ({ data, selected }) => (
+    <div className={`rounded-lg shadow-2xl min-w-[180px] border transition-all ${selected ? 'border-violet-400 shadow-violet-500/30 ring-2 ring-violet-400/40' : 'border-slate-600'}`}
+        style={{ background: 'linear-gradient(145deg, #1e1b3a 0%, #0f0d24 100%)' }}>
+        <div className="px-3 py-2 flex items-center space-x-2 border-b border-violet-900/40">
+            <span className="text-base leading-none">{data.icon || '⚙️'}</span>
+            <span className="text-[10px] font-black text-violet-400 uppercase tracking-widest truncate flex-1">{data.label}</span>
+            <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
         </div>
-        <div className="px-4 py-3">
-            <p className="text-[10px] text-slate-500 line-clamp-2">{data.description || 'Engine'}</p>
-            <div className="mt-2 flex items-center space-x-1">
-                <Cog size={10} className="text-purple-400" />
-                <span className="text-[9px] font-bold text-purple-500 uppercase">{data.engineType || 'Engine'}</span>
-            </div>
+        <div className="px-3 py-2">
+            <p className="text-[9px] text-slate-500 line-clamp-2 leading-relaxed">{data.description || 'Engine'}</p>
+            <span className="inline-block mt-1 text-[8px] font-black text-violet-500 uppercase tracking-[0.15em] bg-violet-500/10 px-1.5 py-0.5 rounded">{data.engineType}</span>
         </div>
-        <Handle type="target" position={Position.Left} className="!w-3 !h-3 !bg-purple-500 !border-2 !border-white" />
-        <Handle type="source" position={Position.Right} className="!w-3 !h-3 !bg-purple-500 !border-2 !border-white" />
+        <Handle type="target" position={Position.Left} className="!w-2.5 !h-2.5 !bg-violet-400 !border-[2px] !border-slate-900 !-left-[6px]" />
+        <Handle type="source" position={Position.Right} className="!w-2.5 !h-2.5 !bg-violet-400 !border-[2px] !border-slate-900 !-right-[6px]" />
     </div>
 );
 
 const nodeTypes = { toolNode: ToolNode, engineNode: EngineNode };
 
-// ═══════════════════════════════════════════════════════════════
-// Main Editor Component
-// ═══════════════════════════════════════════════════════════════
+const defaultEdgeOptions = {
+    type: 'smoothstep',
+    animated: true,
+    style: { stroke: '#8b5cf6', strokeWidth: 2 },
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#8b5cf6', width: 16, height: 16 },
+};
 
+// ═══════════════════════════════════════════════════════════════
+// Main Editor
+// ═══════════════════════════════════════════════════════════════
 const MachineEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -75,6 +81,7 @@ const MachineEditor = () => {
     const [saved, setSaved] = useState(false);
     const [machineName, setMachineName] = useState('');
     const [machineDesc, setMachineDesc] = useState('');
+    const [sidebarOpen, setSidebarOpen] = useState(true);
 
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -84,7 +91,6 @@ const MachineEditor = () => {
 
     const reactFlowWrapper = useRef(null);
 
-    // Load machine, tools, engines
     useEffect(() => {
         const loadData = async () => {
             try {
@@ -93,7 +99,6 @@ const MachineEditor = () => {
                     axios.get(`${API_URL}/tools`),
                     axios.get(`${API_URL}/engines`),
                 ]);
-
                 const m = machineRes.data.data;
                 setMachine(m);
                 setMachineName(m.nombre);
@@ -101,7 +106,6 @@ const MachineEditor = () => {
                 setTools(toolsRes.data.data);
                 setEngines(enginesRes.data.data);
 
-                // Convert DB nodes to React Flow nodes
                 const flowNodes = (m.MachineNodes || []).map(n => ({
                     id: n.id,
                     type: n.node_type === 'tool' ? 'toolNode' : 'engineNode',
@@ -117,70 +121,51 @@ const MachineEditor = () => {
                     },
                 }));
 
-                // Convert DB connections to React Flow edges
                 const flowEdges = (m.MachineConnections || []).map(c => ({
                     id: c.id,
                     source: c.source_node_id,
                     target: c.target_node_id,
                     sourceHandle: c.source_handle,
                     targetHandle: c.target_handle,
-                    animated: true,
-                    style: { stroke: '#8b5cf6', strokeWidth: 2 },
+                    ...defaultEdgeOptions,
                 }));
 
                 setNodes(flowNodes);
                 setEdges(flowEdges);
-            } catch (err) {
-                console.error('Failed to load machine:', err);
-            } finally {
-                setLoading(false);
-            }
+            } catch (err) { console.error('Failed to load:', err); }
+            finally { setLoading(false); }
         };
         loadData();
     }, [id]);
 
     const onConnect = useCallback((params) => {
-        setEdges((eds) => addEdge({
-            ...params,
-            animated: true,
-            style: { stroke: '#8b5cf6', strokeWidth: 2 },
-        }, eds));
+        setEdges((eds) => addEdge({ ...params, ...defaultEdgeOptions }, eds));
     }, [setEdges]);
 
-    // Generate a UUID v4
-    const generateUUID = () => {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const generateUUID = () =>
+        'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
             const r = Math.random() * 16 | 0;
             return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
         });
-    };
 
-    // Drag & Drop handlers
     const onDragStart = (event, itemType, item) => {
         event.dataTransfer.setData('application/reactflow-type', itemType);
         event.dataTransfer.setData('application/reactflow-item', JSON.stringify(item));
         event.dataTransfer.effectAllowed = 'move';
     };
 
-    const onDragOver = useCallback((event) => {
-        event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
-    }, []);
+    const onDragOver = useCallback(e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }, []);
 
     const onDrop = useCallback((event) => {
         event.preventDefault();
         const type = event.dataTransfer.getData('application/reactflow-type');
         const item = JSON.parse(event.dataTransfer.getData('application/reactflow-item'));
-
         if (!type || !item) return;
 
         const wrapperBounds = reactFlowWrapper.current.getBoundingClientRect();
-        const position = {
-            x: event.clientX - wrapperBounds.left - 100,
-            y: event.clientY - wrapperBounds.top - 30,
-        };
+        const position = { x: event.clientX - wrapperBounds.left - 90, y: event.clientY - wrapperBounds.top - 30 };
 
-        const newNode = {
+        setNodes(nds => [...nds, {
             id: generateUUID(),
             type: type === 'tool' ? 'toolNode' : 'engineNode',
             position,
@@ -193,168 +178,106 @@ const MachineEditor = () => {
                 toolId: type === 'tool' ? item.id : null,
                 engineId: type === 'engine' ? item.id : null,
             },
-        };
-
-        setNodes((nds) => [...nds, newNode]);
+        }]);
     }, [setNodes]);
 
-    // Save
     const handleSave = async () => {
         setSaving(true);
         try {
-            const payload = {
+            await axios.put(`${API_URL}/machines/${id}`, {
                 nombre: machineName,
                 descripcion: machineDesc,
                 icono: machine?.icono,
                 nodes: nodes.map(n => ({
-                    id: n.id,
-                    node_type: n.data.nodeType,
-                    tool_id: n.data.toolId,
-                    engine_id: n.data.engineId,
-                    position_x: n.position.x,
-                    position_y: n.position.y,
-                    config: null,
+                    id: n.id, node_type: n.data.nodeType, tool_id: n.data.toolId,
+                    engine_id: n.data.engineId, position_x: n.position.x, position_y: n.position.y, config: null,
                 })),
                 connections: edges.map(e => ({
-                    source_node_id: e.source,
-                    target_node_id: e.target,
-                    source_handle: e.sourceHandle || null,
-                    target_handle: e.targetHandle || null,
+                    source_node_id: e.source, target_node_id: e.target,
+                    source_handle: e.sourceHandle || null, target_handle: e.targetHandle || null,
                 })),
-            };
-
-            await axios.put(`${API_URL}/machines/${id}`, payload);
+            });
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
         } catch (err) {
-            console.error('Save error:', err);
-            alert('Error saving machine: ' + (err.response?.data?.message || err.message));
-        } finally {
-            setSaving(false);
-        }
+            console.error(err);
+            alert('Error: ' + (err.response?.data?.message || err.message));
+        } finally { setSaving(false); }
     };
 
     if (loading) {
         return (
-            <div className="h-[80vh] flex flex-col items-center justify-center space-y-4">
-                <div className="w-10 h-10 border-4 border-guardian-blue border-t-transparent rounded-full animate-spin" />
-                <p className="guardian-text-sm font-bold animate-pulse">Loading Machine Flow...</p>
+            <div className="fixed inset-0 z-50 flex flex-col items-center justify-center" style={{ background: '#0a0e1a' }}>
+                <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+                <p className="text-cyan-500 text-[10px] font-black uppercase tracking-[0.3em] mt-4 animate-pulse">Initializing Machine Flow...</p>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-180px)]">
-            {/* Top Bar */}
-            <div className="bg-white border border-guardian-border rounded-xl p-4 mb-4 flex items-center justify-between shadow-sm">
-                <div className="flex items-center space-x-4">
-                    <button onClick={() => navigate('/machines')} className="guardian-btn-outline !p-2" title="Back to catalog">
-                        <ArrowLeft size={18} />
+        <div className="fixed inset-0 z-50 flex" style={{ background: '#0a0e1a' }}>
+            {/* ── Compact Sidebar ── */}
+            <div className={`flex flex-col border-r border-slate-800 transition-all duration-300 ${sidebarOpen ? 'w-56' : 'w-0 overflow-hidden'}`}
+                style={{ background: 'linear-gradient(180deg, #0f1320 0%, #0a0e1a 100%)' }}>
+
+                {/* Header */}
+                <div className="p-3 border-b border-slate-800 flex items-center justify-between flex-shrink-0">
+                    <div className="flex items-center space-x-2 min-w-0">
+                        <Workflow size={14} className="text-violet-400 flex-shrink-0" />
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] truncate">Components</span>
+                    </div>
+                    <button onClick={() => setSidebarOpen(false)} className="text-slate-600 hover:text-slate-400 p-0.5">
+                        <X size={12} />
                     </button>
-                    <div className="flex items-center space-x-3">
-                        <span className="text-2xl">{machine?.icono || '⚙️'}</span>
-                        <div>
-                            <input
-                                value={machineName}
-                                onChange={e => setMachineName(e.target.value)}
-                                className="text-lg font-bold text-guardian-text bg-transparent border-none outline-none w-full"
-                                placeholder="Machine name..."
-                            />
-                            <input
-                                value={machineDesc}
-                                onChange={e => setMachineDesc(e.target.value)}
-                                className="text-xs text-guardian-muted bg-transparent border-none outline-none w-full"
-                                placeholder="Description..."
-                            />
-                        </div>
-                    </div>
                 </div>
-                <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className={`guardian-btn-primary !w-auto ${saved ? '!bg-green-500' : ''}`}
-                >
-                    {saving ? (
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : saved ? (
-                        <Check size={18} />
-                    ) : (
-                        <Save size={18} />
-                    )}
-                    <span>{saving ? 'Saving...' : saved ? 'Saved!' : 'Save Flow'}</span>
-                </button>
-            </div>
 
-            {/* Editor Area */}
-            <div className="flex flex-1 gap-4 min-h-0">
-                {/* Sidebar */}
-                <div className="w-64 flex-shrink-0 bg-white border border-guardian-border rounded-xl shadow-sm overflow-y-auto">
-                    <div className="p-4 border-b border-guardian-border">
-                        <p className="text-[10px] font-black text-guardian-muted uppercase tracking-widest">
-                            Drag & Drop
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1">Drag items to the canvas</p>
-                    </div>
-
-                    {/* Tools Section */}
-                    <div className="border-b border-guardian-border">
-                        <button
-                            onClick={() => setToolsOpen(!toolsOpen)}
-                            className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
-                        >
-                            <div className="flex items-center space-x-2">
-                                <Cpu size={14} className="text-blue-500" />
-                                <span className="text-xs font-bold text-guardian-text uppercase tracking-wider">Tools</span>
+                {/* Scrollable items */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    {/* Tools */}
+                    <div className="border-b border-slate-800/60">
+                        <button onClick={() => setToolsOpen(!toolsOpen)}
+                            className="w-full flex items-center justify-between px-3 py-2 hover:bg-slate-800/30 transition-colors">
+                            <div className="flex items-center space-x-1.5">
+                                <Cpu size={10} className="text-cyan-500" />
+                                <span className="text-[9px] font-black text-cyan-500 uppercase tracking-widest">Tools</span>
+                                <span className="text-[8px] text-slate-600 ml-1">({tools.length})</span>
                             </div>
-                            {toolsOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                            {toolsOpen ? <ChevronDown size={10} className="text-slate-600" /> : <ChevronRight size={10} className="text-slate-600" />}
                         </button>
                         {toolsOpen && (
-                            <div className="px-3 pb-3 space-y-1">
+                            <div className="px-2 pb-2 space-y-0.5">
                                 {tools.map(tool => (
-                                    <div
-                                        key={tool.id}
-                                        draggable
-                                        onDragStart={e => onDragStart(e, 'tool', tool)}
-                                        className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-50 border border-blue-100 cursor-grab active:cursor-grabbing hover:bg-blue-100 transition-colors group"
-                                    >
-                                        <GripVertical size={12} className="text-blue-300 group-hover:text-blue-500" />
-                                        <span className="text-sm">{tool.logo_herramienta}</span>
-                                        <span className="text-xs font-medium text-slate-700 truncate">{tool.nombre}</span>
+                                    <div key={tool.id} draggable onDragStart={e => onDragStart(e, 'tool', tool)}
+                                        className="flex items-center space-x-1.5 px-2 py-1.5 rounded bg-cyan-500/5 border border-cyan-500/10 cursor-grab active:cursor-grabbing hover:bg-cyan-500/10 hover:border-cyan-500/20 transition-all group">
+                                        <GripVertical size={8} className="text-slate-700 group-hover:text-cyan-500 flex-shrink-0" />
+                                        <span className="text-xs leading-none">{tool.logo_herramienta}</span>
+                                        <span className="text-[10px] font-medium text-slate-400 truncate group-hover:text-cyan-300">{tool.nombre}</span>
                                     </div>
                                 ))}
-                                {tools.length === 0 && (
-                                    <p className="text-xs text-slate-400 text-center py-2">No tools available</p>
-                                )}
                             </div>
                         )}
                     </div>
 
-                    {/* Engines Section */}
+                    {/* Engines */}
                     <div>
-                        <button
-                            onClick={() => setEnginesOpen(!enginesOpen)}
-                            className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
-                        >
-                            <div className="flex items-center space-x-2">
-                                <Cog size={14} className="text-purple-500" />
-                                <span className="text-xs font-bold text-guardian-text uppercase tracking-wider">Engines</span>
+                        <button onClick={() => setEnginesOpen(!enginesOpen)}
+                            className="w-full flex items-center justify-between px-3 py-2 hover:bg-slate-800/30 transition-colors">
+                            <div className="flex items-center space-x-1.5">
+                                <Cog size={10} className="text-violet-500" />
+                                <span className="text-[9px] font-black text-violet-500 uppercase tracking-widest">Engines</span>
+                                <span className="text-[8px] text-slate-600 ml-1">({engines.length})</span>
                             </div>
-                            {enginesOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                            {enginesOpen ? <ChevronDown size={10} className="text-slate-600" /> : <ChevronRight size={10} className="text-slate-600" />}
                         </button>
                         {enginesOpen && (
-                            <div className="px-3 pb-3 space-y-1">
+                            <div className="px-2 pb-2 space-y-0.5">
                                 {engines.map(engine => (
-                                    <div
-                                        key={engine.id}
-                                        draggable
-                                        onDragStart={e => onDragStart(e, 'engine', engine)}
-                                        className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-purple-50 border border-purple-100 cursor-grab active:cursor-grabbing hover:bg-purple-100 transition-colors group"
-                                    >
-                                        <GripVertical size={12} className="text-purple-300 group-hover:text-purple-500" />
-                                        <span className="text-sm">{engine.icono}</span>
-                                        <div className="flex flex-col min-w-0">
-                                            <span className="text-xs font-medium text-slate-700 truncate">{engine.nombre}</span>
-                                            <span className="text-[9px] text-purple-500 uppercase font-bold">{engine.tipo}</span>
+                                    <div key={engine.id} draggable onDragStart={e => onDragStart(e, 'engine', engine)}
+                                        className="flex items-center space-x-1.5 px-2 py-1.5 rounded bg-violet-500/5 border border-violet-500/10 cursor-grab active:cursor-grabbing hover:bg-violet-500/10 hover:border-violet-500/20 transition-all group">
+                                        <GripVertical size={8} className="text-slate-700 group-hover:text-violet-500 flex-shrink-0" />
+                                        <span className="text-xs leading-none">{engine.icono}</span>
+                                        <div className="min-w-0 flex-1">
+                                            <span className="text-[10px] font-medium text-slate-400 truncate block group-hover:text-violet-300">{engine.nombre}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -362,9 +285,51 @@ const MachineEditor = () => {
                         )}
                     </div>
                 </div>
+            </div>
 
-                {/* React Flow Canvas */}
-                <div className="flex-1 bg-white border border-guardian-border rounded-xl shadow-sm overflow-hidden" ref={reactFlowWrapper}>
+            {/* ── Canvas Area ── */}
+            <div className="flex-1 flex flex-col min-w-0">
+                {/* Top bar */}
+                <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 flex-shrink-0"
+                    style={{ background: 'linear-gradient(90deg, #0f1320, #0a0e1a)' }}>
+                    <div className="flex items-center space-x-3 min-w-0">
+                        {!sidebarOpen && (
+                            <button onClick={() => setSidebarOpen(true)} className="text-slate-600 hover:text-cyan-400 p-1 border border-slate-800 rounded transition-colors">
+                                <Workflow size={14} />
+                            </button>
+                        )}
+                        <button onClick={() => navigate('/machines')} className="text-slate-600 hover:text-white p-1 border border-slate-800 rounded transition-colors">
+                            <ArrowLeft size={14} />
+                        </button>
+                        <div className="h-5 w-px bg-slate-800" />
+                        <span className="text-lg leading-none">{machine?.icono || '⚙️'}</span>
+                        <div className="min-w-0">
+                            <input value={machineName} onChange={e => setMachineName(e.target.value)}
+                                className="text-sm font-bold text-white bg-transparent border-none outline-none w-full placeholder:text-slate-700"
+                                placeholder="Machine name..." />
+                            <input value={machineDesc} onChange={e => setMachineDesc(e.target.value)}
+                                className="text-[10px] text-slate-600 bg-transparent border-none outline-none w-full placeholder:text-slate-800"
+                                placeholder="Description..." />
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <div className="text-[9px] font-black text-slate-700 uppercase tracking-widest mr-2">
+                            {nodes.length}N · {edges.length}C
+                        </div>
+                        <button onClick={handleSave} disabled={saving}
+                            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-wider transition-all ${saved
+                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/20'
+                                }`}>
+                            {saving ? <div className="w-3 h-3 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+                                : saved ? <Check size={12} /> : <Save size={12} />}
+                            <span>{saving ? 'Saving' : saved ? 'Saved' : 'Save'}</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* React Flow */}
+                <div className="flex-1" ref={reactFlowWrapper}>
                     <ReactFlow
                         nodes={nodes}
                         edges={edges}
@@ -374,26 +339,21 @@ const MachineEditor = () => {
                         onDragOver={onDragOver}
                         onDrop={onDrop}
                         nodeTypes={nodeTypes}
+                        defaultEdgeOptions={defaultEdgeOptions}
                         fitView
                         deleteKeyCode={['Backspace', 'Delete']}
                         proOptions={{ hideAttribution: true }}
+                        style={{ background: '#0a0e1a' }}
                     >
-                        <Background color="#e2e8f0" gap={20} size={1} />
-                        <Controls className="!bg-white !border-guardian-border !rounded-lg !shadow-sm" />
-                        <MiniMap
-                            nodeColor={(node) => node.type === 'toolNode' ? '#3b82f6' : '#8b5cf6'}
-                            className="!bg-white !border-guardian-border !rounded-lg !shadow-sm"
+                        <Background color="#1e293b" gap={24} size={1} variant="dots" />
+                        <Controls
+                            className="!bg-slate-900 !border-slate-800 !rounded-lg !shadow-2xl [&>button]:!bg-slate-800 [&>button]:!border-slate-700 [&>button]:!text-slate-400 [&>button:hover]:!bg-slate-700"
                         />
-                        <Panel position="top-center">
-                            <div className="bg-white/90 backdrop-blur border border-guardian-border rounded-lg px-4 py-2 shadow-sm">
-                                <div className="flex items-center space-x-3">
-                                    <Workflow size={14} className="text-purple-500" />
-                                    <span className="text-[10px] font-black text-guardian-muted uppercase tracking-widest">
-                                        {nodes.length} Nodes · {edges.length} Connections
-                                    </span>
-                                </div>
-                            </div>
-                        </Panel>
+                        <MiniMap
+                            nodeColor={n => n.type === 'toolNode' ? '#06b6d4' : '#8b5cf6'}
+                            maskColor="rgba(10, 14, 26, 0.85)"
+                            className="!bg-slate-900/80 !border-slate-800 !rounded-lg"
+                        />
                     </ReactFlow>
                 </div>
             </div>

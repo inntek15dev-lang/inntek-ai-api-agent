@@ -1,93 +1,648 @@
-# Master Blueprint: AI Agent Integrations (Sincronizado)
+# INNTEK AI API AGENT — Universal Software Blueprint
+# Version: 3.0.0 | Last Sync: 2026-03-03
 
-## Project Overview
-A robust monorepo platform for managing and executing AI tools via official APIs.
-- **Backend Port**: 3333
-- **Frontend Port**: 5173
-- **Primary AI Engine**: Multi-Provider (Google Gemini Native + OpenAI-Compatible REST APIs)
-- **Production Backend**: https://inntek-ai-api-agent-api.onrender.com/
-- **Production Frontend**: https://inntek-ai-api-agent-client.onrender.com/
+## 1. Overview
 
-## Tech Stack
-- **Backend**: Node.js (Express 5), Sequelize ORM, MySQL 8 (Aiven Cloud, SSL Required), Multer (File Handling), JWT, Swagger JSDoc.
-- **Frontend**: React 18 (Vite), Tailwind CSS, Axios, Lucide Icons, React Flow (@xyflow/react).
+**Project:** AI Agent Integrations Platform — a full-stack web application for creating, managing, and executing AI-powered tools with multi-provider support and a visual workflow orchestrator (Machines).
 
-## Core Modules
-1. **Auth**: JWT-based authentication with role/privilege scoping.
-2. **AI_Tool_Maker**: Advanced CRUD for AI tools including System Instruction (Context & Behavior) definition.
-3. **AI_Tool_Catalog**: Visual repository of available neural units.
-4. **AI_Tool_Execution**: Real-time multimodal execution hub (TexStatus: Implementado
-4. **AI_Tool_Execution**: Real-time multimodal execution hub (Text, Image, Audio, Video).
-- **Status**: Implementado
-- **Default Tools (Seeders Base)**:
-  - 🆔 Validador de CI Chile (OutputFormat: Reporte Validacion Cedula Chilena, JsonSchema: Esquema de Identidad Avanzado V2)
-  - 🎨 CSS EXTRACTOR (Sin OutputFormat/JsonSchema)
-  - 💵 Check de Liquidaciones Chile (OutputFormat: Reporte Check Liquidacion Chile, JsonSchema: Reporte Check Liqui Chile)
-5. **Config**: Global configuration management.
-6. **AI_Providers**: Multi-provider AI configuration (Google, OpenRouter, N custom providers). CRUD, set-default, per-tool override.
-7. **Json_Schemas**: Centralized management of JSON data contracts for strict validation.
-8. **Machines**: Visual flow orchestrator for chaining Tools and Engines in recursive execution pipelines. Drag-and-drop editor with graph persistence.
-9. **Engines**: System-seeded list processors (Iterator, Collector, Data Mapper) used as nodes in Machines to handle iterative data flows.
+**Business Purpose:** Enable non-technical users to build AI processing pipelines through a drag-and-drop interface, chain tools into automated flows, and execute them against multiple AI providers with structured JSON output validation.
 
-## Technical Specifications
-### Database Schema (Aiven MySQL: `inntek-ai-api-agent-manager-db`, Port: 26213, SSL: Required)
-- `Roles`: Authority levels (`id`, `nombre`).
-- `Privilegios`: Granular access control (`id`, `ref_modulo`, `read`, `write`, `exec` (Boolean)).
-- `Users`: Auth entities with role association.
-- `Tools`: AI Unit configurations (`nombre`, `descripcion`, `logo_herramienta`, `training_prompt`, `behavior_prompt`, `response_format`, `output_format_id`, `json_schema_id`).
-- `JsonSchemas`: JSON data contracts (`nombre`, `descripcion`, `schema`).
-- `Config`: Key-Value system parameters.
-- `Engines`: System-level list processors for Machines (`nombre`, `slug`, `tipo` [iterator/collector/mapper], `icono`, `config_schema`, `activo`).
-- `Machines`: Named workflow containers (`nombre`, `descripcion`, `icono`, `activo`).
-- `MachineNodes`: Graph nodes referencing Tool or Engine (`machine_id`, `node_type`, `tool_id`, `engine_id`, `position_x`, `position_y`, `config`).
-- `MachineConnections`: Directed edges between nodes (`machine_id`, `source_node_id`, `target_node_id`, `source_handle`, `target_handle`).
+---
 
-## API Endpoints (Swagger @ `/api-docs`)
-### Auth
-- `POST /api/auth/login`: Authentication entry point.
-- `GET /api/auth/me`: Clearance verification.
+## 2. Tech Stack
 
-### AI Tools
-- `GET /api/tools`: Catalog retrieval.
-- `POST /api/tools`: Unit creation.
-- `GET /api/tools/:id`: Detailed unit data.
-- `PUT /api/tools/:id`: Logic adjustment.
-- `DELETE /api/tools/:id`: Unit decommissioning.
-- `POST /api/tools/:id/execute`: Neural protocol execution. Accepts `multipart/form-data` with `prompt` (text) and `imagen` (file). Chains training + behavior + user prompt. Supports strict schema validation if `json_schema_id` is present. Response is sanitized via `sanitizeResponse()` to strip markdown code fences (` ```json `, ` ``` `) before parsing.
+### Backend
+| Layer | Technology | Version |
+|-------|-----------|---------|
+| Runtime | Node.js | 18+ |
+| Framework | Express | 5.2.x |
+| ORM | Sequelize | 6.37.x |
+| Database | MySQL 8 (Aiven Cloud) | SSL Required |
+| Authentication | JWT (jsonwebtoken) | 9.0.x |
+| AI — Google | @google/generative-ai | 0.24.x |
+| File Upload | Multer | 2.0.x |
+| API Docs | swagger-jsdoc + swagger-ui-express | 6.2.x / 5.0.x |
+| Dev Server | Nodemon | 3.1.x |
+| Env | dotenv | 17.3.x |
+| CORS | cors | 2.8.x |
 
-### Config
-- `GET /api/config`: Global parameter retrieval.
-- `POST /api/config`: Parameter synchronization.
+### Frontend
+| Layer | Technology | Version |
+|-------|-----------|---------|
+| Framework | React | 18.2.x |
+| Build Tool | Vite | 5.0.x |
+| Routing | react-router-dom | 7.13.x |
+| HTTP Client | Axios | 1.13.x |
+| CSS | Tailwind CSS | 3.4.x |
+| Icons | lucide-react | 0.575.x |
+| Flow Editor | @xyflow/react (React Flow) | 12.10.x |
+| PostCSS | autoprefixer + postcss | 10.4.x / 8.4.x |
 
-### Outputs
-- `GET /api/output-categories`: List output categories.
-- `POST /api/output-categories`: Create output category.
-- `GET /api/output-formats`: List output templates.
-- `POST /api/output-formats`: Create output template with HTML structure.
+### Infrastructure
+| Concern | Solution |
+|---------|----------|
+| Backend Hosting | Render (web service) |
+| Frontend Hosting | Render (static site) |
+| Database | Aiven MySQL 8 (SSL, Port 26213) |
+| API Docs | Swagger UI @ `/api-docs` |
+
+---
+
+## 3. Architecture
+
+```
+front/ (React SPA)                    back/ (Express API)
+├── src/                              ├── src/
+│   ├── App.jsx (Routing)             │   ├── server.js (Express + Swagger + CORS)
+│   ├── main.jsx (Entry)              │   ├── config/
+│   ├── theme.css (Design System)     │   │   └── database.js (Sequelize + SSL)
+│   ├── index.css                     │   ├── models/
+│   ├── App.css                       │   │   └── index.js (14 models + associations)
+│   ├── config/                       │   ├── controllers/
+│   │   ├── api.js (API_URL)          │   │   ├── authController.js
+│   │   └── navigation.js (NAV)      │   │   ├── toolController.js
+│   ├── context/                      │   │   ├── configController.js
+│   │   └── AuthContext.jsx           │   │   ├── outputController.js
+│   ├── components/                   │   │   ├── jsonSchemaController.js
+│   │   └── Layout.jsx                │   │   ├── aiProviderController.js
+│   └── pages/                        │   │   ├── machineController.js
+│       ├── LoginPage.jsx             │   │   └── engineController.js
+│       ├── Dashboard.jsx             │   ├── middleware/
+│       ├── ToolMaker.jsx             │   │   └── auth.js (JWT + Privilege Engine)
+│       ├── Catalog.jsx               │   ├── routes/
+│       ├── ToolView.jsx              │   │   └── index.js (All routes + Swagger JSDoc)
+│       ├── Config.jsx                │   ├── seed.js (Complete base data)
+│       ├── OutputMaker.jsx           │   └── utils/
+│       ├── JsonSchemaMaker.jsx       │
+│       ├── MachineCatalog.jsx        │
+│       └── MachineEditor.jsx         │
+```
+
+---
+
+## 4. Modules
+
+### 4.1 Auth
+- **Ref:** `Auth`
+- **Backend:** `authController.js` — `POST /auth/login`, `GET /auth/me`
+- **Frontend:** `LoginPage.jsx`, `AuthContext.jsx`
+- **Mechanism:** JWT token in `localStorage`, Axios global `Authorization` header
+- **Flow:** Login → JWT issued → `fetchMe()` on load → privileges resolved → `ProtectedRoute` guards modules
+- **Password:** bcrypt-hashed in seeder, validated at login
+
+### 4.2 AI Tool Maker
+- **Ref:** `AI_Tool_Maker`
+- **Backend:** `toolController.js` — CRUD (`getTools`, `getTool`, `createTool`, `updateTool`, `deleteTool`)
+- **Frontend:** `ToolMaker.jsx` — form with fields: nombre, descripcion, logo (emoji), training_prompt, behavior_prompt, response_format, output_format, json_schema, ai_provider override
+- **Business Rules:**
+  - Tools have System Instruction split into Context (`training_prompt`) and Behavior (`behavior_prompt`)
+  - Optional JSON Schema binding for structured output validation
+  - Optional OutputFormat binding for HTML rendering templates
+  - Optional per-tool AI Provider override (falls back to system default)
+
+### 4.3 AI Tool Catalog
+- **Ref:** `AI_Tool_Catalog`
+- **Backend:** `toolController.js` — `getTools`
+- **Frontend:** `Catalog.jsx` — card grid with search filter, tool count badge, launch/edit links
+- **UX:** Cards show logo, name, description, response format badge, edit gear button, launch arrow
+
+### 4.4 AI Tool Execution
+- **Ref:** `AI_Tool_Execution`
+- **Backend:** `toolController.js` — `POST /tools/:id/execute`
+- **Frontend:** `ToolView.jsx` — execution hub with input form, file upload, result display
+- **Execution Flow:**
+  1. Client sends `{ requirementInstructions, file? }` via `multipart/form-data`
+  2. Backend resolves AI provider: tool-specific override → system default (`is_default: true`)
+  3. Builds prompt: `training_prompt + behavior_prompt + "#DATA#: " + requirementInstructions`
+  4. If JSON response + JsonSchema: `cleanSchema()` removes unsupported Gemini keywords (`$ref`, `definitions`, `additionalProperties`, `default`, `enum` length validation)
+  5. Routes to execution strategy:
+     - **`google_native`** — Google Generative AI SDK (`generateContent`)
+     - **`openai_compatible`** — Standard OpenAI chat completions API (OpenRouter, Groq, Together, Ollama, etc.)
+  6. `sanitizeResponse()` strips markdown code fences (` ```json `, ` ``` `)
+  7. If JSON format: parse → apply OutputFormat HTML template with `{{placeholder}}` replacement
+  8. Return `{ success, data: { text, json?, html? } }`
+- **Multimodal Support:** Images (PNG, JPEG, WebP, HEIC), PDF, text files, audio (MP3, WAV), video (MP4, AVI)
+- **Supported MIME types:** `image/png`, `image/jpeg`, `image/webp`, `image/heic`, `image/heif`, `application/pdf`, `text/plain`, `text/javascript`, `text/python`, `text/csv`, `audio/mpeg`, `audio/wav`, `video/mp4`, `video/avi`
+
+### 4.5 Config
+- **Ref:** `Config`
+- **Backend:** `configController.js` — `getConfigs`, `upsertConfig`
+- **Frontend:** `Config.jsx` — system settings editor (key-value pairs, AI providers CRUD, user management)
+- **Subsections in Config page:**
+  - General config (key-value)
+  - AI Providers management (full CRUD with masked API keys)
+  - User management (CRUD with role assignment)
+  - Privilege management (per-role per-module granular permissions)
+
+### 4.6 AI Providers
+- **Ref:** `AI_Providers`
+- **Backend:** `aiProviderController.js` — CRUD + `setDefault`
+- **Business Rules:**
+  - API keys masked with `•` on read (show last 4 chars only via `maskKey()`)
+  - Masked keys ignored on update (won't overwrite with dots)
+  - Only one default provider at a time (atomic `setDefault` unsets all then sets one)
+  - Cannot delete the current default provider
+  - Two provider types: `google_native` (uses SDK), `openai_compatible` (uses REST API)
+  - Extra headers support (JSON string) for provider-specific headers
+
+### 4.7 JSON Schemas
+- **Ref:** `Json_Schemas`
+- **Backend:** `jsonSchemaController.js` — full CRUD
+- **Frontend:** `JsonSchemaMaker.jsx` — schema editor with JSON validation
+- **Purpose:** Reusable JSON Schema contracts for AI tool structured output validation
+
+### 4.8 Outputs Maker
+- **Ref:** `Outputs_Maker`
+- **Backend:** `outputController.js` — CRUD for categories and formats
+- **Frontend:** `OutputMaker.jsx` — HTML template editor with `{{placeholder}}` system
+- **Structure:** OutputCategory → OutputFormat (tipo: reporte | accionable | generativo)
+- **Template system:** HTML with `{{fieldName}}` placeholders replaced by parsed JSON output fields
+
+### 4.9 Machines
+- **Ref:** `Machines`
+- **Backend:** `machineController.js` — full CRUD with graph atomics
+- **Frontend:** `MachineCatalog.jsx` (card grid), `MachineEditor.jsx` (visual flow editor)
+- **Concept:** Machines are visual DAG workflows that chain Tools and Engines into recursive execution flows
+- **Graph persistence:** Full graph replacement on save (delete all → recreate nodes → recreate connections)
+- **Editor UX:** Fullscreen dark pizarra (#0a0e1a), compact w-56 collapsible sidebar, React Flow canvas
+  - Tool nodes: cyan accents with dark gradient cards
+  - Engine nodes: violet accents with dark purple gradient cards
+  - Edges: `smoothstep` with `ArrowClosed` markers in violet
+  - Drag from sidebar → drop on canvas → connect handles → save
+  - Delete nodes/edges with Backspace/Delete
+  - MiniMap + Controls styled in dark theme
+
+### 4.10 Engines
+- **Ref:** (part of `Machines` module)
+- **Backend:** `engineController.js` — read-only `getEngines`
+- **Nature:** System-seeded, immutable base components for list processing in Machines
+- **Types:**
+
+| Engine | Slug | Tipo | Behavior |
+|--------|------|------|----------|
+| 🔄 List Iterator | `list-iterator` | `iterator` | Receives array, executes next connected Tool per item |
+| 📦 List Collector | `list-collector` | `collector` | Aggregates individual Tool outputs into a single array |
+| 🔀 Data Mapper | `data-mapper` | `mapper` | Transforms/maps fields between node inputs and outputs |
+
+---
+
+## 5. Security
+
+### Authentication
+- JWT-based, token in `Authorization: Bearer <token>` header
+- `localStorage` persistence on frontend
+- `authMiddleware` decodes JWT → loads User with Role → loads Privilegios → attaches `canRead`, `canWrite`, `canExec` to `req.user`
+
+### Authorization — Privilege Engine
+- **Granular:** per-module `read`, `write`, `exec` permissions
+- **Wildcard:** `ref_modulo: '*'` grants access to all modules
+- **Middleware:** `requirePrivilege(moduleName, action)` checks `req.user.can{Action}(module)`
+- **Frontend mirror:** `AuthContext` exposes `canRead()`, `canWrite()`, `canExec()`, `isAdmin`
+- **Route guard:** `<ProtectedRoute module="X">` blocks rendering if no read access
+
+### Modules with privileges:
+`Auth`, `AI_Tool_Maker`, `AI_Tool_Catalog`, `AI_Tool_Execution`, `Config`, `Outputs_Maker`, `Json_Schemas`, `AI_Providers`, `Machines`
+
+### API Key Security
+- Provider API keys masked on all GET responses (only last 4 chars visible)
+- Masked values ignored on PUT/PATCH to prevent accidental overwrite
+
+---
+
+## 6. Database Schema
+
+### 6.1 Roles
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | UUID | PK, auto-generated |
+| nombre | STRING | unique, not null |
+
+### 6.2 Privilegios
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | UUID | PK |
+| ref_modulo | STRING | not null (`*` for wildcard) |
+| read | BOOLEAN | default: false |
+| write | BOOLEAN | default: false |
+| exec | BOOLEAN | default: false |
+| role_id | UUID | FK → Roles.id |
+
+### 6.3 Users
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | UUID | PK |
+| nombre | STRING | not null |
+| email | STRING | unique, not null |
+| password | STRING | not null (bcrypt) |
+| role_id | UUID | FK → Roles.id |
+
+### 6.4 Tools
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | UUID | PK |
+| nombre | STRING | not null |
+| descripcion | TEXT | — |
+| logo_herramienta | STRING | emoji |
+| training_prompt | TEXT | System Instruction: Context |
+| behavior_prompt | TEXT | System Instruction: Behavior |
+| response_format | STRING | JSON / Text / Markdown |
+| output_format_id | UUID | FK → OutputFormats.id (nullable) |
+| json_schema_id | UUID | FK → JsonSchemas.id (nullable) |
+| ai_provider_id | UUID | FK → AiProviders.id (nullable, override) |
+
+### 6.5 JsonSchemas
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | UUID | PK |
+| nombre | STRING | not null |
+| descripcion | TEXT | — |
+| schema | TEXT | not null (JSON Schema string) |
+
+### 6.6 OutputCategories
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | UUID | PK |
+| nombre | STRING | unique, not null |
+
+### 6.7 OutputFormats
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | UUID | PK |
+| nombre | STRING | not null |
+| tipo | ENUM | reporte, accionable, generativo |
+| estructura | TEXT | not null (HTML template with `{{placeholder}}`) |
+| category_id | UUID | FK → OutputCategories.id |
+
+### 6.8 Configs
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | UUID | PK |
+| key | STRING | unique, not null |
+| value | TEXT | — |
+
+### 6.9 AiProviders
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | UUID | PK |
+| nombre | STRING | not null |
+| slug | STRING | unique, not null |
+| tipo | ENUM | google_native, openai_compatible |
+| api_key | STRING | — (masked on read) |
+| base_url | STRING | — (null for google_native) |
+| modelo | STRING | not null |
+| is_default | BOOLEAN | default: false |
+| activo | BOOLEAN | default: true |
+| extra_headers | TEXT | JSON string for custom HTTP headers |
+
+### 6.10 Engines
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | UUID | PK |
+| nombre | STRING | not null |
+| slug | STRING | unique, not null |
+| descripcion | TEXT | — |
+| tipo | ENUM | iterator, collector, mapper |
+| icono | STRING | emoji |
+| config_schema | TEXT | JSON string |
+| activo | BOOLEAN | default: true |
+
+### 6.11 Machines
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | UUID | PK |
+| nombre | STRING | not null |
+| descripcion | TEXT | — |
+| icono | STRING | emoji |
+| activo | BOOLEAN | default: true |
+
+### 6.12 MachineNodes
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | UUID | PK |
+| machine_id | UUID | FK → Machines.id (CASCADE) |
+| node_type | ENUM | tool, engine |
+| tool_id | UUID | FK → Tools.id (nullable) |
+| engine_id | UUID | FK → Engines.id (nullable) |
+| position_x | FLOAT | default: 0 |
+| position_y | FLOAT | default: 0 |
+| config | TEXT | JSON string |
+
+### 6.13 MachineConnections
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | UUID | PK |
+| machine_id | UUID | FK → Machines.id (CASCADE) |
+| source_node_id | UUID | FK → MachineNodes.id |
+| target_node_id | UUID | FK → MachineNodes.id |
+| source_handle | STRING | — |
+| target_handle | STRING | — |
+
+### Associations
+```
+Role 1──N Privilegio (role_id)
+Role 1──N User (role_id)
+OutputCategory 1──N OutputFormat (category_id)
+OutputFormat 1──N Tool (output_format_id)
+JsonSchema 1──N Tool (json_schema_id)
+AiProvider 1──N Tool (ai_provider_id)
+Machine 1──N MachineNode (machine_id, CASCADE)
+Machine 1──N MachineConnection (machine_id, CASCADE)
+MachineNode N──1 Tool (tool_id)
+MachineNode N──1 Engine (engine_id)
+MachineConnection N──1 MachineNode as SourceNode (source_node_id)
+MachineConnection N──1 MachineNode as TargetNode (target_node_id)
+```
+
+---
+
+## 7. API Endpoints
+
+All routes prefixed with `/api`. Protected by `authMiddleware` + `requirePrivilege`.
+
+### Auth (Public)
+| Method | Path | Action | Privilege |
+|--------|------|--------|-----------|
+| POST | `/auth/login` | Login, returns JWT + user + privileges | Public |
+| GET | `/auth/me` | Get current user + privileges | Auth only |
+
+### Tools
+| Method | Path | Action | Privilege |
+|--------|------|--------|-----------|
+| GET | `/tools` | List all tools | AI_Tool_Catalog.read |
+| POST | `/tools` | Create tool | AI_Tool_Maker.write |
+| GET | `/tools/:id` | Get tool with relations | AI_Tool_Catalog.read |
+| PUT | `/tools/:id` | Update tool | AI_Tool_Maker.write |
+| DELETE | `/tools/:id` | Delete tool | AI_Tool_Maker.write |
+| POST | `/tools/:id/execute` | Execute tool (multipart/form-data) | AI_Tool_Execution.exec |
+
+### AI Providers
+| Method | Path | Action | Privilege |
+|--------|------|--------|-----------|
+| GET | `/ai-providers` | List all (keys masked) | AI_Providers.read |
+| POST | `/ai-providers` | Create provider | AI_Providers.write |
+| GET | `/ai-providers/:id` | Get provider (key masked) | AI_Providers.read |
+| PUT | `/ai-providers/:id` | Update provider (ignores masked key) | AI_Providers.write |
+| DELETE | `/ai-providers/:id` | Delete (cannot delete default) | AI_Providers.write |
+| PUT | `/ai-providers/:id/set-default` | Set as system default | AI_Providers.write |
 
 ### JSON Schemas
-- `GET /api/json-schemas`: List all schemas.
-- `POST /api/json-schemas`: Create a new schema.
-- `GET /api/json-schemas/:id`: Retrieve specific schema.
-- `PUT /api/json-schemas/:id`: Update schema definition.
-- `DELETE /api/json-schemas/:id`: Remove schema.
+| Method | Path | Action | Privilege |
+|--------|------|--------|-----------|
+| GET | `/json-schemas` | List all | Json_Schemas.read |
+| POST | `/json-schemas` | Create schema | AI_Tool_Maker.write |
+| GET | `/json-schemas/:id` | Get schema | Json_Schemas.read |
+| PUT | `/json-schemas/:id` | Update schema | AI_Tool_Maker.write |
+| DELETE | `/json-schemas/:id` | Delete schema | AI_Tool_Maker.write |
+
+### Output Formats
+| Method | Path | Action | Privilege |
+|--------|------|--------|-----------|
+| GET | `/output-categories` | List categories with formats | Outputs_Maker.read |
+| POST | `/output-categories` | Create category | Outputs_Maker.write |
+| PUT | `/output-categories/:id` | Update category | Outputs_Maker.write |
+| DELETE | `/output-categories/:id` | Delete category | Outputs_Maker.write |
+| POST | `/output-formats` | Create format | Outputs_Maker.write |
+| PUT | `/output-formats/:id` | Update format | Outputs_Maker.write |
+| DELETE | `/output-formats/:id` | Delete format | Outputs_Maker.write |
+
+### Config
+| Method | Path | Action | Privilege |
+|--------|------|--------|-----------|
+| GET | `/config` | Get all config pairs | Config.read |
+| POST | `/config` | Upsert config pair | Config.write |
 
 ### Engines
-- `GET /api/engines`: List all active engines.
+| Method | Path | Action | Privilege |
+|--------|------|--------|-----------|
+| GET | `/engines` | List all active engines | Machines.read |
 
 ### Machines
-- `GET /api/machines`: List all machines.
-- `POST /api/machines`: Create a new machine.
-- `GET /api/machines/:id`: Get machine with full graph (nodes + connections).
-- `PUT /api/machines/:id`: Update machine metadata and replace full graph (nodes + connections).
-- `DELETE /api/machines/:id`: Delete machine with cascade (connections → nodes → machine).
+| Method | Path | Action | Privilege |
+|--------|------|--------|-----------|
+| GET | `/machines` | List all machines | Machines.read |
+| POST | `/machines` | Create machine | Machines.write |
+| GET | `/machines/:id` | Get machine with full graph | Machines.read |
+| PUT | `/machines/:id` | Update machine + graph (atomic replace) | Machines.write |
+| DELETE | `/machines/:id` | Delete machine (cascade) | Machines.write |
 
-## Security (Privilegios Engine)
-- **SuperAdmin**: `*` -> `read: true, write: true, exec: true`.
-- **Default Port Strategy**: Port 3001 collision avoided by migrating to **3333**.
+---
 
-## Deployment (Render)
-- **Backend**: `API_URL` env var defines public URL. Swagger dual-server (prod + local).
-- **Frontend**: `VITE_API_URL` env var overrides API base. Centralized in `front/src/config/api.js`.
-- **CORS**: Whitelist via `FRONTEND_URL` env var.
-- **Database**: Aiven Cloud MySQL with SSL (`DB_SSL=true`, `DB_SSL_CA` env var for cert).
+## 8. Frontend Design System
+
+### Theme: "Guardian" (theme.css)
+- **Background:** `#f8fafc` (slate-50)
+- **Text:** `guardian-text` (dark slate)
+- **Accent:** `guardian-blue` (primary blue)
+- **Dark:** `guardian-dark` (near-black)
+- **Border:** `guardian-border`
+- **Muted:** `guardian-muted`
+
+### Component Classes
+| Class | Purpose |
+|-------|---------|
+| `.guardian-header` | Dark header bar |
+| `.guardian-nav` | White nav bar with bottom border |
+| `.guardian-nav-item` | Nav link with bottom border accent |
+| `.guardian-card` | Rounded white card with shadow |
+| `.guardian-stat-card` | Stat cards (Dashboard) |
+| `.guardian-tool-card` | Tool catalog card with top border accent |
+| `.guardian-badge` | Tiny uppercase badge (variants: --blue, --green, --slate) |
+| `.guardian-h1/h2/h3` | Typography hierarchy |
+| `.guardian-text-sm` | Muted small text |
+| `.guardian-label` | Uppercase tracking label |
+| `.guardian-input` | Bordered input with focus ring |
+| `.guardian-btn-primary` | Blue filled button |
+| `.guardian-btn-outline` | Ghost bordered button |
+| `.guardian-grid-3/2` | Responsive grids |
+| `.guardian-main-container` | max-w-7xl centered |
+
+### Machine Editor Theme (override)
+- **Background:** `#0a0e1a` (dark navy/black pizarra)
+- **Node gradients:** `#1e293b → #0f172a` (tool), `#1e1b3a → #0f0d24` (engine)
+- **Accent colors:** Cyan (`#06b6d4`) for tools, Violet (`#8b5cf6`) for engines
+- **Edge style:** smoothstep, animated, `ArrowClosed` marker
+
+### Navigation (navigation.js)
+| Path | Label | Icon | Module |
+|------|-------|------|--------|
+| `/` | Dashboard | LayoutDashboard | Dashboard |
+| `/tool-maker` | AI Tool Maker | Scissors | AI_Tool_Maker |
+| `/catalog` | Catalogo | Library | AI_Tool_Catalog |
+| `/machines` | Machines | Workflow | Machines |
+| `/outputs-maker` | Outputs Maker | Palette | Outputs_Maker |
+| `/json-schemas` | JSON Schemas | Code | Json_Schemas |
+| `/config` | Configuración | Settings | Config |
+
+### Routing (App.jsx)
+| Path | Page Component | Module Guard |
+|------|---------------|-------------|
+| `/login` | LoginPage | Public |
+| `/` | Dashboard | Auth only |
+| `/tool-maker` | ToolMaker | AI_Tool_Maker |
+| `/tool-maker/:id` | ToolMaker (edit) | AI_Tool_Maker |
+| `/catalog` | Catalog | AI_Tool_Catalog |
+| `/tool/:id` | ToolView | AI_Tool_Execution |
+| `/config` | Config | Config |
+| `/outputs-maker` | OutputMaker | Outputs_Maker |
+| `/json-schemas` | JsonSchemaMaker | Json_Schemas |
+| `/machines` | MachineCatalog | Machines |
+| `/machines/:id` | MachineEditor | Machines |
+
+---
+
+## 9. Seeder Base Data (seed.js)
+
+### Roles
+| Role | Privileges |
+|------|-----------|
+| admin | All 9 modules: read + write + exec |
+| user | AI_Tool_Catalog: read, AI_Tool_Execution: read + exec |
+
+### Users
+| Name | Email | Role |
+|------|-------|------|
+| Inntek System | admin@inntek.cl | admin |
+
+### AI Providers
+| Provider | Slug | Type | Model | Default |
+|----------|------|------|-------|---------|
+| Google Gemini | google | google_native | gemini-2.0-flash | No |
+| OpenRouter | openrouter | openai_compatible | google/gemini-2.0-flash-lite | **Yes** |
+
+### Engines (3)
+| Name | Slug | Type |
+|------|------|------|
+| 🔄 List Iterator | list-iterator | iterator |
+| 📦 List Collector | list-collector | collector |
+| 🔀 Data Mapper | data-mapper | mapper |
+
+### Output Categories & Formats
+| Category | Format | Type |
+|----------|--------|------|
+| Documentos Identidad | Reporte Validacion Cedula Chilena | reporte |
+| Liquidaciones | Reporte Check Liquidacion Chile | reporte |
+
+### JSON Schemas
+| Name | Purpose |
+|------|---------|
+| Esquema de Identidad Avanzado V2 | Chilean ID validation structured output |
+| Reporte Check Liqui Chile | Salary slip validation output |
+| Schema Lista Genérica | Reusable list/array output with items, documents, and summary stats |
+
+### Tools (11)
+
+#### Core Tools
+| Icon | Name | Schema | Purpose |
+|------|------|--------|---------|
+| 🆔 | Validador de CI Chile | Esquema de Identidad Avanzado V2 | Chilean ID document validation |
+| 🎨 | CSS EXTRACTOR | — | Extract CSS from UI screenshots |
+| 💵 | Check de Liquidaciones Chile | Reporte Check Liqui Chile | Chilean salary slip analysis |
+
+#### List-Generating Tools
+| Icon | Name | Schema | Purpose |
+|------|------|--------|---------|
+| 📊 | CSV Data Extractor | Schema Lista Genérica | Extract structured lists from CSV (embedded sample: 5 workers, 3 vehicles, 3 machines) |
+| 🚛 | Fleet Inventory Analyzer | Schema Lista Genérica | Vehicle/machinery fleet compliance analysis |
+| ✅ | Document Compliance Checker | Schema Lista Genérica | Per-item compliance verification (iterative in Machines) |
+
+#### Labor Verification Tool Kit
+| Icon | Name | Schema | Purpose |
+|------|------|--------|---------|
+| 📋 | Extractor de Nómina | Schema Lista Genérica | Payroll CSV ingestion → structured worker list (embedded 8-worker sample) |
+| 🧮 | Validador de Liquidación Individual | Schema Lista Genérica | Per-worker payslip validation (AFP, Salud 7%, AFC, tope imponible) |
+| 📄 | Verificador de Contrato | Schema Lista Genérica | Employment contract check (Art. 9 CT, plazo fijo, vigencia) |
+| 🏅 | Verificador de Certificaciones | Schema Lista Genérica | Cert/license audit per worker (AFP, salud, licencia, competencias) |
+| 📈 | Generador de Reporte de Lote | Schema Lista Genérica | Batch executive report (stats, hallazgos, recomendaciones) |
+
+### Pre-built Machines (2)
+
+#### 🏭 Verificación Laboral en Lotes
+Linear flow for monthly payroll batch processing:
+```
+📋 Extractor de Nómina → 🔄 List Iterator → 🧮 Validador Liquidación → 📦 List Collector → 📈 Reporte de Lote
+```
+5 nodes, 4 connections.
+
+#### 🔍 Verificación Documental Completa
+Parallel branching flow for full document audit:
+```
+📋 Extractor de Nómina → 🔄 List Iterator ─┬→ 📄 Verificador Contrato → 📦 Collector ─┬→ 🔀 Data Mapper → 📈 Reporte
+                                             └→ 🏅 Verificador Certs   → 📦 Collector ─┘
+```
+8 nodes, 8 connections. |
+
+---
+
+## 10. Environment Variables
+
+### Backend (.env)
+| Variable | Description | Example |
+|----------|-------------|---------|
+| PORT | Server port | 3333 |
+| DB_HOST | MySQL host | mysql-xxx.aiven.io |
+| DB_PORT | MySQL port | 26213 |
+| DB_NAME | Database name | inntek-ai-api-agent-manager-db |
+| DB_USER | Database user | avnadmin |
+| DB_PASS | Database password | *** |
+| DB_SSL | Enable SSL | true |
+| DB_SSL_CA | SSL CA certificate (env var for cloud) | — |
+| JWT_SECRET | JWT signing secret | *** |
+
+### Frontend (.env)
+| Variable | Description | Example |
+|----------|-------------|---------|
+| VITE_API_URL | Backend API base URL | https://inntek-ai-api-agent-api.onrender.com/api |
+
+### CORS Origins
+- `https://inntek-ai-api-agent-client.onrender.com` (production)
+- `http://localhost:5173` (development)
+
+### Swagger Servers
+- Production: `https://inntek-ai-api-agent-api.onrender.com/api`
+- Development: `http://localhost:3333/api`
+
+---
+
+## 11. Best Practices & Conventions
+
+### Backend
+- All IDs are UUID v4 (auto-generated by Sequelize)
+- Consistent response format: `{ success: boolean, data?: any, message?: string }`
+- Error handling: try/catch with `res.status(500).json({ success: false, message: error.message })`
+- File uploads to `uploads/` directory (temporary, read and delete on use)
+- DB sync: `sequelize.sync({ force: false })` — non-destructive by default
+- DB pool: max 5, idle timeout 10s, acquire timeout 30s
+
+### Frontend
+- Functional components with hooks
+- Context API for global state (auth only)
+- Axios with global `Authorization` header set in `AuthContext`
+- Design tokens via Tailwind `@layer components` in `theme.css`
+- Every page follows "guardian-" class convention
+- Protected routes via `<ProtectedRoute module="X">` HOC
+- Navigation items filtered by privilege via `getVisibleNavItems(canRead, isAdmin)`
+
+### AI Execution
+- `cleanSchema()` sanitizes JSON schemas for Gemini compatibility
+- `sanitizeResponse()` strips markdown code fences before JSON parsing
+- `fileToGenerativePart()` converts uploaded files to Gemini multimodal parts
+- Provider strategy pattern: `executeGoogleNative()` vs `executeOpenAICompatible()`
+
+---
+
+## 12. NPM Scripts
+
+### Backend (`back/`)
+| Script | Command | Purpose |
+|--------|---------|---------|
+| `npm run dev` | `nodemon src/server.js` | Development with auto-reload |
+| `npm start` | `node src/server.js` | Production |
+| `npm run seed` | `node src/seed.js` | Seed database with base data |
+| `npm run build` | echo (no-op) | Required by Render |
+
+### Frontend (`front/`)
+| Script | Command | Purpose |
+|--------|---------|---------|
+| `npm run dev` | `vite` | Dev server on :5173 |
+| `npm run build` | `vite build` | Production build |
+| `npm run preview` | `vite preview` | Preview production build |
