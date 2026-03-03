@@ -255,10 +255,10 @@ const seed = async () => {
             nombre: 'Google Gemini',
             slug: 'google',
             tipo: 'google_native',
-            api_key: null, // Set via Config UI
+            api_key: null,
             base_url: null,
             modelo: 'gemini-2.0-flash',
-            is_default: true,
+            is_default: false,
             activo: true,
             extra_headers: null
         });
@@ -267,10 +267,10 @@ const seed = async () => {
             nombre: 'OpenRouter',
             slug: 'openrouter',
             tipo: 'openai_compatible',
-            api_key: null, // Set via Config UI
+            api_key: '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',
             base_url: 'https://openrouter.ai/api/v1',
-            modelo: 'google/gemini-2.0-flash-exp:free',
-            is_default: false,
+            modelo: 'google/gemini-2.0-flash-lite',
+            is_default: true,
             activo: true,
             extra_headers: JSON.stringify({
                 'HTTP-Referer': 'https://inntek-ai-api-agent-client.onrender.com',
