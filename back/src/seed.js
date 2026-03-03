@@ -1,4 +1,4 @@
-const { sequelize, Role, Privilegio, User, Tool, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine } = require('./models');
+const { sequelize, Role, Privilegio, User, Tool, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Machine, MachineNode, MachineConnection } = require('./models');
 require('dotenv').config();
 
 const seed = async () => {
@@ -282,7 +282,7 @@ const seed = async () => {
         // 8. Engines (System-level list processors for Machines)
         // ═══════════════════════════════════════════════════════════════
 
-        await Engine.create({
+        const engineIterator = await Engine.create({
             nombre: 'List Iterator',
             slug: 'list-iterator',
             descripcion: 'Receives an array from a connected Tool output and executes the next connected Tool once per item in the list.',
@@ -292,7 +292,7 @@ const seed = async () => {
             activo: true
         });
 
-        await Engine.create({
+        const engineCollector = await Engine.create({
             nombre: 'List Collector',
             slug: 'list-collector',
             descripcion: 'Aggregates individual outputs from a connected Tool into a single consolidated array.',
@@ -302,7 +302,7 @@ const seed = async () => {
             activo: true
         });
 
-        await Engine.create({
+        const engineMapper = await Engine.create({
             nombre: 'Data Mapper',
             slug: 'data-mapper',
             descripcion: 'Transforms and maps fields between Tool inputs and outputs. Define field mappings to reshape data between nodes.',
@@ -354,6 +354,357 @@ const seed = async () => {
             output_format_id: formatCheckLiqui.id,
             json_schema_id: schemaCheckLiqui.id
         });
+
+        // ═══════════════════════════════════════════════════════════════
+        // 10. Generic List Schema (for Machine list-output tools)
+        // ═══════════════════════════════════════════════════════════════
+
+        const schemaGenericList = await JsonSchema.create({
+            id: 'ab000001-0000-4000-a000-000000000001',
+            nombre: 'Schema Lista Genérica',
+            descripcion: 'Estructura genérica para outputs de tipo lista/array. Cada item tiene id, nombre, tipo, estado, datos clave-valor, y un array de documentos asociados.',
+            schema: JSON.stringify({
+                "type": "object",
+                "required": ["lista", "total", "resumen"],
+                "properties": {
+                    "lista": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["id", "nombre", "tipo", "estado"],
+                            "properties": {
+                                "id": { "type": "string" },
+                                "nombre": { "type": "string" },
+                                "tipo": { "type": "string" },
+                                "estado": { "type": "string" },
+                                "datos": {
+                                    "type": "object",
+                                    "properties": {
+                                        "rut": { "type": "string" },
+                                        "cargo": { "type": "string" },
+                                        "patente": { "type": "string" },
+                                        "marca": { "type": "string" },
+                                        "modelo": { "type": "string" },
+                                        "anio": { "type": "string" },
+                                        "area": { "type": "string" },
+                                        "observaciones": { "type": "string" }
+                                    }
+                                },
+                                "documentos": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "required": ["nombre_documento", "estado"],
+                                        "properties": {
+                                            "nombre_documento": { "type": "string" },
+                                            "estado": { "type": "string" },
+                                            "fecha_vencimiento": { "type": "string" },
+                                            "observacion": { "type": "string" }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "total": { "type": "number" },
+                    "resumen": {
+                        "type": "object",
+                        "properties": {
+                            "completos": { "type": "number" },
+                            "incompletos": { "type": "number" },
+                            "criticos": { "type": "number" },
+                            "observacion_general": { "type": "string" }
+                        }
+                    }
+                }
+            })
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // 11. List-Generating Tools (for Machine flows)
+        // ═══════════════════════════════════════════════════════════════
+
+        // 11a. CSV Data Extractor — extracts structured lists from CSV data
+        await Tool.create({
+            id: 'edb84cda-0000-4a2c-8187-000000000010',
+            nombre: 'CSV Data Extractor',
+            descripcion: 'Recibe datos CSV (adjunto o en el prompt) de trabajadores, vehículos y/o maquinarias. Extrae y estructura cada registro en un array JSON detallado con sus documentos asociados. Diseñada para producir listas que alimenten Machines.',
+            logo_herramienta: '📊',
+            training_prompt: `Eres un experto en procesamiento de datos tabulares y documentación de operaciones industriales.
+Tu tarea es analizar datos CSV de trabajadores, vehículos y maquinarias, y transformarlos en un JSON estructurado.
+
+DATOS CSV DE EJEMPLO INTEGRADOS:
+tipo,id,nombre,rut,cargo,patente,marca,modelo,anio,area,doc_contrato,doc_licencia,doc_rev_tecnica,doc_seguro,doc_cert_competencia
+TRABAJADOR,T001,Juan Pérez González,12.345.678-9,Operador Grúa,,,,, Operaciones,SI,SI CLASE D,,,SI
+TRABAJADOR,T002,María López Soto,11.222.333-4,Conductora,,,,, Transporte,SI,SI CLASE A2,,,NO
+TRABAJADOR,T003,Carlos Muñoz Díaz,9.876.543-2,Mecánico,,,,, Mantenimiento,SI,NO,,,SI
+TRABAJADOR,T004,Ana Torres Vega,15.444.555-6,Supervisora HSEC,,,,, HSEC,SI,SI CLASE B,,,SI
+TRABAJADOR,T005,Pedro Rojas Fuentes,8.765.432-1,Soldador,,,,, Mantenimiento,NO,NO,,,NO
+VEHICULO,V001,Camión Tolva 01,,, AB-1234,Volvo,FMX 500,2021,Transporte,,, SI 2026-06,SI 2026-12,
+VEHICULO,V002,Camioneta Terreno,,, CD-5678,Toyota,Hilux,2023,Operaciones,,, SI 2026-08,SI 2026-10,
+VEHICULO,V003,Bus Personal,,, EF-9012,Mercedes,OF 1722,2019,Transporte,,, NO VENCIDA,SI 2026-03,
+MAQUINARIA,M001,Excavadora CAT 320,,,,CAT,320 GC,2022,Operaciones,,,,SI 2026-12,
+MAQUINARIA,M002,Grúa Telescópica,,,,Liebherr,LTM 1100,2020,Operaciones,,,,NO VENCIDA,
+MAQUINARIA,M003,Retroexcavadora,,,,JCB,3CX,2018,Mantenimiento,,,,SI 2026-04,
+
+Para cada registro debes generar un objeto en el array "lista" con: id, nombre, tipo (TRABAJADOR/VEHICULO/MAQUINARIA), estado (COMPLETO/INCOMPLETO/CRITICO según documentación), datos (campos relevantes), y documentos (array de documentos requeridos con su estado).`,
+            behavior_prompt: 'Analiza los datos CSV proporcionados (en el prompt o en archivo adjunto). Genera un JSON con el array "lista" conteniendo cada registro estructurado. Evalúa el estado documental: COMPLETO si tiene toda la documentación, INCOMPLETO si falta algo no crítico, CRITICO si faltan documentos obligatorios (contrato, licencia vigente, revisión técnica vigente). Incluye resumen con conteos.',
+            response_format: 'JSON',
+            output_format_id: null,
+            json_schema_id: schemaGenericList.id
+        });
+
+        // 11b. Fleet Inventory Analyzer — analyzes vehicle/machinery fleets
+        await Tool.create({
+            id: 'edb84cda-0000-4a2c-8187-000000000011',
+            nombre: 'Fleet Inventory Analyzer',
+            descripcion: 'Analiza inventarios de flotas de vehículos y maquinarias. Recibe datos de flota y genera un listado detallado con estado de cada unidad, documentación vigente/vencida, y alertas de mantenimiento.',
+            logo_herramienta: '🚛',
+            training_prompt: `Eres un experto en gestión de flotas vehiculares y maquinaria pesada para operaciones industriales.
+Tu objetivo es recibir información de flota (texto, CSV o archivo adjunto) y generar un inventario estructurado con:
+- Identificación de cada unidad (patente, marca, modelo, año)
+- Estado operacional (OPERATIVO, EN MANTENIMIENTO, FUERA DE SERVICIO)
+- Documentación (revisión técnica, seguro, permiso de circulación, certificaciones)
+- Alertas por documentos próximos a vencer (30 días) o ya vencidos
+Cada unidad debe tener su array de documentos con estado y fecha de vencimiento.`,
+            behavior_prompt: 'Procesa la información de flota recibida. Para cada vehículo/maquinaria, determina su estado según la documentación: COMPLETO si todo vigente, INCOMPLETO si hay documentos por vencer en 30 días, CRITICO si hay documentos vencidos o faltantes obligatorios. Genera la lista como array JSON con resumen de conteos.',
+            response_format: 'JSON',
+            output_format_id: null,
+            json_schema_id: schemaGenericList.id
+        });
+
+        // 11c. Document Compliance Checker — checks docs per entity from a list
+        await Tool.create({
+            id: 'edb84cda-0000-4a2c-8187-000000000012',
+            nombre: 'Document Compliance Checker',
+            descripcion: 'Recibe un elemento individual (trabajador, vehículo o maquinaria) con su lista de documentos y verifica el cumplimiento documental según normativa chilena. Diseñada para ser usada iterativamente dentro de una Machine, recibiendo un item a la vez desde un List Iterator.',
+            logo_herramienta: '✅',
+            training_prompt: `Eres un auditor experto en cumplimiento documental para operaciones industriales en Chile.
+Recibirás los datos de UN solo registro (trabajador, vehículo o maquinaria) y debes verificar:
+
+PARA TRABAJADORES:
+- Contrato de trabajo (obligatorio)
+- Licencia de conducir vigente (si aplica al cargo)
+- Certificación de competencias (si aplica)
+- Exámenes preocupacionales
+- Inducción de seguridad
+
+PARA VEHÍCULOS:
+- Revisión técnica vigente (obligatorio)
+- Seguro obligatorio SOAP (obligatorio)
+- Permiso de circulación (obligatorio)
+- Certificado de emisiones
+
+PARA MAQUINARIAS:
+- Seguro de responsabilidad civil (obligatorio)
+- Certificación de operatividad
+- Registro de mantenimiento preventivo`,
+            behavior_prompt: 'Analiza el registro individual recibido. Verifica cada documento requerido según el tipo de entidad. Responde con un JSON que contenga el mismo elemento pero con un array actualizado de documentos donde cada uno tiene estado detallado (VIGENTE/VENCIDO/FALTANTE/NO_APLICA), fecha de vencimiento si corresponde, y observaciones. Calcula un estado general: COMPLETO, INCOMPLETO o CRITICO.',
+            response_format: 'JSON',
+            output_format_id: null,
+            json_schema_id: schemaGenericList.id
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // 12. Labor Verification Tool Kit
+        // ═══════════════════════════════════════════════════════════════
+
+        // 12a. Extractor de Nómina — ingests payroll CSV/data and outputs worker list
+        const toolNomina = await Tool.create({
+            id: 'edb84cda-0000-4a2c-8187-000000000020',
+            nombre: 'Extractor de Nómina',
+            descripcion: 'Recibe un archivo CSV o datos textuales con la nómina de trabajadores de un período. Extrae y estructura cada trabajador con sus datos laborales, salariales y documentación asociada en un array JSON.',
+            logo_herramienta: '📋',
+            training_prompt: `Eres un experto en gestión de recursos humanos y procesamiento de nóminas laborales en Chile.
+Tu tarea es analizar datos de nómina (CSV, planilla o texto) y transformarlos en un array JSON estructurado.
+
+Cada trabajador debe incluir:
+- Datos personales: RUT, nombre completo, cargo, área/departamento
+- Datos contractuales: tipo contrato, fecha inicio, fecha fin (si aplica)
+- Datos salariales: sueldo base, gratificación, bonos, total haberes imponibles
+- Documentación laboral: contrato (SI/NO), liquidación mes actual (SI/NO), certificado AFP (SI/NO), certificado salud (SI/NO)
+
+DATOS CSV DE EJEMPLO INTEGRADOS:
+rut,nombre,cargo,area,tipo_contrato,fecha_inicio,sueldo_base,gratificacion,bono_produccion,contrato,liquidacion_actual,cert_afp,cert_salud
+12.345.678-9,Juan Pérez González,Operador Grúa,Operaciones,Indefinido,2023-03-15,850000,70833,120000,SI,SI,SI,SI
+11.222.333-4,María López Soto,Conductora,Transporte,Indefinido,2022-08-01,720000,60000,0,SI,SI,SI,NO
+9.876.543-2,Carlos Muñoz Díaz,Mecánico,Mantenimiento,Plazo Fijo,2025-11-01,680000,56667,80000,SI,NO,NO,NO
+15.444.555-6,Ana Torres Vega,Supervisora HSEC,HSEC,Indefinido,2021-05-20,1200000,100000,150000,SI,SI,SI,SI
+8.765.432-1,Pedro Rojas Fuentes,Soldador,Mantenimiento,Plazo Fijo,2025-12-01,650000,54167,60000,NO,NO,NO,NO
+16.777.888-9,Sofía Hernández Muñoz,Administrativa,RRHH,Indefinido,2024-01-10,580000,48333,0,SI,SI,SI,SI
+10.111.222-3,Roberto Sánchez Pino,Electricista,Mantenimiento,Indefinido,2023-06-01,750000,62500,90000,SI,SI,NO,SI
+14.333.444-5,Claudia Reyes Orrego,Prevencionista,HSEC,Indefinido,2022-02-15,950000,79167,100000,SI,SI,SI,SI`,
+            behavior_prompt: 'Analiza los datos de nómina proporcionados. Genera un JSON con array "lista" donde cada trabajador es un objeto con: id (RUT), nombre, tipo (TRABAJADOR), estado (COMPLETO/INCOMPLETO/CRITICO según documentación), datos (cargo, area, sueldo_base, tipo_contrato), y documentos (array con cada doc requerido y su estado). Un trabajador es CRITICO si no tiene contrato. INCOMPLETO si le falta algún certificado. COMPLETO si tiene todo.',
+            response_format: 'JSON',
+            output_format_id: null,
+            json_schema_id: schemaGenericList.id
+        });
+
+        // 12b. Validador de Liquidación Individual — validates one payslip
+        const toolValLiqui = await Tool.create({
+            id: 'edb84cda-0000-4a2c-8187-000000000021',
+            nombre: 'Validador de Liquidación Individual',
+            descripcion: 'Recibe los datos de UN trabajador y valida su liquidación de sueldo: verifica cálculos de haberes imponibles, descuentos legales (AFP, Salud 7%, AFC), gratificación legal, y sueldo líquido. Diseñada para uso iterativo en Machines.',
+            logo_herramienta: '🧮',
+            training_prompt: `Eres un experto en legislación laboral chilena y validación de liquidaciones de sueldo.
+Recibirás los datos de UN solo trabajador con su información salarial y debes verificar:
+
+CÁLCULOS OBLIGATORIOS:
+1. Total Imponible = Sueldo Base + Gratificación + Bonos imponibles
+2. Descuento AFP = Total Imponible × tasa AFP (aprox 12.5%)
+3. Descuento Salud = Total Imponible × 7% (Fonasa) o monto pactado (Isapre)
+4. Descuento AFC = Total Imponible × 0.6% (contrato indefinido) o 3% (plazo fijo)
+5. Sueldo Líquido = Total Imponible - Descuentos Legales - Impuesto Único (si aplica)
+
+VALIDACIONES:
+- Sueldo base >= Ingreso Mínimo Mensual vigente ($500.000 aprox)
+- Gratificación legal: máx 4.75 IMM/12 por mes
+- Tope imponible: 81.6 UF mensual para cotizaciones
+- Consistencia entre montos declarados y calculados`,
+            behavior_prompt: 'Analiza los datos salariales del trabajador individual recibido. Calcula y verifica cada componente de la liquidación. Responde con un JSON que contenga el trabajador con estado actualizado: COMPLETO si todos los cálculos son correctos, INCOMPLETO si hay discrepancias menores (< 5%), CRITICO si hay errores graves o incumplimientos legales. Incluye detalle de cada validación.',
+            response_format: 'JSON',
+            output_format_id: null,
+            json_schema_id: schemaGenericList.id
+        });
+
+        // 12c. Verificador de Contrato — validates employment contract
+        const toolContrato = await Tool.create({
+            id: 'edb84cda-0000-4a2c-8187-000000000022',
+            nombre: 'Verificador de Contrato',
+            descripcion: 'Verifica la existencia y vigencia del contrato de trabajo de un trabajador individual. Evalúa: tipo de contrato, fechas, cláusulas obligatorias según Código del Trabajo chileno.',
+            logo_herramienta: '📄',
+            training_prompt: `Eres un experto en derecho laboral chileno y contratos de trabajo.
+Recibirás los datos de UN trabajador y debes verificar su situación contractual:
+
+VERIFICACIONES:
+- Existencia de contrato firmado (obligatorio Art. 9 Código del Trabajo)
+- Tipo de contrato: Indefinido, Plazo Fijo (máx 2 años), Por obra/faena
+- Fecha de inicio y antigüedad
+- Si es Plazo Fijo: verificar que no supere el máximo legal
+- Si tiene más de 1 año: debería ser indefinido o renovado formalmente
+- Cláusulas obligatorias: lugar de trabajo, función, remuneración, jornada
+
+ESTADOS:
+- VIGENTE: contrato existe y está al día
+- VENCIDO: contrato plazo fijo expirado
+- FALTANTE: no tiene contrato registrado (CRITICO)
+- IRREGULAR: contrato con anomalías`,
+            behavior_prompt: 'Analiza la situación contractual del trabajador recibido. Verifica existencia, tipo, vigencia y regularidad del contrato según normativa chilena. Responde con JSON incluyendo estado del contrato y observaciones detalladas.',
+            response_format: 'JSON',
+            output_format_id: null,
+            json_schema_id: schemaGenericList.id
+        });
+
+        // 12d. Verificador de Certificaciones — checks licenses and certs
+        const toolCerts = await Tool.create({
+            id: 'edb84cda-0000-4a2c-8187-000000000023',
+            nombre: 'Verificador de Certificaciones',
+            descripcion: 'Verifica certificaciones, licencias y documentación complementaria de un trabajador individual: certificado AFP, certificado de salud (Fonasa/Isapre), licencia de conducir, certificaciones de competencia.',
+            logo_herramienta: '🏅',
+            training_prompt: `Eres un auditor de cumplimiento documental laboral en Chile.
+Recibirás los datos de UN trabajador y debes verificar su documentación complementaria:
+
+DOCUMENTOS A VERIFICAR:
+1. Certificado AFP vigente (obligatorio para todo trabajador dependiente)
+2. Certificado de Salud (Fonasa o Isapre, obligatorio)
+3. Licencia de conducir (obligatorio si el cargo requiere conducción)
+4. Certificación de competencias (según cargo: grúa, soldadura, electricidad, etc.)
+5. Examen preocupacional (requerido por la mutualidad)
+6. Inducción de seguridad (obligatorio en faenas industriales)
+
+CRITERIOS:
+- VIGENTE: documento existe y está al día
+- VENCIDO: documento existe pero caducó
+- FALTANTE: documento no existe y es obligatorio
+- NO_APLICA: documento no requerido para este cargo`,
+            behavior_prompt: 'Verifica cada certificación y documento complementario del trabajador recibido. Evalúa según su cargo qué documentos son obligatorios vs opcionales. Estado general: COMPLETO si todo vigente, INCOMPLETO si falta algo no crítico, CRITICO si falta AFP, salud o certificación obligatoria para el cargo.',
+            response_format: 'JSON',
+            output_format_id: null,
+            json_schema_id: schemaGenericList.id
+        });
+
+        // 12e. Generador de Reporte de Lote — aggregates batch results
+        const toolReporteLote = await Tool.create({
+            id: 'edb84cda-0000-4a2c-8187-000000000024',
+            nombre: 'Generador de Reporte de Lote',
+            descripcion: 'Recibe el resultado agregado de un proceso de verificación en lote y genera un reporte ejecutivo consolidado con estadísticas, hallazgos críticos, y recomendaciones.',
+            logo_herramienta: '📈',
+            training_prompt: `Eres un experto en generación de reportes ejecutivos de cumplimiento laboral.
+Recibirás un array consolidado con los resultados de verificación de múltiples trabajadores y debes generar un reporte ejecutivo que incluya:
+
+SECCIONES DEL REPORTE:
+1. Resumen Ejecutivo: total procesados, completos, incompletos, críticos
+2. Indicadores: % cumplimiento general, % por tipo de documento
+3. Hallazgos Críticos: lista de trabajadores con problemas graves
+4. Trabajadores sin contrato (máxima prioridad)
+5. Trabajadores con certificaciones vencidas
+6. Discrepancias salariales encontradas
+7. Recomendaciones: acciones inmediatas y plan de regularización
+8. Detalle por trabajador: resumen individual de cada uno`,
+            behavior_prompt: 'Procesa el array de resultados recibido. Genera un reporte ejecutivo completo en JSON con estadísticas globales, hallazgos ordenados por severidad, y recomendaciones accionables. El resumen debe permitir a un gerente de RRHH tomar decisiones inmediatas.',
+            response_format: 'JSON',
+            output_format_id: null,
+            json_schema_id: schemaGenericList.id
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // 13. Pre-built Machines (seeded with full graph)
+        // ═══════════════════════════════════════════════════════════════
+
+        // ── Machine 1: Verificación Laboral en Lotes ──
+        const machineLotes = await Machine.create({
+            id: 'machine-0000-0000-0000-000000000001',
+            nombre: 'Verificación Laboral en Lotes',
+            descripcion: 'Proceso estándar mensual: ingesta de nómina CSV → iteración por trabajador → validación de liquidación individual → recolección de resultados → reporte ejecutivo consolidado.',
+            icono: '🏭',
+            activo: true
+        });
+
+        // Nodes for Machine 1
+        const m1n1 = await MachineNode.create({ id: 'mn-lotes-0001', machine_id: machineLotes.id, node_type: 'tool', tool_id: toolNomina.id, position_x: 50, position_y: 200, config: null });
+        const m1n2 = await MachineNode.create({ id: 'mn-lotes-0002', machine_id: machineLotes.id, node_type: 'engine', engine_id: engineIterator.id, position_x: 320, position_y: 200, config: JSON.stringify({ input_field: 'lista' }) });
+        const m1n3 = await MachineNode.create({ id: 'mn-lotes-0003', machine_id: machineLotes.id, node_type: 'tool', tool_id: toolValLiqui.id, position_x: 590, position_y: 200, config: null });
+        const m1n4 = await MachineNode.create({ id: 'mn-lotes-0004', machine_id: machineLotes.id, node_type: 'engine', engine_id: engineCollector.id, position_x: 860, position_y: 200, config: JSON.stringify({ output_field: 'resultados_validacion' }) });
+        const m1n5 = await MachineNode.create({ id: 'mn-lotes-0005', machine_id: machineLotes.id, node_type: 'tool', tool_id: toolReporteLote.id, position_x: 1130, position_y: 200, config: null });
+
+        // Connections for Machine 1: linear flow
+        await MachineConnection.create({ machine_id: machineLotes.id, source_node_id: m1n1.id, target_node_id: m1n2.id, source_handle: null, target_handle: null });
+        await MachineConnection.create({ machine_id: machineLotes.id, source_node_id: m1n2.id, target_node_id: m1n3.id, source_handle: null, target_handle: null });
+        await MachineConnection.create({ machine_id: machineLotes.id, source_node_id: m1n3.id, target_node_id: m1n4.id, source_handle: null, target_handle: null });
+        await MachineConnection.create({ machine_id: machineLotes.id, source_node_id: m1n4.id, target_node_id: m1n5.id, source_handle: null, target_handle: null });
+
+        // ── Machine 2: Verificación Documental Completa ──
+        const machineDocCompleta = await Machine.create({
+            id: 'machine-0000-0000-0000-000000000002',
+            nombre: 'Verificación Documental Completa',
+            descripcion: 'Proceso completo de auditoría: ingesta de nómina → iteración por trabajador → verificación paralela de contrato + certificaciones → recolección → reporte ejecutivo.',
+            icono: '🔍',
+            activo: true
+        });
+
+        // Nodes for Machine 2 (parallel branches for contrato + certificaciones)
+        const m2n1 = await MachineNode.create({ id: 'mn-docs-0001', machine_id: machineDocCompleta.id, node_type: 'tool', tool_id: toolNomina.id, position_x: 50, position_y: 250, config: null });
+        const m2n2 = await MachineNode.create({ id: 'mn-docs-0002', machine_id: machineDocCompleta.id, node_type: 'engine', engine_id: engineIterator.id, position_x: 320, position_y: 250, config: JSON.stringify({ input_field: 'lista' }) });
+        const m2n3 = await MachineNode.create({ id: 'mn-docs-0003', machine_id: machineDocCompleta.id, node_type: 'tool', tool_id: toolContrato.id, position_x: 590, position_y: 120, config: null });
+        const m2n4 = await MachineNode.create({ id: 'mn-docs-0004', machine_id: machineDocCompleta.id, node_type: 'tool', tool_id: toolCerts.id, position_x: 590, position_y: 380, config: null });
+        const m2n5 = await MachineNode.create({ id: 'mn-docs-0005', machine_id: machineDocCompleta.id, node_type: 'engine', engine_id: engineCollector.id, position_x: 860, position_y: 120, config: JSON.stringify({ output_field: 'contratos_verificados' }) });
+        const m2n6 = await MachineNode.create({ id: 'mn-docs-0006', machine_id: machineDocCompleta.id, node_type: 'engine', engine_id: engineCollector.id, position_x: 860, position_y: 380, config: JSON.stringify({ output_field: 'certificaciones_verificadas' }) });
+        const m2n7 = await MachineNode.create({ id: 'mn-docs-0007', machine_id: machineDocCompleta.id, node_type: 'engine', engine_id: engineMapper.id, position_x: 1130, position_y: 250, config: JSON.stringify({ mappings: [{ from: 'contratos_verificados', to: 'contratos' }, { from: 'certificaciones_verificadas', to: 'certificaciones' }] }) });
+        const m2n8 = await MachineNode.create({ id: 'mn-docs-0008', machine_id: machineDocCompleta.id, node_type: 'tool', tool_id: toolReporteLote.id, position_x: 1400, position_y: 250, config: null });
+
+        // Connections for Machine 2: split flow with parallel branches
+        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n1.id, target_node_id: m2n2.id, source_handle: null, target_handle: null });
+        // Iterator feeds both branches
+        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n2.id, target_node_id: m2n3.id, source_handle: null, target_handle: null });
+        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n2.id, target_node_id: m2n4.id, source_handle: null, target_handle: null });
+        // Each branch collects
+        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n3.id, target_node_id: m2n5.id, source_handle: null, target_handle: null });
+        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n4.id, target_node_id: m2n6.id, source_handle: null, target_handle: null });
+        // Both collectors merge via mapper
+        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n5.id, target_node_id: m2n7.id, source_handle: null, target_handle: null });
+        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n6.id, target_node_id: m2n7.id, source_handle: null, target_handle: null });
+        // Mapper outputs to final report
+        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n7.id, target_node_id: m2n8.id, source_handle: null, target_handle: null });
 
         console.log('Database seeded successfully!');
         process.exit(0);

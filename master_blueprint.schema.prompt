@@ -1,90 +1,194 @@
-# Master Blueprint: Schema (Sincronizado)
+# INNTEK AI API AGENT — Database Schema Reference
+# Mirror of: master_blueprint.prompt § 6. Database Schema
+# Version: 3.0.0 | Sync: 2026-03-03
 
-## Tables & Fields
+## ORM: Sequelize 6.37.x | Dialect: MySQL 8 | File: back/src/models/index.js
+
+---
+
+## Tables (14 models)
 
 ### Roles
-- `id` (UUID, PK)
-- `nombre` (String, Unique)
+```sql
+id          UUID        PK, DEFAULT UUIDV4
+nombre      VARCHAR     UNIQUE, NOT NULL
+createdAt   DATETIME    auto
+updatedAt   DATETIME    auto
+```
 
 ### Privilegios
-- `id` (UUID, PK)
-- `ref_modulo` (String)
-- `read` (Boolean)
-- `write` (Boolean)
-- `exec` (Boolean)
-- `role_id` (FK -> Roles.id)
+```sql
+id          UUID        PK, DEFAULT UUIDV4
+ref_modulo  VARCHAR     NOT NULL  -- '*' = wildcard (all modules)
+read        BOOLEAN     DEFAULT FALSE
+write       BOOLEAN     DEFAULT FALSE
+exec        BOOLEAN     DEFAULT FALSE
+role_id     UUID        FK → Roles.id
+createdAt   DATETIME    auto
+updatedAt   DATETIME    auto
+```
 
 ### Users
-- `id` (UUID, PK)
-- `nombre` (String)
-- `email` (String, Unique)
-- `password` (String)
-- `role_id` (FK -> Roles.id)
+```sql
+id          UUID        PK, DEFAULT UUIDV4
+nombre      VARCHAR     NOT NULL
+email       VARCHAR     UNIQUE, NOT NULL
+password    VARCHAR     NOT NULL  -- bcrypt hash
+role_id     UUID        FK → Roles.id
+createdAt   DATETIME    auto
+updatedAt   DATETIME    auto
+```
 
 ### Tools
-- `id` (UUID, PK)
-- `nombre` (String)
-- `descripcion` (Text)
-- `logo_herramienta` (String)
-- `training_prompt` (Text)
-- `behavior_prompt` (Text)
-- `response_format` (String)
-- `output_format_id` (FK -> OutputFormats.id)
-- `json_schema_id` (FK -> JsonSchemas.id)
+```sql
+id                UUID        PK, DEFAULT UUIDV4
+nombre            VARCHAR     NOT NULL
+descripcion       TEXT
+logo_herramienta  VARCHAR               -- emoji icon
+training_prompt   TEXT                   -- System Instruction: Context
+behavior_prompt   TEXT                   -- System Instruction: Behavior
+response_format   VARCHAR               -- 'JSON' | 'Text' | 'Markdown'
+output_format_id  UUID        FK → OutputFormats.id  (NULLABLE)
+json_schema_id    UUID        FK → JsonSchemas.id    (NULLABLE)
+ai_provider_id    UUID        FK → AiProviders.id    (NULLABLE, per-tool override)
+createdAt         DATETIME    auto
+updatedAt         DATETIME    auto
+```
 
 ### JsonSchemas
-- `id` (UUID, PK)
-- `nombre` (String)
-- `descripcion` (Text)
-- `schema` (Text - JSON Schema)
+```sql
+id          UUID        PK, DEFAULT UUIDV4
+nombre      VARCHAR     NOT NULL
+descripcion TEXT
+schema      TEXT        NOT NULL  -- JSON Schema as string
+createdAt   DATETIME    auto
+updatedAt   DATETIME    auto
+```
 
 ### OutputCategories
-- `id` (UUID, PK)
-- `nombre` (String, Unique)
+```sql
+id          UUID        PK, DEFAULT UUIDV4
+nombre      VARCHAR     UNIQUE, NOT NULL
+createdAt   DATETIME    auto
+updatedAt   DATETIME    auto
+```
 
 ### OutputFormats
-- `id` (UUID, PK)
-- `nombre` (String)
-- `tipo` (Enum: reporte, accionable, generativo)
-- `estructura` (Text - JSON/HTML template)
-- `category_id` (FK -> OutputCategories.id)
+```sql
+id          UUID        PK, DEFAULT UUIDV4
+nombre      VARCHAR     NOT NULL
+tipo        ENUM('reporte','accionable','generativo')  DEFAULT 'reporte'
+estructura  TEXT        NOT NULL  -- HTML template with {{placeholder}}
+category_id UUID        FK → OutputCategories.id
+createdAt   DATETIME    auto
+updatedAt   DATETIME    auto
+```
 
 ### Configs
-- `id` (UUID, PK)
-- `key` (String, Unique)
-- `value` (Text)
+```sql
+id          UUID        PK, DEFAULT UUIDV4
+key         VARCHAR     UNIQUE, NOT NULL
+value       TEXT
+createdAt   DATETIME    auto
+updatedAt   DATETIME    auto
+```
+
+### AiProviders
+```sql
+id              UUID        PK, DEFAULT UUIDV4
+nombre          VARCHAR     NOT NULL
+slug            VARCHAR     UNIQUE, NOT NULL
+tipo            ENUM('google_native','openai_compatible')  NOT NULL
+api_key         VARCHAR               -- masked on GET (last 4 chars only)
+base_url        VARCHAR               -- null for google_native
+modelo          VARCHAR     NOT NULL
+is_default      BOOLEAN     DEFAULT FALSE
+activo          BOOLEAN     DEFAULT TRUE
+extra_headers   TEXT                   -- JSON string for custom HTTP headers
+createdAt       DATETIME    auto
+updatedAt       DATETIME    auto
+```
 
 ### Engines
-- `id` (UUID, PK)
-- `nombre` (String)
-- `slug` (String, Unique)
-- `descripcion` (Text)
-- `tipo` (Enum: iterator, collector, mapper)
-- `icono` (String)
-- `config_schema` (Text - JSON)
-- `activo` (Boolean)
+```sql
+id              UUID        PK, DEFAULT UUIDV4
+nombre          VARCHAR     NOT NULL
+slug            VARCHAR     UNIQUE, NOT NULL
+descripcion     TEXT
+tipo            ENUM('iterator','collector','mapper')  NOT NULL
+icono           VARCHAR               -- emoji icon
+config_schema   TEXT                   -- JSON string defining config fields
+activo          BOOLEAN     DEFAULT TRUE
+createdAt       DATETIME    auto
+updatedAt       DATETIME    auto
+```
 
 ### Machines
-- `id` (UUID, PK)
-- `nombre` (String)
-- `descripcion` (Text)
-- `icono` (String)
-- `activo` (Boolean)
+```sql
+id          UUID        PK, DEFAULT UUIDV4
+nombre      VARCHAR     NOT NULL
+descripcion TEXT
+icono       VARCHAR               -- emoji icon
+activo      BOOLEAN     DEFAULT TRUE
+createdAt   DATETIME    auto
+updatedAt   DATETIME    auto
+```
 
 ### MachineNodes
-- `id` (UUID, PK)
-- `machine_id` (FK -> Machines.id)
-- `node_type` (Enum: tool, engine)
-- `tool_id` (FK -> Tools.id, nullable)
-- `engine_id` (FK -> Engines.id, nullable)
-- `position_x` (Float)
-- `position_y` (Float)
-- `config` (Text - JSON)
+```sql
+id          UUID        PK, DEFAULT UUIDV4
+machine_id  UUID        FK → Machines.id  (ON DELETE CASCADE)
+node_type   ENUM('tool','engine')  NOT NULL
+tool_id     UUID        FK → Tools.id     (NULLABLE)
+engine_id   UUID        FK → Engines.id   (NULLABLE)
+position_x  FLOAT       DEFAULT 0
+position_y  FLOAT       DEFAULT 0
+config      TEXT                   -- JSON string for node-specific config
+createdAt   DATETIME    auto
+updatedAt   DATETIME    auto
+```
 
 ### MachineConnections
-- `id` (UUID, PK)
-- `machine_id` (FK -> Machines.id)
-- `source_node_id` (FK -> MachineNodes.id)
-- `target_node_id` (FK -> MachineNodes.id)
-- `source_handle` (String)
-- `target_handle` (String)
+```sql
+id              UUID        PK, DEFAULT UUIDV4
+machine_id      UUID        FK → Machines.id      (ON DELETE CASCADE)
+source_node_id  UUID        FK → MachineNodes.id   (alias: SourceNode)
+target_node_id  UUID        FK → MachineNodes.id   (alias: TargetNode)
+source_handle   VARCHAR
+target_handle   VARCHAR
+createdAt       DATETIME    auto
+updatedAt       DATETIME    auto
+```
+
+---
+
+## Associations (models/index.js)
+
+```
+Role        1 ──────── N  Privilegio      (role_id)
+Role        1 ──────── N  User            (role_id)
+OutputCategory 1 ───── N  OutputFormat     (category_id)
+OutputFormat   1 ───── N  Tool            (output_format_id)
+JsonSchema     1 ───── N  Tool            (json_schema_id)
+AiProvider     1 ───── N  Tool            (ai_provider_id)
+Machine     1 ──────── N  MachineNode     (machine_id, CASCADE)
+Machine     1 ──────── N  MachineConnection (machine_id, CASCADE)
+MachineNode N ──────── 1  Tool            (tool_id)
+MachineNode N ──────── 1  Engine          (engine_id)
+MachineConnection N ── 1  MachineNode     as SourceNode (source_node_id)
+MachineConnection N ── 1  MachineNode     as TargetNode (target_node_id)
+```
+
+---
+
+### Roles: SuperAdmin, Admin, User
+### Users: inntek (SuperAdmin role)
+### Privilege Modules: Auth, AI_Tool_Maker, AI_Tool_Catalog, AI_Tool_Execution, Config, Outputs_Maker, Json_Schemas, AI_Providers, Machines
+### AiProviders: Google Gemini (google_native), OpenRouter (openai_compatible, DEFAULT)
+### Engines: list-iterator, list-collector, data-mapper
+### OutputCategories: Identidad y Documentación, Reportes Ejecutivos
+### OutputFormats: Reporte Validacion Cedula Chilena, Reporte Check Liquidacion Chile
+### JsonSchemas: Esquema de Identidad Avanzado V2, Reporte Check Liqui Chile, Schema Lista Genérica
+### Tools (11): Validador de CI Chile, CSS EXTRACTOR, Check de Liquidaciones Chile, CSV Data Extractor, Fleet Inventory Analyzer, Document Compliance Checker, Extractor de Nómina, Validador de Liquidación Individual, Verificador de Contrato, Verificador de Certificaciones, Generador de Reporte de Lote
+### Machines (2): Verificación Laboral en Lotes (5 nodes, 4 connections), Verificación Documental Completa (8 nodes, 8 connections)
+
