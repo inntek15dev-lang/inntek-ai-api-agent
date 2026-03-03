@@ -12,6 +12,8 @@ import ToolView from './pages/ToolView';
 import Config from './pages/Config';
 import OutputMaker from './pages/OutputMaker';
 import JsonSchemaMaker from './pages/JsonSchemaMaker';
+import MachineCatalog from './pages/MachineCatalog';
+import MachineEditor from './pages/MachineEditor';
 
 const ProtectedRoute = ({ children, module, action = 'read' }) => {
   const { isAuthenticated, loading, canRead, isAdmin } = useAuth();
@@ -93,6 +95,16 @@ function App() {
             <Route path="json-schemas" element={
               <ProtectedRoute module="Json_Schemas">
                 <JsonSchemaMaker />
+              </ProtectedRoute>
+            } />
+            <Route path="machines" element={
+              <ProtectedRoute module="Machines">
+                <MachineCatalog />
+              </ProtectedRoute>
+            } />
+            <Route path="machines/:id" element={
+              <ProtectedRoute module="Machines">
+                <MachineEditor />
               </ProtectedRoute>
             } />
           </Route>

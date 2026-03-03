@@ -69,6 +69,39 @@ const AiProvider = sequelize.define('AiProvider', {
     extra_headers: { type: DataTypes.TEXT } // JSON string for additional headers
 });
 
+const Engine = sequelize.define('Engine', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    nombre: { type: DataTypes.STRING, allowNull: false },
+    slug: { type: DataTypes.STRING, unique: true, allowNull: false },
+    descripcion: { type: DataTypes.TEXT },
+    tipo: { type: DataTypes.ENUM('iterator', 'collector', 'mapper'), allowNull: false },
+    icono: { type: DataTypes.STRING },
+    config_schema: { type: DataTypes.TEXT }, // JSON string defining config fields
+    activo: { type: DataTypes.BOOLEAN, defaultValue: true }
+});
+
+const Machine = sequelize.define('Machine', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    nombre: { type: DataTypes.STRING, allowNull: false },
+    descripcion: { type: DataTypes.TEXT },
+    icono: { type: DataTypes.STRING },
+    activo: { type: DataTypes.BOOLEAN, defaultValue: true }
+});
+
+const MachineNode = sequelize.define('MachineNode', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    node_type: { type: DataTypes.ENUM('tool', 'engine'), allowNull: false },
+    position_x: { type: DataTypes.FLOAT, defaultValue: 0 },
+    position_y: { type: DataTypes.FLOAT, defaultValue: 0 },
+    config: { type: DataTypes.TEXT } // JSON string for node-specific config
+});
+
+const MachineConnection = sequelize.define('MachineConnection', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    source_handle: { type: DataTypes.STRING },
+    target_handle: { type: DataTypes.STRING }
+});
+
 // Associations
 Role.hasMany(Privilegio, { foreignKey: 'role_id' });
 Privilegio.belongsTo(Role, { foreignKey: 'role_id' });
@@ -88,4 +121,17 @@ JsonSchema.hasMany(Tool, { foreignKey: 'json_schema_id' });
 Tool.belongsTo(AiProvider, { foreignKey: 'ai_provider_id' });
 AiProvider.hasMany(Tool, { foreignKey: 'ai_provider_id' });
 
-module.exports = { sequelize, Role, Privilegio, User, Tool, Config, OutputCategory, OutputFormat, JsonSchema, AiProvider };
+// Machine associations
+Machine.hasMany(MachineNode, { foreignKey: 'machine_id', onDelete: 'CASCADE' });
+MachineNode.belongsTo(Machine, { foreignKey: 'machine_id' });
+
+Machine.hasMany(MachineConnection, { foreignKey: 'machine_id', onDelete: 'CASCADE' });
+MachineConnection.belongsTo(Machine, { foreignKey: 'machine_id' });
+
+MachineNode.belongsTo(Tool, { foreignKey: 'tool_id' });
+MachineNode.belongsTo(Engine, { foreignKey: 'engine_id' });
+
+MachineConnection.belongsTo(MachineNode, { as: 'SourceNode', foreignKey: 'source_node_id' });
+MachineConnection.belongsTo(MachineNode, { as: 'TargetNode', foreignKey: 'target_node_id' });
+
+module.exports = { sequelize, Role, Privilegio, User, Tool, Config, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Machine, MachineNode, MachineConnection };
