@@ -318,6 +318,42 @@ exports.executeMachine = async (req, res) => {
                         }
                         step.output = nodeOutputs[nodeId];
 
+                    } else if (engineSlug === 'api-consumer') {
+                        // ── API Consumer: run external fetch ──
+                        let config = {};
+                        try { config = node.config ? JSON.parse(node.config) : {}; } catch (e) { }
+
+                        const method = (config.method || 'GET').toUpperCase();
+                        const url = config.url;
+                        if (!url) throw new Error('API Consumer requires a URL configuration.');
+
+                        let hdrs = {};
+                        if (config.headers) {
+                            try { hdrs = typeof config.headers === 'string' ? JSON.parse(config.headers) : config.headers; }
+                            catch (e) { }
+                        }
+
+                        const fetchOptions = { method, headers: { ...hdrs } };
+
+                        if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+                            fetchOptions.body = typeof inputText === 'string' ? inputText : JSON.stringify(inputText);
+                            if (!fetchOptions.headers['Content-Type']) {
+                                fetchOptions.headers['Content-Type'] = 'application/json';
+                            }
+                        }
+
+                        const response = await fetch(url, fetchOptions);
+                        const respText = await response.text();
+                        let respData = respText;
+                        try { respData = JSON.parse(respText); } catch (e) { }
+
+                        if (!response.ok) {
+                            throw new Error(`API returned ${response.status}: ${respText}`);
+                        }
+
+                        nodeOutputs[nodeId] = respData;
+                        step.output = respData;
+
                     } else {
                         // Unknown engine — pass through
                         nodeOutputs[nodeId] = inputText;

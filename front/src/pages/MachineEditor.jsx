@@ -22,18 +22,18 @@ import { Save, ArrowLeft, Cpu, Cog, GripVertical, Workflow, ChevronDown, Chevron
 // Custom Node: Tool (Blue)
 // ═══════════════════════════════════════════════════════════════
 const ToolNode = ({ data, selected }) => (
-    <div className={`rounded-lg shadow-2xl min-w-[180px] border transition-all ${selected ? 'border-cyan-400 shadow-cyan-500/30 ring-2 ring-cyan-400/40' : 'border-slate-600'}`}
+    <div className={`rounded-xl shadow-2xl w-40 h-40 border flex flex-col transition-all relative ${selected ? 'border-cyan-400 shadow-cyan-500/30 ring-2 ring-cyan-400/40' : 'border-slate-600'}`}
         style={{ background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)' }}>
-        <div className="px-3 py-2 flex items-center space-x-2 border-b border-slate-700/60">
-            <span className="text-base leading-none">{data.icon || '🔧'}</span>
-            <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest truncate flex-1">{data.label}</span>
-            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+        <div className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
+        <div className="flex-1 p-4 flex flex-col items-center justify-center text-center">
+            <span className="text-4xl mb-3 leading-none drop-shadow-md">{data.icon || '🔧'}</span>
+            <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest line-clamp-2 leading-tight w-full drop-shadow-sm">{data.label}</span>
+            <div className="mt-2 w-full flex-1 relative overflow-hidden">
+                <p className="text-[9px] text-slate-400 line-clamp-3 leading-snug">{data.description || 'AI Tool'}</p>
+            </div>
         </div>
-        <div className="px-3 py-2">
-            <p className="text-[9px] text-slate-500 line-clamp-2 leading-relaxed">{data.description || 'AI Tool'}</p>
-        </div>
-        <Handle type="target" position={Position.Left} className="!w-2.5 !h-2.5 !bg-cyan-400 !border-[2px] !border-slate-900 !-left-[6px]" />
-        <Handle type="source" position={Position.Right} className="!w-2.5 !h-2.5 !bg-cyan-400 !border-[2px] !border-slate-900 !-right-[6px]" />
+        <Handle type="target" position={Position.Left} className="!w-3 !h-3 !bg-cyan-400 !border-[2px] !border-slate-900 !-left-[7px]" />
+        <Handle type="source" position={Position.Right} className="!w-3 !h-3 !bg-cyan-400 !border-[2px] !border-slate-900 !-right-[7px]" />
     </div>
 );
 
@@ -41,19 +41,19 @@ const ToolNode = ({ data, selected }) => (
 // Custom Node: Engine (Purple)
 // ═══════════════════════════════════════════════════════════════
 const EngineNode = ({ data, selected }) => (
-    <div className={`rounded-lg shadow-2xl min-w-[180px] border transition-all ${selected ? 'border-violet-400 shadow-violet-500/30 ring-2 ring-violet-400/40' : 'border-slate-600'}`}
+    <div className={`rounded-xl shadow-2xl w-40 h-40 border flex flex-col transition-all relative ${selected ? 'border-violet-400 shadow-violet-500/30 ring-2 ring-violet-400/40' : 'border-slate-600'}`}
         style={{ background: 'linear-gradient(145deg, #1e1b3a 0%, #0f0d24 100%)' }}>
-        <div className="px-3 py-2 flex items-center space-x-2 border-b border-violet-900/40">
-            <span className="text-base leading-none">{data.icon || '⚙️'}</span>
-            <span className="text-[10px] font-black text-violet-400 uppercase tracking-widest truncate flex-1">{data.label}</span>
-            <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+        <div className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-violet-400 animate-pulse shadow-[0_0_8px_rgba(167,139,250,0.6)]" />
+        <div className="flex-1 p-4 flex flex-col items-center justify-center text-center">
+            <span className="text-4xl mb-2.5 leading-none drop-shadow-md">{data.icon || '⚙️'}</span>
+            <span className="text-[10px] font-black text-violet-400 uppercase tracking-widest line-clamp-2 leading-tight w-full drop-shadow-sm">{data.label}</span>
+            <span className="inline-block mt-1.5 text-[8px] font-black text-violet-300 uppercase tracking-[0.15em] bg-violet-500/20 px-1.5 py-0.5 rounded border border-violet-500/30">{data.engineType}</span>
+            <div className="mt-2 w-full flex-1 relative overflow-hidden">
+                <p className="text-[9px] text-slate-400 line-clamp-2 leading-snug">{data.description || 'Engine'}</p>
+            </div>
         </div>
-        <div className="px-3 py-2">
-            <p className="text-[9px] text-slate-500 line-clamp-2 leading-relaxed">{data.description || 'Engine'}</p>
-            <span className="inline-block mt-1 text-[8px] font-black text-violet-500 uppercase tracking-[0.15em] bg-violet-500/10 px-1.5 py-0.5 rounded">{data.engineType}</span>
-        </div>
-        <Handle type="target" position={Position.Left} className="!w-2.5 !h-2.5 !bg-violet-400 !border-[2px] !border-slate-900 !-left-[6px]" />
-        <Handle type="source" position={Position.Right} className="!w-2.5 !h-2.5 !bg-violet-400 !border-[2px] !border-slate-900 !-right-[6px]" />
+        <Handle type="target" position={Position.Left} className="!w-3 !h-3 !bg-violet-400 !border-[2px] !border-slate-900 !-left-[7px]" />
+        <Handle type="source" position={Position.Right} className="!w-3 !h-3 !bg-violet-400 !border-[2px] !border-slate-900 !-right-[7px]" />
     </div>
 );
 
@@ -118,6 +118,8 @@ const MachineEditor = () => {
                         nodeType: n.node_type,
                         toolId: n.tool_id,
                         engineId: n.engine_id,
+                        config: n.config ? (typeof n.config === 'string' ? JSON.parse(n.config) : n.config) : {},
+                        configSchema: n.Engine?.config_schema ? (typeof n.Engine.config_schema === 'string' ? JSON.parse(n.Engine.config_schema) : n.Engine.config_schema) : null,
                     },
                 }));
 
@@ -177,9 +179,31 @@ const MachineEditor = () => {
                 nodeType: type,
                 toolId: type === 'tool' ? item.id : null,
                 engineId: type === 'engine' ? item.id : null,
+                config: {},
+                configSchema: item.config_schema ? (typeof item.config_schema === 'string' ? JSON.parse(item.config_schema) : item.config_schema) : null
             },
         }]);
     }, [setNodes]);
+
+    const updateNodeConfig = (nodeId, key, value) => {
+        setNodes((nds) =>
+            nds.map((n) => {
+                if (n.id === nodeId) {
+                    return {
+                        ...n,
+                        data: {
+                            ...n.data,
+                            config: {
+                                ...n.data.config,
+                                [key]: value,
+                            },
+                        },
+                    };
+                }
+                return n;
+            })
+        );
+    };
 
     const handleSave = async () => {
         setSaving(true);
@@ -190,7 +214,7 @@ const MachineEditor = () => {
                 icono: machine?.icono,
                 nodes: nodes.map(n => ({
                     id: n.id, node_type: n.data.nodeType, tool_id: n.data.toolId,
-                    engine_id: n.data.engineId, position_x: n.position.x, position_y: n.position.y, config: null,
+                    engine_id: n.data.engineId, position_x: n.position.x, position_y: n.position.y, config: n.data.config,
                 })),
                 connections: edges.map(e => ({
                     source_node_id: e.source, target_node_id: e.target,
@@ -213,6 +237,8 @@ const MachineEditor = () => {
             </div>
         );
     }
+
+    const selectedNode = nodes.find(n => n.selected);
 
     return (
         <div className="fixed inset-0 z-50 flex" style={{ background: '#0a0e1a' }}>
@@ -245,13 +271,13 @@ const MachineEditor = () => {
                             {toolsOpen ? <ChevronDown size={10} className="text-slate-600" /> : <ChevronRight size={10} className="text-slate-600" />}
                         </button>
                         {toolsOpen && (
-                            <div className="px-2 pb-2 space-y-0.5">
+                            <div className="px-3 pb-3 grid grid-cols-2 gap-2">
                                 {tools.map(tool => (
                                     <div key={tool.id} draggable onDragStart={e => onDragStart(e, 'tool', tool)}
-                                        className="flex items-center space-x-1.5 px-2 py-1.5 rounded bg-cyan-500/5 border border-cyan-500/10 cursor-grab active:cursor-grabbing hover:bg-cyan-500/10 hover:border-cyan-500/20 transition-all group">
-                                        <GripVertical size={8} className="text-slate-700 group-hover:text-cyan-500 flex-shrink-0" />
-                                        <span className="text-xs leading-none">{tool.logo_herramienta}</span>
-                                        <span className="text-[10px] font-medium text-slate-400 truncate group-hover:text-cyan-300">{tool.nombre}</span>
+                                        className="flex flex-col items-center justify-center p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/10 cursor-grab active:cursor-grabbing hover:bg-cyan-500/10 hover:border-cyan-500/30 transition-all group aspect-square text-center relative overflow-hidden">
+                                        <GripVertical size={10} className="absolute top-1.5 left-1.5 text-slate-700/50 group-hover:text-cyan-500/50" />
+                                        <span className="text-2xl mb-2 leading-none">{tool.logo_herramienta}</span>
+                                        <span className="text-[9px] font-bold text-slate-400 line-clamp-3 leading-tight group-hover:text-cyan-300 px-1">{tool.nombre}</span>
                                     </div>
                                 ))}
                             </div>
@@ -270,15 +296,13 @@ const MachineEditor = () => {
                             {enginesOpen ? <ChevronDown size={10} className="text-slate-600" /> : <ChevronRight size={10} className="text-slate-600" />}
                         </button>
                         {enginesOpen && (
-                            <div className="px-2 pb-2 space-y-0.5">
+                            <div className="px-3 pb-3 grid grid-cols-2 gap-2">
                                 {engines.map(engine => (
                                     <div key={engine.id} draggable onDragStart={e => onDragStart(e, 'engine', engine)}
-                                        className="flex items-center space-x-1.5 px-2 py-1.5 rounded bg-violet-500/5 border border-violet-500/10 cursor-grab active:cursor-grabbing hover:bg-violet-500/10 hover:border-violet-500/20 transition-all group">
-                                        <GripVertical size={8} className="text-slate-700 group-hover:text-violet-500 flex-shrink-0" />
-                                        <span className="text-xs leading-none">{engine.icono}</span>
-                                        <div className="min-w-0 flex-1">
-                                            <span className="text-[10px] font-medium text-slate-400 truncate block group-hover:text-violet-300">{engine.nombre}</span>
-                                        </div>
+                                        className="flex flex-col items-center justify-center p-3 rounded-lg bg-violet-500/5 border border-violet-500/10 cursor-grab active:cursor-grabbing hover:bg-violet-500/10 hover:border-violet-500/30 transition-all group aspect-square text-center relative overflow-hidden">
+                                        <GripVertical size={10} className="absolute top-1.5 left-1.5 text-slate-700/50 group-hover:text-violet-500/50" />
+                                        <span className="text-2xl mb-2 leading-none">{engine.icono}</span>
+                                        <span className="text-[9px] font-bold text-slate-400 line-clamp-3 leading-tight group-hover:text-violet-300 px-1">{engine.nombre}</span>
                                     </div>
                                 ))}
                             </div>
@@ -360,6 +384,63 @@ const MachineEditor = () => {
                             className="!bg-slate-900/80 !border-slate-800 !rounded-lg"
                         />
                     </ReactFlow>
+
+                    {/* Properties Panel (Overlay) */}
+                    {selectedNode && selectedNode.data.configSchema && Object.keys(selectedNode.data.configSchema).length > 0 && (
+                        <div className="absolute top-16 right-4 w-72 bg-slate-900/90 backdrop-blur-sm border border-slate-700/60 rounded-lg shadow-2xl z-10 flex flex-col pointer-events-auto"
+                            style={{ background: 'linear-gradient(180deg, rgba(15,23,42,0.95) 0%, rgba(10,14,26,0.95) 100%)' }}>
+                            <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                    <span className="text-xs">{selectedNode.data.icon}</span>
+                                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{selectedNode.data.label} Properties</span>
+                                </div>
+                            </div>
+                            <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                                {Object.entries(selectedNode.data.configSchema).map(([key, field]) => {
+                                    // Handle direct field type or nested object { type, description, options }
+                                    const fieldType = typeof field === 'string' ? field : field.type;
+                                    const description = typeof field === 'object' ? field.description : '';
+                                    const options = typeof field === 'object' ? field.options : [];
+                                    const val = selectedNode.data.config?.[key] || '';
+
+                                    return (
+                                        <div key={key}>
+                                            <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">{key}</label>
+
+                                            {fieldType === 'select' ? (
+                                                <select
+                                                    value={val}
+                                                    onChange={e => updateNodeConfig(selectedNode.id, key, e.target.value)}
+                                                    className="w-full bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/50"
+                                                >
+                                                    <option value="">Select option...</option>
+                                                    {options?.map(opt => (
+                                                        <option key={opt} value={opt}>{opt}</option>
+                                                    ))}
+                                                </select>
+                                            ) : fieldType === 'text' || fieldType === 'textarea' ? (
+                                                <textarea
+                                                    value={val}
+                                                    onChange={e => updateNodeConfig(selectedNode.id, key, e.target.value)}
+                                                    className="w-full bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/50 min-h-[60px]"
+                                                    placeholder={description}
+                                                />
+                                            ) : (
+                                                <input
+                                                    type="text"
+                                                    value={val}
+                                                    onChange={e => updateNodeConfig(selectedNode.id, key, e.target.value)}
+                                                    className="w-full bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/50"
+                                                    placeholder={description}
+                                                />
+                                            )}
+                                            {description && <p className="mt-1 text-[9px] text-slate-600">{description}</p>}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
