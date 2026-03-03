@@ -1,4 +1,4 @@
-const { sequelize, Role, Privilegio, User, Tool, OutputCategory, OutputFormat, JsonSchema, AiProvider } = require('./models');
+const { sequelize, Role, Privilegio, User, Tool, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine } = require('./models');
 require('dotenv').config();
 
 const seed = async () => {
@@ -20,7 +20,7 @@ const seed = async () => {
         });
 
         // Admin Privileges
-        const modules = ['Auth', 'AI_Tool_Maker', 'AI_Tool_Catalog', 'AI_Tool_Execution', 'Config', 'Outputs_Maker', 'Json_Schemas', 'AI_Providers'];
+        const modules = ['Auth', 'AI_Tool_Maker', 'AI_Tool_Catalog', 'AI_Tool_Execution', 'Config', 'Outputs_Maker', 'Json_Schemas', 'AI_Providers', 'Machines'];
         for (const mod of modules) {
             await Privilegio.create({
                 ref_modulo: mod,
@@ -279,7 +279,41 @@ const seed = async () => {
         });
 
         // ═══════════════════════════════════════════════════════════════
-        // 8. AI Tools
+        // 8. Engines (System-level list processors for Machines)
+        // ═══════════════════════════════════════════════════════════════
+
+        await Engine.create({
+            nombre: 'List Iterator',
+            slug: 'list-iterator',
+            descripcion: 'Receives an array from a connected Tool output and executes the next connected Tool once per item in the list.',
+            tipo: 'iterator',
+            icono: '🔄',
+            config_schema: JSON.stringify({ input_field: 'string', description: 'Field name from source output that contains the array' }),
+            activo: true
+        });
+
+        await Engine.create({
+            nombre: 'List Collector',
+            slug: 'list-collector',
+            descripcion: 'Aggregates individual outputs from a connected Tool into a single consolidated array.',
+            tipo: 'collector',
+            icono: '📦',
+            config_schema: JSON.stringify({ output_field: 'string', description: 'Field name for the collected array in the output' }),
+            activo: true
+        });
+
+        await Engine.create({
+            nombre: 'Data Mapper',
+            slug: 'data-mapper',
+            descripcion: 'Transforms and maps fields between Tool inputs and outputs. Define field mappings to reshape data between nodes.',
+            tipo: 'mapper',
+            icono: '🔀',
+            config_schema: JSON.stringify({ mappings: 'array', description: 'Array of {from, to} field mapping objects' }),
+            activo: true
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // 9. AI Tools
         // ═══════════════════════════════════════════════════════════════
 
         // 7a. Validador de CI Chile

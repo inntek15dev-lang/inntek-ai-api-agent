@@ -6,6 +6,8 @@ const configController = require('../controllers/configController');
 const outputController = require('../controllers/outputController');
 const jsonSchemaController = require('../controllers/jsonSchemaController');
 const aiProviderController = require('../controllers/aiProviderController');
+const machineController = require('../controllers/machineController');
+const engineController = require('../controllers/engineController');
 const { authMiddleware, requirePrivilege } = require('../middleware/auth');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
@@ -104,6 +106,41 @@ const upload = multer({ dest: 'uploads/' });
  *         extra_headers:
  *           type: string
  *           description: JSON string with additional HTTP headers
+ *     Engine:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         nombre:
+ *           type: string
+ *         slug:
+ *           type: string
+ *         descripcion:
+ *           type: string
+ *         tipo:
+ *           type: string
+ *           enum: [iterator, collector, mapper]
+ *         icono:
+ *           type: string
+ *         config_schema:
+ *           type: string
+ *         activo:
+ *           type: boolean
+ *     Machine:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         nombre:
+ *           type: string
+ *         descripcion:
+ *           type: string
+ *         icono:
+ *           type: string
+ *         activo:
+ *           type: boolean
  */
 
 // Auth
@@ -533,5 +570,115 @@ router.put('/json-schemas/:id', authMiddleware, requirePrivilege('AI_Tool_Maker'
  *         description: Schema deleted
  */
 router.delete('/json-schemas/:id', authMiddleware, requirePrivilege('AI_Tool_Maker', 'write'), jsonSchemaController.deleteSchema);
+
+// Engines
+/**
+ * @swagger
+ * /engines:
+ *   get:
+ *     summary: Get all active Engines
+ *     tags: [Engines]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of engines
+ */
+router.get('/engines', authMiddleware, requirePrivilege('Machines', 'read'), engineController.getEngines);
+
+// Machines
+/**
+ * @swagger
+ * /machines:
+ *   get:
+ *     summary: Get all Machines
+ *     tags: [Machines]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of machines
+ */
+router.get('/machines', authMiddleware, requirePrivilege('Machines', 'read'), machineController.getMachines);
+
+/**
+ * @swagger
+ * /machines:
+ *   post:
+ *     summary: Create a new Machine
+ *     tags: [Machines]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Machine'
+ *     responses:
+ *       200:
+ *         description: Machine created
+ */
+router.post('/machines', authMiddleware, requirePrivilege('Machines', 'write'), machineController.createMachine);
+
+/**
+ * @swagger
+ * /machines/{id}:
+ *   get:
+ *     summary: Get a Machine with full graph (nodes + connections)
+ *     tags: [Machines]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Machine with graph data
+ */
+router.get('/machines/:id', authMiddleware, requirePrivilege('Machines', 'read'), machineController.getMachine);
+
+/**
+ * @swagger
+ * /machines/{id}:
+ *   put:
+ *     summary: Update a Machine (metadata + full graph replacement)
+ *     tags: [Machines]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Machine updated
+ */
+router.put('/machines/:id', authMiddleware, requirePrivilege('Machines', 'write'), machineController.updateMachine);
+
+/**
+ * @swagger
+ * /machines/{id}:
+ *   delete:
+ *     summary: Delete a Machine (cascades nodes and connections)
+ *     tags: [Machines]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Machine deleted
+ */
+router.delete('/machines/:id', authMiddleware, requirePrivilege('Machines', 'write'), machineController.deleteMachine);
 
 module.exports = router;

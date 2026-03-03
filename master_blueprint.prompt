@@ -10,7 +10,7 @@ A robust monorepo platform for managing and executing AI tools via official APIs
 
 ## Tech Stack
 - **Backend**: Node.js (Express 5), Sequelize ORM, MySQL 8 (Aiven Cloud, SSL Required), Multer (File Handling), JWT, Swagger JSDoc.
-- **Frontend**: React 18 (Vite), Tailwind CSS, Axios, Lucide Icons.
+- **Frontend**: React 18 (Vite), Tailwind CSS, Axios, Lucide Icons, React Flow (@xyflow/react).
 
 ## Core Modules
 1. **Auth**: JWT-based authentication with role/privilege scoping.
@@ -26,6 +26,8 @@ A robust monorepo platform for managing and executing AI tools via official APIs
 5. **Config**: Global configuration management.
 6. **AI_Providers**: Multi-provider AI configuration (Google, OpenRouter, N custom providers). CRUD, set-default, per-tool override.
 7. **Json_Schemas**: Centralized management of JSON data contracts for strict validation.
+8. **Machines**: Visual flow orchestrator for chaining Tools and Engines in recursive execution pipelines. Drag-and-drop editor with graph persistence.
+9. **Engines**: System-seeded list processors (Iterator, Collector, Data Mapper) used as nodes in Machines to handle iterative data flows.
 
 ## Technical Specifications
 ### Database Schema (Aiven MySQL: `inntek-ai-api-agent-manager-db`, Port: 26213, SSL: Required)
@@ -35,6 +37,10 @@ A robust monorepo platform for managing and executing AI tools via official APIs
 - `Tools`: AI Unit configurations (`nombre`, `descripcion`, `logo_herramienta`, `training_prompt`, `behavior_prompt`, `response_format`, `output_format_id`, `json_schema_id`).
 - `JsonSchemas`: JSON data contracts (`nombre`, `descripcion`, `schema`).
 - `Config`: Key-Value system parameters.
+- `Engines`: System-level list processors for Machines (`nombre`, `slug`, `tipo` [iterator/collector/mapper], `icono`, `config_schema`, `activo`).
+- `Machines`: Named workflow containers (`nombre`, `descripcion`, `icono`, `activo`).
+- `MachineNodes`: Graph nodes referencing Tool or Engine (`machine_id`, `node_type`, `tool_id`, `engine_id`, `position_x`, `position_y`, `config`).
+- `MachineConnections`: Directed edges between nodes (`machine_id`, `source_node_id`, `target_node_id`, `source_handle`, `target_handle`).
 
 ## API Endpoints (Swagger @ `/api-docs`)
 ### Auth
@@ -65,6 +71,16 @@ A robust monorepo platform for managing and executing AI tools via official APIs
 - `GET /api/json-schemas/:id`: Retrieve specific schema.
 - `PUT /api/json-schemas/:id`: Update schema definition.
 - `DELETE /api/json-schemas/:id`: Remove schema.
+
+### Engines
+- `GET /api/engines`: List all active engines.
+
+### Machines
+- `GET /api/machines`: List all machines.
+- `POST /api/machines`: Create a new machine.
+- `GET /api/machines/:id`: Get machine with full graph (nodes + connections).
+- `PUT /api/machines/:id`: Update machine metadata and replace full graph (nodes + connections).
+- `DELETE /api/machines/:id`: Delete machine with cascade (connections → nodes → machine).
 
 ## Security (Privilegios Engine)
 - **SuperAdmin**: `*` -> `read: true, write: true, exec: true`.

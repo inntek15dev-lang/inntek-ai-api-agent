@@ -53,3 +53,38 @@
 - `id` (UUID, PK)
 - `key` (String, Unique)
 - `value` (Text)
+
+### Engines
+- `id` (UUID, PK)
+- `nombre` (String)
+- `slug` (String, Unique)
+- `descripcion` (Text)
+- `tipo` (Enum: iterator, collector, mapper)
+- `icono` (String)
+- `config_schema` (Text - JSON)
+- `activo` (Boolean)
+
+### Machines
+- `id` (UUID, PK)
+- `nombre` (String)
+- `descripcion` (Text)
+- `icono` (String)
+- `activo` (Boolean)
+
+### MachineNodes
+- `id` (UUID, PK)
+- `machine_id` (FK -> Machines.id)
+- `node_type` (Enum: tool, engine)
+- `tool_id` (FK -> Tools.id, nullable)
+- `engine_id` (FK -> Engines.id, nullable)
+- `position_x` (Float)
+- `position_y` (Float)
+- `config` (Text - JSON)
+
+### MachineConnections
+- `id` (UUID, PK)
+- `machine_id` (FK -> Machines.id)
+- `source_node_id` (FK -> MachineNodes.id)
+- `target_node_id` (FK -> MachineNodes.id)
+- `source_handle` (String)
+- `target_handle` (String)
