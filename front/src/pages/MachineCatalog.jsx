@@ -170,6 +170,13 @@ const MachineCatalog = () => {
                                         <Trash2 size={16} />
                                     </button>
                                     <Link
+                                        to={`/machines/${machine.id}/execute`}
+                                        className="guardian-btn-outline group !p-2 hover:!border-violet-400 hover:!text-violet-500"
+                                        title="Execute Machine"
+                                    >
+                                        <Zap size={16} />
+                                    </Link>
+                                    <Link
                                         to={`/machines/${machine.id}`}
                                         className="guardian-btn-outline group"
                                     >

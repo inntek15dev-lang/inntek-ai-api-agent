@@ -681,4 +681,35 @@ router.put('/machines/:id', authMiddleware, requirePrivilege('Machines', 'write'
  */
 router.delete('/machines/:id', authMiddleware, requirePrivilege('Machines', 'write'), machineController.deleteMachine);
 
+/**
+ * @swagger
+ * /machines/{id}/execute:
+ *   post:
+ *     summary: Execute a Machine (DAG traversal — runs all Tools and Engines in order)
+ *     tags: [Machines]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               prompt:
+ *                 type: string
+ *               imagen:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Machine execution result with step-by-step log
+ */
+router.post('/machines/:id/execute', authMiddleware, requirePrivilege('Machines', 'exec'), upload.single('imagen'), machineController.executeMachine);
+
 module.exports = router;

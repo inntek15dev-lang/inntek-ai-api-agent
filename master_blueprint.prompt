@@ -1,5 +1,5 @@
 # INNTEK AI API AGENT — Universal Software Blueprint
-# Version: 3.0.0 | Last Sync: 2026-03-03
+# Version: 3.1.0 | Last Sync: 2026-03-03
 
 ## 1. Overview
 
@@ -73,9 +73,10 @@ front/ (React SPA)                    back/ (Express API)
 │       ├── ToolView.jsx              │   │   └── index.js (All routes + Swagger JSDoc)
 │       ├── Config.jsx                │   ├── seed.js (Complete base data)
 │       ├── OutputMaker.jsx           │   └── utils/
-│       ├── JsonSchemaMaker.jsx       │
+│       ├── JsonSchemaMaker.jsx       │       └── aiExecutor.js (Shared AI exec)
 │       ├── MachineCatalog.jsx        │
-│       └── MachineEditor.jsx         │
+│       ├── MachineEditor.jsx         │
+│       └── MachineExecutor.jsx       │
 ```
 
 ---
@@ -160,8 +161,8 @@ front/ (React SPA)                    back/ (Express API)
 
 ### 4.9 Machines
 - **Ref:** `Machines`
-- **Backend:** `machineController.js` — full CRUD with graph atomics
-- **Frontend:** `MachineCatalog.jsx` (card grid), `MachineEditor.jsx` (visual flow editor)
+- **Backend:** `machineController.js` — full CRUD with graph atomics + DAG execution engine
+- **Frontend:** `MachineCatalog.jsx` (card grid), `MachineEditor.jsx` (visual flow editor), `MachineExecutor.jsx` (execution hub)
 - **Concept:** Machines are visual DAG workflows that chain Tools and Engines into recursive execution flows
 - **Graph persistence:** Full graph replacement on save (delete all → recreate nodes → recreate connections)
 - **Editor UX:** Fullscreen dark pizarra (#0a0e1a), compact w-56 collapsible sidebar, React Flow canvas
@@ -171,8 +172,28 @@ front/ (React SPA)                    back/ (Express API)
   - Drag from sidebar → drop on canvas → connect handles → save
   - Delete nodes/edges with Backspace/Delete
   - MiniMap + Controls styled in dark theme
+  - **Run** button in top bar → navigates to MachineExecutor
 
-### 4.10 Engines
+### 4.10 Machine Execution
+- **Ref:** (part of `Machines` module)
+- **Backend:** `machineController.js` — `POST /machines/:id/execute`
+- **Frontend:** `MachineExecutor.jsx` — execution hub with prompt input, file upload, step-by-step log
+- **Shared Utility:** `utils/aiExecutor.js` — extracted AI execution logic reused by both tool and machine execution
+- **Execution Flow:**
+  1. Load full graph (Machine + Nodes with deep Tool/Engine relations + Connections)
+  2. Build adjacency list + in-degree map from connections
+  3. Topological sort via Kahn's algorithm
+  4. Execute nodes sequentially in topological order:
+     - **Tool nodes** → call `aiExecutor.executeSingleTool(tool, inputText, file?)`
+     - **Engine: `list-iterator`** → parse input as array, execute connected Tool per item
+     - **Engine: `list-collector`** → aggregate all incoming parent outputs into single array
+     - **Engine: `data-mapper`** → merge/pass-through incoming data
+  5. Return `{ steps[], finalOutput, totalDuration }`
+- **Step Log Format:** `{ nodeId, nodeName, nodeIcon, nodeType, engineType, status, output, error, duration, provider? }`
+- **Multimodal:** First root tool node receives uploaded file (if any), subsequent nodes receive text only
+- **Error Handling:** Individual step errors don't halt the pipeline; partial results returned
+
+### 4.11 Engines
 - **Ref:** (part of `Machines` module)
 - **Backend:** `engineController.js` — read-only `getEngines`
 - **Nature:** System-seeded, immutable base components for list processing in Machines
@@ -424,6 +445,7 @@ All routes prefixed with `/api`. Protected by `authMiddleware` + `requirePrivile
 | GET | `/machines/:id` | Get machine with full graph | Machines.read |
 | PUT | `/machines/:id` | Update machine + graph (atomic replace) | Machines.write |
 | DELETE | `/machines/:id` | Delete machine (cascade) | Machines.write |
+| POST | `/machines/:id/execute` | Execute machine (DAG traversal, multipart/form-data) | Machines.exec |
 
 ---
 
@@ -487,6 +509,7 @@ All routes prefixed with `/api`. Protected by `authMiddleware` + `requirePrivile
 | `/json-schemas` | JsonSchemaMaker | Json_Schemas |
 | `/machines` | MachineCatalog | Machines |
 | `/machines/:id` | MachineEditor | Machines |
+| `/machines/:id/execute` | MachineExecutor | Machines |
 
 ---
 
@@ -623,6 +646,8 @@ Parallel branching flow for full document audit:
 - Navigation items filtered by privilege via `getVisibleNavItems(canRead, isAdmin)`
 
 ### AI Execution
+- Shared utility `utils/aiExecutor.js` — used by both `toolController` and `machineController`
+- `executeSingleTool()` — full tool execution pipeline (resolve provider → build prompt → call AI → sanitize → parse)
 - `cleanSchema()` sanitizes JSON schemas for Gemini compatibility
 - `sanitizeResponse()` strips markdown code fences before JSON parsing
 - `fileToGenerativePart()` converts uploaded files to Gemini multimodal parts
