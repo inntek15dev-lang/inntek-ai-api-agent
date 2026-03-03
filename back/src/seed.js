@@ -312,6 +312,20 @@ const seed = async () => {
             activo: true
         });
 
+        const engineApiConsumer = await Engine.create({
+            nombre: 'API Consumer',
+            slug: 'api-consumer',
+            descripcion: 'Ejecuta peticiones HTTP a APIs externas. Si es POST/PUT, el input del nodo anterior se enviará como body JSON.',
+            tipo: 'api-consumer',
+            icono: '🌐',
+            config_schema: JSON.stringify({
+                url: { type: 'string', description: 'URL del endpoint (ej. https://api.ejemplo.com/v1/data)' },
+                method: { type: 'select', options: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], description: 'Método HTTP' },
+                headers: { type: 'text', description: 'Headers adicionales en formato JSON (ej. {"Authorization": "Bearer token"})' }
+            }),
+            activo: true
+        });
+
         // ═══════════════════════════════════════════════════════════════
         // 9. AI Tools
         // ═══════════════════════════════════════════════════════════════
