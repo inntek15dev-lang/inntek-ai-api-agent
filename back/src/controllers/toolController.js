@@ -202,6 +202,11 @@ const executeOpenAICompatible = async (provider, fullTextPrompt, file) => {
     }
 
     const data = await response.json();
+
+    if (!data.choices || !data.choices.length || !data.choices[0].message) {
+        throw new Error(`Unexpected provider response structure: ${JSON.stringify(data).substring(0, 300)}`);
+    }
+
     return data.choices[0].message.content;
 };
 
@@ -310,16 +315,14 @@ ${req.body.prompt || "Analyze the attached content."}
         });
     } catch (error) {
         console.error('AI Execution Error:', error.message);
+        console.error('Stack:', error.stack);
 
         const isClientError = error.message.includes('400') || error.message.includes('403');
         const status = isClientError ? 400 : 500;
-        const userMessage = isClientError
-            ? `Neural Protocol Failed: ${error.message}. This is usually due to an invalid JSON Schema or a safety filter trigger.`
-            : 'Neural Processing Failure. Please check system logs for audit trail.';
 
         res.status(status).json({
             success: false,
-            message: userMessage
+            message: `Neural Protocol Failed: ${error.message}`
         });
     }
 };
