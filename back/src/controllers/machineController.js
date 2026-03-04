@@ -144,6 +144,28 @@ exports.deleteMachine = async (req, res) => {
 exports.executeMachine = async (req, res) => {
     const globalStart = Date.now();
     const steps = [];
+    const isStream = req.query.stream === 'true';
+
+    // Set SSE headers if stream
+    if (isStream) {
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.flushHeaders();
+        // Send initial connect event
+        res.write(`data: ${JSON.stringify({ type: 'connected' })}\n\n`);
+    }
+
+    const sendError = (status, msg, data = null) => {
+        if (isStream) {
+            res.write(`data: ${JSON.stringify({ type: 'error', message: msg, data })}\n\n`);
+            res.end();
+        } else {
+            const resp = { success: false, message: msg };
+            if (data) resp.data = data;
+            res.status(status).json(resp);
+        }
+    };
 
     try {
         // 1. Load full graph with deep Tool relations
@@ -166,13 +188,13 @@ exports.executeMachine = async (req, res) => {
             ]
         });
 
-        if (!machine) return res.status(404).json({ success: false, message: 'Machine not found' });
+        if (!machine) return sendError(404, 'Machine not found');
 
         const allNodes = machine.MachineNodes || [];
         const allConns = machine.MachineConnections || [];
 
         if (allNodes.length === 0) {
-            return res.status(400).json({ success: false, message: 'Machine has no nodes to execute.' });
+            return sendError(400, 'Machine has no nodes to execute.');
         }
 
         // 2. Build adjacency & in-degree maps
@@ -209,7 +231,7 @@ exports.executeMachine = async (req, res) => {
         }
 
         if (executionOrder.length !== allNodes.length) {
-            return res.status(400).json({ success: false, message: 'Machine graph contains a cycle. Cannot execute.' });
+            return sendError(400, 'Machine graph contains a cycle. Cannot execute.');
         }
 
         // 4. Build node lookup
@@ -223,6 +245,11 @@ exports.executeMachine = async (req, res) => {
         for (const nodeId of executionOrder) {
             const node = nodeMap[nodeId];
             const stepStart = Date.now();
+
+            if (isStream) {
+                res.write(`data: ${JSON.stringify({ type: 'node-start', nodeId })}\n\n`);
+            }
+
             const nodeName = node.Tool?.nombre || node.Engine?.nombre || 'Unknown';
             const nodeIcon = node.Tool?.logo_herramienta || node.Engine?.icono || '❓';
 
@@ -376,7 +403,12 @@ exports.executeMachine = async (req, res) => {
 
             // Skip adding duplicate step for tool nodes already executed by list-iterator
             const alreadyAdded = steps.find(s => s.nodeId === nodeId);
-            if (!alreadyAdded) steps.push(step);
+            if (!alreadyAdded) {
+                steps.push(step);
+                if (isStream) {
+                    res.write(`data: ${JSON.stringify({ type: 'node-end', step })}\n\n`);
+                }
+            }
         }
 
         // Cleanup temp file
@@ -387,25 +419,25 @@ exports.executeMachine = async (req, res) => {
         // 6. Determine final output (last node in execution order)
         const lastNodeId = executionOrder[executionOrder.length - 1];
         const finalOutput = nodeOutputs[lastNodeId];
+        const responseData = {
+            machine: { id: machine.id, nombre: machine.nombre, icono: machine.icono },
+            steps,
+            finalOutput,
+            totalDuration: Date.now() - globalStart
+        };
 
-        res.json({
-            success: true,
-            data: {
-                machine: { id: machine.id, nombre: machine.nombre, icono: machine.icono },
-                steps,
-                finalOutput,
-                totalDuration: Date.now() - globalStart
-            }
-        });
+        if (isStream) {
+            res.write(`data: ${JSON.stringify({ type: 'machine-end', data: responseData })}\n\n`);
+            res.end();
+        } else {
+            res.json({ success: true, data: responseData });
+        }
+
     } catch (error) {
         if (req.file) {
             try { fs.unlinkSync(req.file.path); } catch (e) { /* ignore */ }
         }
         console.error('Machine Execution Error:', error.message);
-        res.status(500).json({
-            success: false,
-            message: `Machine Execution Failed: ${error.message}`,
-            data: { steps, totalDuration: Date.now() - globalStart }
-        });
+        sendError(500, `Machine Execution Failed: ${error.message}`, { steps, totalDuration: Date.now() - globalStart });
     }
 };
