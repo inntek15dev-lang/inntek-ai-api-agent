@@ -359,6 +359,9 @@ const MachineEditor = () => {
 
             const response = await fetch(`${API_URL}/machines/${id}/execute?stream=true`, {
                 method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
                 body: formData
             });
 
