@@ -1,0 +1,18 @@
+FROM node:18-alpine
+
+# Directorio de trabajo
+WORKDIR /app
+
+# Instalar dependencias
+COPY package*.json ./
+RUN npm install
+
+# Copiar el código fuente
+COPY . .
+
+# Exponer el puerto
+EXPOSE 4088
+
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+ENTRYPOINT ["./entrypoint.sh"]
