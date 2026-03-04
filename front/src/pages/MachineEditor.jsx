@@ -16,7 +16,7 @@ import {
     MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Save, ArrowLeft, Cpu, Cog, GripVertical, Workflow, ChevronDown, ChevronRight, Check, Trash2, X, Play, Loader2, Upload } from 'lucide-react';
+import { Save, ArrowLeft, Cpu, Cog, GripVertical, Workflow, ChevronDown, ChevronRight, Check, Trash2, X, Play, Loader2, Upload, MousePointer2, Eraser } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
 // Custom Node: Tool (Blue)
@@ -164,6 +164,8 @@ const MachineEditor = () => {
     const [executionPrompt, setExecutionPrompt] = useState('');
     const [executionFile, setExecutionFile] = useState(null);
 
+    const [pointerMode, setPointerMode] = useState('select'); // 'select' | 'erase'
+
     const reactFlowWrapper = useRef(null);
 
     useEffect(() => {
@@ -267,6 +269,19 @@ const MachineEditor = () => {
             },
         }]);
     }, [setNodes]);
+
+    const onNodeClick = useCallback((event, node) => {
+        if (pointerMode === 'erase') {
+            setNodes((nds) => nds.filter((n) => n.id !== node.id));
+            setEdges((eds) => eds.filter((e) => e.source !== node.id && e.target !== node.id));
+        }
+    }, [pointerMode, setNodes, setEdges]);
+
+    const onEdgeClick = useCallback((event, edge) => {
+        if (pointerMode === 'erase') {
+            setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+        }
+    }, [pointerMode, setEdges]);
 
     const updateNodeConfig = (nodeId, key, value) => {
         setNodes((nds) =>
@@ -541,6 +556,25 @@ const MachineEditor = () => {
                         <div className="text-[9px] font-black text-slate-700 uppercase tracking-widest mr-2">
                             {nodes.length}N · {edges.length}C
                         </div>
+
+                        {/* Pointer Mode Toggle */}
+                        <div className="flex items-center bg-slate-900 border border-slate-800 rounded p-0.5 mr-2">
+                            <button
+                                onClick={() => setPointerMode('select')}
+                                className={`p-1.5 rounded transition-colors ${pointerMode === 'select' ? 'bg-slate-800 text-cyan-400 shadow-sm' : 'text-slate-600 hover:text-slate-400'}`}
+                                title="Select / Move"
+                            >
+                                <MousePointer2 size={12} />
+                            </button>
+                            <button
+                                onClick={() => setPointerMode('erase')}
+                                className={`p-1.5 rounded transition-colors ${pointerMode === 'erase' ? 'bg-red-500/20 text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.2)] border border-red-500/30' : 'text-slate-600 hover:text-slate-400'}`}
+                                title="Eraser Mode"
+                            >
+                                <Eraser size={12} />
+                            </button>
+                        </div>
+
                         <button onClick={() => setStreamModalOpen(true)}
                             disabled={executingStream}
                             className={`flex items-center space-x-1.5 px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-wider transition-all ${executingStream ? 'bg-violet-500/30 text-violet-300 border border-violet-400' : 'bg-violet-500/10 text-violet-400 border border-violet-500/20 hover:bg-violet-500/20 shadow-[0_0_10px_rgba(139,92,246,0.15)]'}`}>
@@ -569,12 +603,17 @@ const MachineEditor = () => {
                         onConnect={onConnect}
                         onDragOver={onDragOver}
                         onDrop={onDrop}
+                        onNodeClick={onNodeClick}
+                        onEdgeClick={onEdgeClick}
                         nodeTypes={nodeTypes}
                         defaultEdgeOptions={defaultEdgeOptions}
                         fitView
                         deleteKeyCode={['Backspace', 'Delete']}
                         proOptions={{ hideAttribution: true }}
-                        style={{ background: '#0a0e1a' }}
+                        style={{
+                            background: '#0a0e1a',
+                            cursor: pointerMode === 'erase' ? 'crosshair' : 'default'
+                        }}
                     >
                         <Background color="#1e293b" gap={24} size={1} variant="dots" />
                         <Controls

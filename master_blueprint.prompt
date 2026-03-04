@@ -170,7 +170,8 @@ front/ (React SPA)                    back/ (Express API)
   - Engine nodes: violet accents with dark purple gradient cards
   - Edges: `smoothstep` with `ArrowClosed` markers in violet
   - Drag from sidebar → drop on canvas → connect handles → save
-  - Delete nodes/edges with Backspace/Delete
+  - **Pointer Mode Toggle**: Switch between 'Select' (default cursor, move canvas) and 'Erase' (crosshair cursor, click nodes/edges to delete)
+  - Delete nodes/edges with Backspace/Delete, or using the 'Erase' mode
   - MiniMap + Controls styled in dark theme
   - **Run** button in top bar → navigates to MachineExecutor
 

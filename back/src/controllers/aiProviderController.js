@@ -55,7 +55,7 @@ exports.updateProvider = async (req, res) => {
         const data = { ...req.body };
 
         // If api_key is masked (unchanged), remove it from update
-        if (data.api_key && data.api_key.includes('•')) {
+        if (data.api_key && (data.api_key.includes('•') || data.api_key === '****' || data.api_key === maskKey(provider.api_key))) {
             delete data.api_key;
         }
 
