@@ -189,7 +189,7 @@ front/ (React SPA)                    back/ (Express API)
      - **Engine: `list-collector`** → aggregate all incoming parent outputs into single array
      - **Engine: `data-mapper`** → merge/pass-through incoming data
      - **Engine: `api-consumer`** → execute external HTTP request (fetch) using node configuration (method, url, headers) and previous step output as body payload
-  5. Return `{ steps[], finalOutput, totalDuration }` (or stream as Server-Sent Events if `?stream=true` is provided)
+  5. Return `{ steps[], finalOutput, totalDuration }` (or stream as Server-Sent Events if `?stream=true` is provided. Frontend must initiate fetch with `Authorization` header).
 - **Step Log Format:** `{ nodeId, nodeName, nodeIcon, nodeType, engineType, status, output, error, duration, provider? }`
 - **Multimodal:** First root tool node receives uploaded file (if any), subsequent nodes receive text only
 - **Error Handling:** Individual step errors don't halt the pipeline; partial results returned
