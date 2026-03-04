@@ -1,5 +1,5 @@
 # INNTEK AI API AGENT — Universal Software Blueprint
-# Version: 3.2.0 | Last Sync: 2026-03-03
+# Version: 3.3.0 | Last Sync: 2026-03-03
 
 ## 1. Overview
 
@@ -189,7 +189,7 @@ front/ (React SPA)                    back/ (Express API)
      - **Engine: `list-collector`** → aggregate all incoming parent outputs into single array
      - **Engine: `data-mapper`** → merge/pass-through incoming data
      - **Engine: `api-consumer`** → execute external HTTP request (fetch) using node configuration (method, url, headers) and previous step output as body payload
-  5. Return `{ steps[], finalOutput, totalDuration }`
+  5. Return `{ steps[], finalOutput, totalDuration }` (or stream as Server-Sent Events if `?stream=true` is provided)
 - **Step Log Format:** `{ nodeId, nodeName, nodeIcon, nodeType, engineType, status, output, error, duration, provider? }`
 - **Multimodal:** First root tool node receives uploaded file (if any), subsequent nodes receive text only
 - **Error Handling:** Individual step errors don't halt the pipeline; partial results returned
@@ -446,8 +446,8 @@ All routes prefixed with `/api`. Protected by `authMiddleware` + `requirePrivile
 | POST | `/machines` | Create machine | Machines.write |
 | GET | `/machines/:id` | Get machine with full graph | Machines.read |
 | PUT | `/machines/:id` | Update machine + graph (atomic replace) | Machines.write |
+| POST | `/machines/:id/execute` | Execute machine (DAG traversal, multipart/form-data). Supports `?stream=true` for Server-Sent Events (SSE) real-time execution streaming. | Machines.exec |
 | DELETE | `/machines/:id` | Delete machine (cascade) | Machines.write |
-| POST | `/machines/:id/execute` | Execute machine (DAG traversal, multipart/form-data) | Machines.exec |
 
 ---
 
