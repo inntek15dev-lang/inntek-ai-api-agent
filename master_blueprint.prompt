@@ -657,6 +657,9 @@ Parallel branching flow for full document audit:
 - Provider strategy pattern: `executeGoogleNative()` vs `executeOpenAICompatible()`
 - **Security Hardening**: Automatic detection and blocking of masked API keys (bullets/stars) in both execution and storage layers to prevent 401/500 faults.
 - **Input Sanitization**: API keys are trimmed prior to execution.
+- **PRINTER Engine**: Specialized output engine that displays smart-printed JSON via a floating luminous UI tag in the frontend.
+- **VISORES (Viewers)**: NEW category of visual nodes (TABLE, MESSAGE, DOCUMENT) with cyber-industrial aesthetics and interactive controls for real-time data monitoring.
+- **JSON Converter**: Bidirectional engine for seamless conversion between JSON strings and JavaScript objects.
 
 ---
 

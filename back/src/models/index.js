@@ -74,7 +74,17 @@ const Engine = sequelize.define('Engine', {
     nombre: { type: DataTypes.STRING, allowNull: false },
     slug: { type: DataTypes.STRING, unique: true, allowNull: false },
     descripcion: { type: DataTypes.TEXT },
-    tipo: { type: DataTypes.ENUM('iterator', 'collector', 'mapper', 'api-consumer'), allowNull: false },
+    tipo: { type: DataTypes.ENUM('iterator', 'collector', 'mapper', 'api-consumer', 'output', 'converter'), allowNull: false },
+    icono: { type: DataTypes.STRING },
+    config_schema: { type: DataTypes.TEXT }, // JSON string defining config fields
+    activo: { type: DataTypes.BOOLEAN, defaultValue: true }
+});
+
+const Visor = sequelize.define('Visor', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    nombre: { type: DataTypes.STRING, allowNull: false },
+    slug: { type: DataTypes.STRING, unique: true, allowNull: false },
+    descripcion: { type: DataTypes.TEXT },
     icono: { type: DataTypes.STRING },
     config_schema: { type: DataTypes.TEXT }, // JSON string defining config fields
     activo: { type: DataTypes.BOOLEAN, defaultValue: true }
@@ -90,7 +100,7 @@ const Machine = sequelize.define('Machine', {
 
 const MachineNode = sequelize.define('MachineNode', {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    node_type: { type: DataTypes.ENUM('tool', 'engine'), allowNull: false },
+    node_type: { type: DataTypes.ENUM('tool', 'engine', 'visor'), allowNull: false },
     position_x: { type: DataTypes.FLOAT, defaultValue: 0 },
     position_y: { type: DataTypes.FLOAT, defaultValue: 0 },
     config: { type: DataTypes.TEXT } // JSON string for node-specific config
@@ -130,8 +140,9 @@ MachineConnection.belongsTo(Machine, { foreignKey: 'machine_id' });
 
 MachineNode.belongsTo(Tool, { foreignKey: 'tool_id' });
 MachineNode.belongsTo(Engine, { foreignKey: 'engine_id' });
+MachineNode.belongsTo(Visor, { foreignKey: 'visor_id' });
 
 MachineConnection.belongsTo(MachineNode, { as: 'SourceNode', foreignKey: 'source_node_id' });
 MachineConnection.belongsTo(MachineNode, { as: 'TargetNode', foreignKey: 'target_node_id' });
 
-module.exports = { sequelize, Role, Privilegio, User, Tool, Config, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Machine, MachineNode, MachineConnection };
+module.exports = { sequelize, Role, Privilegio, User, Tool, Config, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Visor, Machine, MachineNode, MachineConnection };

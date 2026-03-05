@@ -1,4 +1,4 @@
-const { sequelize, Role, Privilegio, User, Tool, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Machine, MachineNode, MachineConnection } = require('./models');
+const { sequelize, Role, Privilegio, User, Tool, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Visor, Machine, MachineNode, MachineConnection } = require('./models');
 require('dotenv').config();
 
 const seed = async () => {
@@ -323,6 +323,57 @@ const seed = async () => {
                 method: { type: 'select', options: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], description: 'Método HTTP' },
                 headers: { type: 'text', description: 'Headers adicionales en formato JSON (ej. {"Authorization": "Bearer token"})' }
             }),
+            activo: true
+        });
+
+        const enginePrinter = await Engine.create({
+            nombre: 'PRINTER',
+            slug: 'printer',
+            descripcion: 'Engine de salida que pasa los datos como JSON. Úsalo con un VISOR para ver los resultados.',
+            tipo: 'output',
+            icono: '🖨️',
+            config_schema: JSON.stringify({}),
+            activo: true
+        });
+
+        const engineConverter = await Engine.create({
+            nombre: 'JSON Converter',
+            slug: 'json-converter',
+            descripcion: 'Convierte bidireccionalmente entre string JSON y objeto. Si recibe string lo convierte a objeto, y viceversa.',
+            tipo: 'converter',
+            icono: '🔄',
+            config_schema: JSON.stringify({}),
+            activo: true
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // 9. Visores
+        // ═══════════════════════════════════════════════════════════════
+
+        const visorMessage = await Visor.create({
+            nombre: 'MENSAJE',
+            slug: 'message-visor',
+            descripcion: 'Muestra el resultado como un mensaje flotante minimalista.',
+            icono: '💬',
+            config_schema: JSON.stringify({}),
+            activo: true
+        });
+
+        const visorTable = await Visor.create({
+            nombre: 'TABLA',
+            slug: 'table-visor',
+            descripcion: 'Muestra los datos en un formato de tabla estructurada.',
+            icono: '📊',
+            config_schema: JSON.stringify({}),
+            activo: true
+        });
+
+        const visorDocument = await Visor.create({
+            nombre: 'DOCUMENTO',
+            slug: 'document-visor',
+            descripcion: 'Visualizador de documentos con formato HTML canónico.',
+            icono: '📄',
+            config_schema: JSON.stringify({}),
             activo: true
         });
 

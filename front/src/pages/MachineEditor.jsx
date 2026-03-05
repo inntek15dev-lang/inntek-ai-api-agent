@@ -16,7 +16,8 @@ import {
     MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Save, ArrowLeft, Cpu, Cog, GripVertical, Workflow, ChevronDown, ChevronRight, Check, Trash2, X, Play, Loader2, Upload, MousePointer2, Eraser } from 'lucide-react';
+import { Save, ArrowLeft, Cpu, Cog, GripVertical, Workflow, ChevronDown, ChevronRight, Check, Trash2, X, Play, Loader2, Upload, MousePointer2, Eraser, Plus, Minus } from 'lucide-react';
+import PrinterTag from '../components/PrinterTag';
 
 // ═══════════════════════════════════════════════════════════════
 // Custom Node: Tool (Blue)
@@ -109,7 +110,13 @@ const EngineNode = ({ data, selected }) => {
                 </div>
             </div>
 
-            {(data.execOutput || data.execError) && (
+            {/* Specialized Printer Output Tag */}
+            {data.engineId && data.label === 'PRINTER' && data.execOutput && (
+                <PrinterTag data={data.execOutput} onClear={() => { }} />
+            )}
+
+            {/* Standard JSON Box (hidden for Printer engine if showing tag) */}
+            {data.execOutput && data.label !== 'PRINTER' && (
                 <div className="absolute top-[105%] left-1/2 -translate-x-1/2 w-64 max-h-48 overflow-y-auto bg-slate-900 border border-slate-700/60 rounded-lg shadow-2xl p-3 z-50 text-left custom-scrollbar pointer-events-auto cursor-text nodrag">
                     <p className={`text-[9px] font-black uppercase mb-2 border-b border-slate-800 pb-1 flex justify-between ${data.execError ? 'text-red-400' : 'text-emerald-400'}`}>
                         <span>{data.execError ? 'Error Output' : 'Execution Output'}</span>
@@ -121,13 +128,154 @@ const EngineNode = ({ data, selected }) => {
                 </div>
             )}
 
+            {/* Error Always Shown in standard box */}
+            {data.execError && (
+                <div className="absolute top-[105%] left-1/2 -translate-x-1/2 w-64 max-h-48 overflow-y-auto bg-slate-900 border border-slate-700/60 rounded-lg shadow-2xl p-3 z-50 text-left custom-scrollbar pointer-events-auto cursor-text nodrag">
+                    <p className="text-[9px] font-black uppercase mb-2 border-b border-slate-800 pb-1 flex justify-between text-red-400">
+                        <span>Error Output</span>
+                        {data.execDuration && <span className="font-mono opacity-50 text-[8px] text-slate-400">{(data.execDuration / 1000).toFixed(1)}s</span>}
+                    </p>
+                    <div className="text-[10px] font-mono leading-relaxed whitespace-pre-wrap break-words text-red-300">
+                        {data.execError}
+                    </div>
+                </div>
+            )}
+
             <Handle type="target" position={Position.Left} className="!w-3 !h-3 !bg-violet-400 !border-[2px] !border-slate-900 !-left-[7px]" />
             <Handle type="source" position={Position.Right} className="!w-3 !h-3 !bg-violet-400 !border-[2px] !border-slate-900 !-right-[7px]" />
         </div>
     );
 };
 
-const nodeTypes = { toolNode: ToolNode, engineNode: EngineNode };
+// ═══════════════════════════════════════════════════════════════
+// Custom Node: Visor (Green/Luminous)
+// ═══════════════════════════════════════════════════════════════
+const VisorNode = ({ data }) => {
+    const [isFolded, setIsFolded] = React.useState(false);
+
+    const renderVisorContent = () => {
+        if (!data.execOutput) return <p className="text-[9px] text-emerald-500/50 italic animate-pulse">Waiting for data stream...</p>;
+
+        const visorSlug = data.slug;
+        const rawData = data.execOutput;
+
+        try {
+            if (visorSlug === 'table-visor') {
+                const items = Array.isArray(rawData) ? rawData : (typeof rawData === 'object' ? [rawData] : []);
+                if (items.length === 0) return <p className="text-[9px] text-slate-400">No tabular data</p>;
+                const keys = Object.keys(items[0]);
+                return (
+                    <div className="overflow-x-auto custom-scrollbar">
+                        <table className="w-full text-[9px] text-emerald-100 border-collapse">
+                            <thead>
+                                <tr className="border-b border-emerald-500/30">
+                                    {keys.map(k => <th key={k} className="text-left p-1 uppercase font-black opacity-60 bg-emerald-500/5">{k}</th>)}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {items.slice(0, 10).map((it, i) => (
+                                    <tr key={i} className="border-b border-emerald-500/10 hover:bg-emerald-500/5 transition-colors">
+                                        {keys.map(k => <td key={k} className="p-1 truncate max-w-[100px] border-r border-emerald-500/5 last:border-0">{String(it[k])}</td>)}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {items.length > 10 && <p className="text-[7px] text-emerald-500/40 mt-1 text-center italic">+ {items.length - 10} more rows hidden</p>}
+                    </div>
+                );
+            }
+
+            if (visorSlug === 'message-visor') {
+                const content = typeof rawData === 'string' ? rawData : JSON.stringify(rawData, null, 2);
+                return (
+                    <div className="bg-emerald-500/5 border border-emerald-500/20 p-2 rounded text-[10px] font-mono text-emerald-200/90 leading-tight">
+                        <div className="flex items-center space-x-1 mb-1 opacity-50">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            <span className="text-[7px] font-black uppercase">Standard Stream</span>
+                        </div>
+                        {content}
+                    </div>
+                );
+            }
+
+            if (visorSlug === 'document-visor') {
+                return (
+                    <div className="text-[10px] bg-white/5 p-3 rounded-lg border border-white/10 text-slate-100 leading-relaxed max-h-48 overflow-y-auto custom-scrollbar shadow-inner">
+                        <div className="mb-2 pb-1 border-b border-white/10 flex justify-between items-center">
+                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Canonical View</span>
+                            <div className="flex space-x-1">
+                                <div className="w-1 h-1 rounded-full bg-slate-500" />
+                                <div className="w-1 h-1 rounded-full bg-slate-500" />
+                            </div>
+                        </div>
+                        {typeof rawData === 'string' ? rawData : <pre className="whitespace-pre-wrap">{JSON.stringify(rawData, null, 2)}</pre>}
+                    </div>
+                );
+            }
+        } catch (e) {
+            return <p className="text-red-400 text-[9px] font-bold">CRITICAL: Visor Rendering Fault</p>;
+        }
+
+        return <div className="text-[9px] font-mono opacity-50">{JSON.stringify(rawData, null, 1)}</div>;
+    };
+
+    return (
+        <div className={`relative flex flex-col w-64 min-h-[140px] rounded-xl border-2 transition-all duration-500 shadow-2xl bg-[#0a0f18] overflow-hidden ${data.selected ? 'border-emerald-400 shadow-[0_0_30px_rgba(52,211,153,0.4)] scale-[1.02]' : 'border-emerald-500/30'}`}>
+            {/* Top Luminous Bar */}
+            <div className="h-1 w-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)]" />
+
+            <Handle type="target" position={Position.Left} className="!w-3 !h-3 !bg-emerald-400 !border-2 !border-[#0a0f18] shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+            <Handle type="source" position={Position.Right} className="!w-3 !h-3 !bg-emerald-400 !border-2 !border-[#0a0f18] shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+
+            <div className="px-3 py-2 border-b border-emerald-500/20 bg-emerald-500/5 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                    <div className="p-1 bg-emerald-500/20 rounded shadow-inner">
+                        <span className="text-xl leading-none">{data.icon || '👁️'}</span>
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black text-emerald-300 uppercase tracking-widest drop-shadow-sm">{data.label}</p>
+                        <div className="flex items-center space-x-1">
+                            <span className="w-1 h-1 rounded-full bg-emerald-400 animate-ping" />
+                            <span className="text-[7px] text-emerald-400/60 font-black uppercase tracking-tighter">Visor Protocol v1.0</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex items-center space-x-1">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setIsFolded(!isFolded); }}
+                        className="p-1 hover:bg-emerald-500/30 rounded text-emerald-400 transition-colors"
+                    >
+                        {isFolded ? <Plus size={10} /> : <Minus size={10} />}
+                    </button>
+                </div>
+            </div>
+
+            <div className={`transition-all duration-300 ${isFolded ? 'max-h-0' : 'max-h-[350px] overflow-hidden'}`}>
+                <div className="p-3 flex flex-col bg-emerald-500/5 relative">
+                    {/* Cyber grid background */}
+                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#10b981 1px, transparent 1px)', backgroundSize: '10px 10px' }} />
+                    <div className="relative z-10">
+                        {renderVisorContent()}
+                    </div>
+                </div>
+            </div>
+
+            {/* Status Footer */}
+            <div className="px-3 py-1 bg-emerald-500/5 border-t border-emerald-500/10 flex justify-between items-center">
+                <span className="text-[6px] text-emerald-500/40 font-mono">STATUS: CONNECTED</span>
+                <div className="flex space-x-[2px]">
+                    {[1, 2, 3, 4, 5].map(i => <div key={i} className="w-[3px] h-[3px] bg-emerald-500/20" />)}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const nodeTypes = {
+    toolNode: ToolNode,
+    engineNode: EngineNode,
+    visor: VisorNode
+};
 
 const defaultEdgeOptions = {
     type: 'smoothstep',
@@ -146,6 +294,7 @@ const MachineEditor = () => {
     const [machine, setMachine] = useState(null);
     const [tools, setTools] = useState([]);
     const [engines, setEngines] = useState([]);
+    const [visores, setVisores] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -158,6 +307,7 @@ const MachineEditor = () => {
 
     const [toolsOpen, setToolsOpen] = useState(true);
     const [enginesOpen, setEnginesOpen] = useState(true);
+    const [visoresOpen, setVisoresOpen] = useState(true);
 
     const [executingStream, setExecutingStream] = useState(false);
     const [streamModalOpen, setStreamModalOpen] = useState(false);
@@ -171,38 +321,48 @@ const MachineEditor = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [machineRes, toolsRes, enginesRes] = await Promise.all([
+                const [machineRes, toolsRes, enginesRes, visoresRes] = await Promise.all([
                     axios.get(`${API_URL}/machines/${id}`),
                     axios.get(`${API_URL}/tools`),
                     axios.get(`${API_URL}/engines`),
+                    axios.get(`${API_URL}/visores`),
                 ]);
                 const m = machineRes.data.data;
                 setMachine(m);
                 setMachineName(m.nombre);
                 setMachineDesc(m.descripcion || '');
-                setTools(toolsRes.data.data);
-                setEngines(enginesRes.data.data);
+                setTools(toolsRes.data.data || toolsRes.data);
+                setEngines(enginesRes.data.data || enginesRes.data);
+                setVisores(visoresRes.data.data || visoresRes.data);
 
-                const flowNodes = (m.MachineNodes || []).map(n => ({
-                    id: n.id,
-                    type: n.node_type === 'tool' ? 'toolNode' : 'engineNode',
-                    position: { x: n.position_x || 0, y: n.position_y || 0 },
-                    data: {
-                        label: n.Tool?.nombre || n.Engine?.nombre || 'Unknown',
-                        icon: n.Tool?.logo_herramienta || n.Engine?.icono || '❓',
-                        description: n.Tool?.descripcion || n.Engine?.descripcion || '',
-                        engineType: n.Engine?.tipo || '',
-                        nodeType: n.node_type,
-                        toolId: n.tool_id,
-                        engineId: n.engine_id,
-                        config: n.config ? (typeof n.config === 'string' ? JSON.parse(n.config) : n.config) : {},
-                        configSchema: n.Engine?.config_schema ? (typeof n.Engine.config_schema === 'string' ? JSON.parse(n.Engine.config_schema) : n.Engine.config_schema) : null,
-                        execStatus: 'pending',
-                        execOutput: null,
-                        execError: null,
-                        execDuration: null
-                    },
-                }));
+                const flowNodes = (m.MachineNodes || []).map(n => {
+                    let nodeType = 'toolNode';
+                    if (n.node_type === 'engine') nodeType = 'engineNode';
+                    if (n.node_type === 'visor') nodeType = 'visor';
+
+                    return {
+                        id: n.id,
+                        type: nodeType,
+                        position: { x: n.position_x || 0, y: n.position_y || 0 },
+                        data: {
+                            label: n.Tool?.nombre || n.Engine?.nombre || n.Visor?.nombre || 'Unknown',
+                            icon: n.Tool?.logo_herramienta || n.Engine?.icono || n.Visor?.icono || '❓',
+                            description: n.Tool?.descripcion || n.Engine?.descripcion || n.Visor?.descripcion || '',
+                            engineType: n.Engine?.tipo || '',
+                            nodeType: n.node_type,
+                            toolId: n.tool_id,
+                            engineId: n.engine_id,
+                            visorId: n.visor_id,
+                            slug: n.Visor?.slug || '',
+                            config: n.config ? (typeof n.config === 'string' ? JSON.parse(n.config) : n.config) : {},
+                            configSchema: n.Engine?.config_schema ? (typeof n.Engine.config_schema === 'string' ? JSON.parse(n.Engine.config_schema) : n.Engine.config_schema) : null,
+                            execStatus: 'pending',
+                            execOutput: null,
+                            execError: null,
+                            execDuration: null
+                        },
+                    };
+                });
 
                 const flowEdges = (m.MachineConnections || []).map(c => ({
                     id: c.id,
@@ -248,9 +408,13 @@ const MachineEditor = () => {
         const wrapperBounds = reactFlowWrapper.current.getBoundingClientRect();
         const position = { x: event.clientX - wrapperBounds.left - 90, y: event.clientY - wrapperBounds.top - 30 };
 
+        let nodeType = 'toolNode';
+        if (type === 'engine') nodeType = 'engineNode';
+        if (type === 'visor') nodeType = 'visor';
+
         setNodes(nds => [...nds, {
             id: generateUUID(),
-            type: type === 'tool' ? 'toolNode' : 'engineNode',
+            type: nodeType,
             position,
             data: {
                 label: item.nombre,
@@ -260,6 +424,8 @@ const MachineEditor = () => {
                 nodeType: type,
                 toolId: type === 'tool' ? item.id : null,
                 engineId: type === 'engine' ? item.id : null,
+                visorId: type === 'visor' ? item.id : null,
+                slug: item.slug || '',
                 config: {},
                 configSchema: item.config_schema ? (typeof item.config_schema === 'string' ? JSON.parse(item.config_schema) : item.config_schema) : null,
                 execStatus: 'pending',
@@ -501,7 +667,7 @@ const MachineEditor = () => {
                     </div>
 
                     {/* Engines */}
-                    <div>
+                    <div className="border-b border-slate-800/50 pb-1">
                         <button onClick={() => setEnginesOpen(!enginesOpen)}
                             className="w-full flex items-center justify-between px-3 py-2 hover:bg-slate-800/30 transition-colors">
                             <div className="flex items-center space-x-1.5">
@@ -519,6 +685,32 @@ const MachineEditor = () => {
                                         <GripVertical size={10} className="absolute top-1.5 left-1.5 text-slate-700/50 group-hover:text-violet-500/50" />
                                         <span className="text-2xl mb-2 leading-none">{engine.icono}</span>
                                         <span className="text-[9px] font-bold text-slate-400 line-clamp-3 leading-tight group-hover:text-violet-300 px-1">{engine.nombre}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Visores */}
+                    <div className="pb-1">
+                        <button onClick={() => setVisoresOpen(!visoresOpen)}
+                            className="w-full flex items-center justify-between px-3 py-2 hover:bg-slate-800/30 transition-colors">
+                            <div className="flex items-center space-x-1.5">
+                                <Workflow size={10} className="text-emerald-500" />
+                                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Visores</span>
+                                <span className="text-[8px] text-slate-600 ml-1">({visores.length})</span>
+                            </div>
+                            {visoresOpen ? <ChevronDown size={10} className="text-slate-600" /> : <ChevronRight size={10} className="text-slate-600" />}
+                        </button>
+                        {visoresOpen && (
+                            <div className="px-3 pb-3 grid grid-cols-2 gap-2">
+                                {visores.map(visor => (
+                                    <div key={visor.id} draggable onDragStart={e => onDragStart(e, 'visor', visor)}
+                                        className="flex flex-col items-center justify-center p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10 cursor-grab active:cursor-grabbing hover:bg-emerald-500/10 hover:border-emerald-400 transitions-all group aspect-square text-center relative overflow-hidden shadow-[inset_0_0_10px_rgba(16,185,129,0.05)]">
+                                        <GripVertical size={10} className="absolute top-1.5 left-1.5 text-slate-700/50 group-hover:text-emerald-500/50" />
+                                        <span className="text-2xl mb-2 leading-none group-hover:scale-110 transition-transform duration-300">{visor.icono}</span>
+                                        <span className="text-[9px] font-bold text-slate-400 line-clamp-3 leading-tight group-hover:text-emerald-300 px-1">{visor.nombre}</span>
+                                        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-emerald-500/0 group-hover:bg-emerald-500/40 transition-all shadow-[0_0_5px_rgba(16,185,129,1)]" />
                                     </div>
                                 ))}
                             </div>
