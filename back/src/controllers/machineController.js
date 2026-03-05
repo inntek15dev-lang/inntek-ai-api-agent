@@ -26,7 +26,8 @@ exports.getMachine = async (req, res) => {
                     model: MachineNode,
                     include: [
                         { model: Tool, attributes: ['id', 'nombre', 'logo_herramienta', 'descripcion'] },
-                        { model: Engine, attributes: ['id', 'nombre', 'icono', 'tipo', 'descripcion'] }
+                        { model: Engine, attributes: ['id', 'nombre', 'icono', 'tipo', 'descripcion'] },
+                        { model: Visor, attributes: ['id', 'nombre', 'icono', 'descripcion'] }
                     ]
                 },
                 {
@@ -82,6 +83,7 @@ exports.updateMachine = async (req, res) => {
                     node_type: node.node_type,
                     tool_id: node.tool_id || null,
                     engine_id: node.engine_id || null,
+                    visor_id: node.visor_id || null,
                     position_x: node.position_x,
                     position_y: node.position_y,
                     config: node.config ? JSON.stringify(node.config) : null
@@ -108,7 +110,8 @@ exports.updateMachine = async (req, res) => {
                     model: MachineNode,
                     include: [
                         { model: Tool, attributes: ['id', 'nombre', 'logo_herramienta', 'descripcion'] },
-                        { model: Engine, attributes: ['id', 'nombre', 'icono', 'tipo', 'descripcion'] }
+                        { model: Engine, attributes: ['id', 'nombre', 'icono', 'tipo', 'descripcion'] },
+                        { model: Visor, attributes: ['id', 'nombre', 'icono', 'descripcion'] }
                     ]
                 },
                 { model: MachineConnection }
@@ -181,7 +184,8 @@ exports.executeMachine = async (req, res) => {
                                 { model: AiProvider }
                             ]
                         },
-                        { model: Engine }
+                        { model: Engine },
+                        { model: Visor }
                     ]
                 },
                 { model: MachineConnection }
@@ -250,8 +254,8 @@ exports.executeMachine = async (req, res) => {
                 res.write(`data: ${JSON.stringify({ type: 'node-start', nodeId })}\n\n`);
             }
 
-            const nodeName = node.Tool?.nombre || node.Engine?.nombre || 'Unknown';
-            const nodeIcon = node.Tool?.logo_herramienta || node.Engine?.icono || '❓';
+            const nodeName = node.Tool?.nombre || node.Engine?.nombre || node.Visor?.nombre || 'Unknown';
+            const nodeIcon = node.Tool?.logo_herramienta || node.Engine?.icono || node.Visor?.icono || '❓';
 
             const step = {
                 nodeId: node.id,
@@ -381,13 +385,55 @@ exports.executeMachine = async (req, res) => {
                         nodeOutputs[nodeId] = respData;
                         step.output = respData;
 
+                    } else if (engineSlug === 'printer') {
+                        // ── PRINTER: Smart print of the input ──
+                        let data = inputText;
+                        if (typeof data === 'string') {
+                            try { data = JSON.parse(data); } catch (e) { }
+                        }
+
+                        let printResult = data;
+                        if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+                            const keys = Object.keys(data);
+                            if (keys.length === 1) {
+                                printResult = data[keys[0]];
+                            }
+                        }
+
+                        nodeOutputs[nodeId] = printResult;
+                        step.output = printResult;
+
+                    } else if (engineSlug === 'json-converter') {
+                        // ── JSON Converter: bidirectional string/object conversion ──
+                        let data = inputText;
+                        if (typeof data === 'string') {
+                            try {
+                                const parsed = JSON.parse(data);
+                                nodeOutputs[nodeId] = parsed;
+                                step.output = parsed;
+                            } catch (e) {
+                                // If fail, it's already a string, maybe it's not JSON
+                                nodeOutputs[nodeId] = data;
+                                step.output = data;
+                            }
+                        } else {
+                            const stringified = JSON.stringify(data, null, 2);
+                            nodeOutputs[nodeId] = stringified;
+                            step.output = stringified;
+                        }
+
                     } else {
                         // Unknown engine — pass through
                         nodeOutputs[nodeId] = inputText;
                         step.output = inputText;
                     }
+                } else if (node.node_type === 'visor' && node.Visor) {
+                    // ── Visor Node: passthrough for visual feedback ──
+                    nodeOutputs[nodeId] = inputText;
+                    step.output = inputText;
+                    step.visorSlug = node.Visor.slug;
                 } else {
-                    // Node with missing Tool/Engine reference — pass through
+                    // Node with missing Tool/Engine/Visor reference — pass through
                     nodeOutputs[nodeId] = inputText;
                     step.output = inputText;
                 }

@@ -8,6 +8,7 @@ const jsonSchemaController = require('../controllers/jsonSchemaController');
 const aiProviderController = require('../controllers/aiProviderController');
 const machineController = require('../controllers/machineController');
 const engineController = require('../controllers/engineController');
+const visorController = require('../controllers/visorController');
 const { authMiddleware, requirePrivilege } = require('../middleware/auth');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
@@ -585,6 +586,21 @@ router.delete('/json-schemas/:id', authMiddleware, requirePrivilege('AI_Tool_Mak
  *         description: List of engines
  */
 router.get('/engines', authMiddleware, requirePrivilege('Machines', 'read'), engineController.getEngines);
+
+// Visores
+/**
+ * @swagger
+ * /visores:
+ *   get:
+ *     summary: Get all active Visores
+ *     tags: [Visores]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of visores
+ */
+router.get('/visores', authMiddleware, requirePrivilege('Machines', 'read'), visorController.getVisores);
 
 // Machines
 /**
