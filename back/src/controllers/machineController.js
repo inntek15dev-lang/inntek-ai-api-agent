@@ -1,4 +1,4 @@
-const { Machine, MachineNode, MachineConnection, Tool, Engine, JsonSchema, AiProvider } = require('../models');
+const { Machine, MachineNode, MachineConnection, Tool, Engine, Visor, JsonSchema, AiProvider } = require('../models');
 const { executeSingleTool } = require('../utils/aiExecutor');
 const fs = require('fs');
 
