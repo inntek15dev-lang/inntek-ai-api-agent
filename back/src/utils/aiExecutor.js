@@ -54,7 +54,13 @@ const SUPPORTED_MIME_TYPES = [
 // ═══════════════════════════════════════════════════════════════
 
 const executeGoogleNative = async (provider, fullTextPrompt, promptParts, generationConfig) => {
-    const genAI = new GoogleGenerativeAI(provider.api_key);
+    // Hardening: Ensure we don't send a masked key to the provider
+    const apiKey = provider.api_key ? provider.api_key.trim() : '';
+    if (apiKey.includes('•') || apiKey.includes('*')) {
+        throw new Error(`Critical Security Fault: Provider "${provider.nombre}" is using a masked API key. Please re-enter the cleartext API key in Config → AI Providers.`);
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: provider.modelo, generationConfig });
     const result = await model.generateContent(promptParts);
     const response = await result.response;
@@ -62,9 +68,15 @@ const executeGoogleNative = async (provider, fullTextPrompt, promptParts, genera
 };
 
 const executeOpenAICompatible = async (provider, fullTextPrompt, file) => {
+    // Hardening: Ensure we don't send a masked key to the provider
+    const apiKey = provider.api_key ? provider.api_key.trim() : '';
+    if (apiKey.includes('•') || apiKey.includes('*')) {
+        throw new Error(`Critical Security Fault: Provider "${provider.nombre}" is using a masked API key. Please re-enter the cleartext API key in Config → AI Providers.`);
+    }
+
     const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${provider.api_key}`,
+        'Authorization': `Bearer ${apiKey}`,
     };
 
     if (provider.extra_headers) {

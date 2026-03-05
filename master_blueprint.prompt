@@ -1,9 +1,9 @@
-# INNTEK AI API AGENT — Universal Software Blueprint
-# Version: 3.3.0 | Last Sync: 2026-03-03
+# AgentiX — Universal Software Blueprint
+# Version: 3.4.0 | Last Sync: 2026-03-04
 
 ## 1. Overview
 
-**Project:** AI Agent Integrations Platform — a full-stack web application for creating, managing, and executing AI-powered tools with multi-provider support and a visual workflow orchestrator (Machines).
+**Project:** AgentiX — a full-stack web application for creating, managing, and executing AI-powered tools with multi-provider support and a visual workflow orchestrator (Machines).
 
 **Business Purpose:** Enable non-technical users to build AI processing pipelines through a drag-and-drop interface, chain tools into automated flows, and execute them against multiple AI providers with structured JSON output validation.
 
@@ -655,6 +655,8 @@ Parallel branching flow for full document audit:
 - `sanitizeResponse()` strips markdown code fences before JSON parsing
 - `fileToGenerativePart()` converts uploaded files to Gemini multimodal parts
 - Provider strategy pattern: `executeGoogleNative()` vs `executeOpenAICompatible()`
+- **Security Hardening**: Automatic detection and blocking of masked API keys (bullets/stars) in both execution and storage layers to prevent 401/500 faults.
+- **Input Sanitization**: API keys are trimmed prior to execution.
 
 ---
 
