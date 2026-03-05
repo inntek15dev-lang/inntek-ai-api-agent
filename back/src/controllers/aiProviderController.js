@@ -36,6 +36,11 @@ exports.getProvider = async (req, res) => {
 exports.createProvider = async (req, res) => {
     try {
         const data = { ...req.body };
+        // Hardening: Prevent creating a provider with an already masked key
+        if (data.api_key && (data.api_key.includes('•') || data.api_key.includes('*'))) {
+            return res.status(400).json({ success: false, message: 'Invalid API Key: You cannot save a masked key (bullets or stars). Please enter the full cleartext key.' });
+        }
+
         // If this is set as default, unset all others
         if (data.is_default) {
             await AiProvider.update({ is_default: false }, { where: {} });
@@ -55,8 +60,13 @@ exports.updateProvider = async (req, res) => {
         const data = { ...req.body };
 
         // If api_key is masked (unchanged), remove it from update
-        if (data.api_key && (data.api_key.includes('•') || data.api_key === '****' || data.api_key === maskKey(provider.api_key))) {
+        if (data.api_key && (data.api_key.includes('•') || data.api_key.includes('*') || data.api_key === maskKey(provider.api_key))) {
             delete data.api_key;
+        }
+
+        // Hardening: If they actually CHANGED it to something that looks masked but isn't the previous mask
+        if (data.api_key && (data.api_key.includes('•') || data.api_key.includes('*'))) {
+            return res.status(400).json({ success: false, message: 'Invalid API Key: You cannot save a masked key (bullets or stars). Please enter the full cleartext key.' });
         }
 
         // If setting as default, unset all others
