@@ -74,7 +74,7 @@ const Engine = sequelize.define('Engine', {
     nombre: { type: DataTypes.STRING, allowNull: false },
     slug: { type: DataTypes.STRING, unique: true, allowNull: false },
     descripcion: { type: DataTypes.TEXT },
-    tipo: { type: DataTypes.ENUM('iterator', 'collector', 'mapper', 'api-consumer', 'output', 'converter'), allowNull: false },
+    tipo: { type: DataTypes.ENUM('iterator', 'collector', 'mapper', 'api-consumer', 'output', 'converter', 'extractor'), allowNull: false },
     icono: { type: DataTypes.STRING },
     config_schema: { type: DataTypes.TEXT }, // JSON string defining config fields
     activo: { type: DataTypes.BOOLEAN, defaultValue: true }
