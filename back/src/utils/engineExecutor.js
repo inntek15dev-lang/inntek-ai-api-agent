@@ -135,6 +135,52 @@ const engines = {
             const stringified = JSON.stringify(data, null, 2);
             return { output: stringified, stepInfo: stringified };
         }
+    },
+
+    'json-entity-extractor': async (node, inputText) => {
+        let data = inputText;
+        if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (e) { /* ignore */ }
+        }
+
+        const findEntities = (obj) => {
+            if (Array.isArray(obj)) {
+                // If it's an array of objects, assume these are the entities
+                if (obj.length > 0 && typeof obj[0] === 'object' && obj[0] !== null) return obj;
+                return [];
+            }
+            if (typeof obj !== 'object' || obj === null) return [];
+
+            // Prioritize common collection keys
+            const priorityKeys = ['items', 'data', 'rows', 'results', 'entities', 'entries', 'objects'];
+            for (const key of priorityKeys) {
+                if (Array.isArray(obj[key])) {
+                    const found = findEntities(obj[key]);
+                    if (found.length > 0) return found;
+                }
+            }
+
+            // Fallback: look at any array property
+            for (const key in obj) {
+                if (Array.isArray(obj[key])) {
+                    const found = findEntities(obj[key]);
+                    if (found.length > 0) return found;
+                } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                    // One level deeper search
+                    const found = findEntities(obj[key]);
+                    if (found.length > 0) return found;
+                }
+            }
+            return [];
+        };
+
+        const entities = findEntities(data);
+        const finalOutput = entities.length > 0 ? entities : (typeof data === 'object' ? [data] : []);
+
+        return {
+            output: finalOutput,
+            stepInfo: { entitiesFound: entities.length, type: Array.isArray(data) ? 'array' : 'object' }
+        };
     }
 };
 

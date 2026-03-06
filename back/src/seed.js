@@ -346,6 +346,16 @@ const seed = async () => {
             activo: true
         });
 
+        const engineEntityExtractor = await Engine.create({
+            nombre: 'Entity Extractor',
+            slug: 'json-entity-extractor',
+            descripcion: 'Analiza una estructura JSON para identificar y extraer la colección principal de entidades como un array plano.',
+            tipo: 'extractor',
+            icono: '📂',
+            config_schema: JSON.stringify({}),
+            activo: true
+        });
+
         // ═══════════════════════════════════════════════════════════════
         // 9. Visores
         // ═══════════════════════════════════════════════════════════════
