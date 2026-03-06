@@ -165,8 +165,8 @@ ${tool.training_prompt}
 BEHAVIOR PROTOCOL:
 ${tool.behavior_prompt}
 
-USER INSTRUCTION:
-${promptText || 'Analyze the attached content.'}
+User Instruction:
+${promptText || (file ? 'Analyze the attached content.' : 'Execute and generate output based on your training and behavior protocols.')}
 `.trim();
 
     if (tool.JsonSchema) {
