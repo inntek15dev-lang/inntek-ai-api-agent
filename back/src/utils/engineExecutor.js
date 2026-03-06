@@ -44,7 +44,7 @@ const findEntities = (obj) => {
  */
 const engines = {
     'list-iterator': async (node, inputText, parentOutputs, context) => {
-        const { nodeMap, adjacency } = context;
+        const { nodeMap, adjacency, onProgress } = context;
         let config = {};
         try { config = node.config ? JSON.parse(node.config) : {}; } catch (e) { }
 
@@ -66,6 +66,10 @@ const engines = {
             else if (data) items = [data];
         }
 
+        if (onProgress) {
+            onProgress({ type: 'iterator-start', total: items.length });
+        }
+
         const targetIds = adjacency[node.id] || [];
         const nextNode = targetIds.map(id => nodeMap[id]).find(n => (n.node_type === 'tool' && n.Tool) || (n.node_type === 'engine' && n.Engine));
 
@@ -74,6 +78,16 @@ const engines = {
             for (let i = 0; i < items.length; i++) {
                 const itemData = items[i];
                 const itemInput = typeof itemData === 'string' ? itemData : JSON.stringify(itemData);
+
+                if (onProgress) {
+                    onProgress({
+                        type: 'iteration-start',
+                        index: i + 1,
+                        total: items.length,
+                        currentItem: itemData,
+                        inputToNext: itemInput
+                    });
+                }
 
                 let result;
                 if (nextNode.node_type === 'tool') {

@@ -290,7 +290,15 @@ exports.executeMachine = async (req, res) => {
 
                 } else if (node.node_type === 'engine' && node.Engine) {
                     // ── Engine Node: execute pure code logic ──
-                    const engineResult = await executeEngine(node, inputText, parentOutputs, { nodeMap, adjacency });
+                    const engineResult = await executeEngine(node, inputText, parentOutputs, {
+                        nodeMap,
+                        adjacency,
+                        onProgress: (progress) => {
+                            if (isStream) {
+                                res.write(`data: ${JSON.stringify({ type: 'node-progress', nodeId, progress })}\n\n`);
+                            }
+                        }
+                    });
 
                     nodeOutputs[nodeId] = engineResult.output;
                     step.output = engineResult.stepInfo;
