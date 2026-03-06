@@ -248,6 +248,9 @@ exports.executeMachine = async (req, res) => {
         const userPrompt = req.body.prompt || null;
 
         for (const nodeId of executionOrder) {
+            // Skip nodes already executed/consumed by an engine (like list-iterator)
+            if (nodeOutputs[nodeId] !== undefined) continue;
+
             const node = nodeMap[nodeId];
             const stepStart = Date.now();
 

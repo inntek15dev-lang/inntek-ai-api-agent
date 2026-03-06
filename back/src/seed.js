@@ -722,6 +722,41 @@ SECCIONES DEL REPORTE:
             json_schema_id: schemaGenericList.id
         });
 
+        // 12f. Demo Liquidaciones — Specialized extractor for payroll and COTI
+        const toolDemoLiqui = await Tool.create({
+            id: 'edb84cda-0000-4a2c-8187-000000000030',
+            nombre: 'Demo Liquidaciones',
+            descripcion: 'Extracción experta de datos de liquidaciones y cotizaciones (COTI) con formato pipe-separated.',
+            logo_herramienta: '📑',
+            training_prompt: `Eres un experto en extracción de datos de documentos laborales chilenos.
+Tu objetivo es analizar Liquidaciones de Sueldo y Documentos de Cotización (COTI) y extraer la información estrictamente como se solicita.
+
+REGLAS PARA LIQUIDACIONES:
+Para cada liquidación, genera una línea con valores separados por pipes (|):
+NUMERO|RUT|PERIODO(MM-YYYY)|DIAS|SUELDO BASE|DSCTO DIAS NO TRAB|GRATIFICACION|TOTAL IMPONIBLE|TOTAL NO IMPONIBLES|TOTAL HABERES|INDEMNIZACIONES|LIQUIDO A PAGO
+
+REGLAS PARA COTI:
+CODIGO|RUT|FECHA DE CARGO|IMPONIBLE|### COTIZACION OBLIGATORIA|!!! ISAPRE|... SEGURO SOCIAL|% FONASA|&&& MUTUAL|/// CAJA COMPENSACION
+
+IMPORTANTE:
+- NO realices cálculos. Solo copia y pega.
+- Si no ves el RUT, escribe "SIN RUT".
+- Si no ves un valor, escribe "NO VEO VALOR".
+- RUTs con puntos, guion y sin cero a la izquierda.`,
+            behavior_prompt: `PROCESAMIENTO DE LIQUIDACIONES:
+Para cada una de las liquidaciones del PDF, genera el resumen pipe-separated siguiendo este orden y formato:
+NUMERO DE LIQUIDACION|RUT DEL TRABAJADOR|PERIODO DE LA LIQUIDACION|DIAS TRABAJADOS|SUELDO BASE|total por DESCUENTO POR DIAS NO TRABAJADOS|GRATIFICACION|TOTAL IMPONIBLE|TOTAL NO IMPONIBLES|TOTAL HABERES|INDEMNIZACION POR VACACIONES...|LIQUIDO A PAGO
+
+PROCESAMIENTO DE COTI:
+RESUME Y ESTRUCTURA SEPARANDO POR "|" DE LA SIGUIENTE FORMA:
+CODIGO|RUT|FECHA DE CARGO|IMPONIBLE|### COTIZACION OBLIGATORIA|!!! ISAPRE|... SEGURO SOCIAL|% FONASA|&&& MUTUAL|/// CAJA COMPENSACION
+
+Suma los dos valores de "COTIZACION OBLIGATORIA" si aparecen dos. Reemplaza comas por puntos en los miles.`,
+            response_format: 'Markdown',
+            output_format_id: null,
+            json_schema_id: null
+        });
+
         // ═══════════════════════════════════════════════════════════════
         // 13. Pre-built Machines (seeded with full graph)
         // ═══════════════════════════════════════════════════════════════
