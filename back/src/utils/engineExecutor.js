@@ -5,37 +5,91 @@
 const { executeSingleTool } = require('./aiExecutor');
 
 /**
+ * Shared helper to find arrays of objects within a JSON structure.
+ */
+const findEntities = (obj) => {
+    if (Array.isArray(obj)) {
+        // If it's an array of objects, assume these are the entities
+        if (obj.length > 0 && typeof obj[0] === 'object' && obj[0] !== null) return obj;
+        return [];
+    }
+    if (typeof obj !== 'object' || obj === null) return [];
+
+    // Prioritize common collection keys
+    const priorityKeys = ['lista', 'items', 'data', 'rows', 'results', 'entities', 'entries', 'objects'];
+    for (const key of priorityKeys) {
+        if (Array.isArray(obj[key])) {
+            const found = findEntities(obj[key]);
+            if (found.length > 0) return found;
+        }
+    }
+
+    // Fallback: look at any array property
+    for (const key in obj) {
+        if (Array.isArray(obj[key])) {
+            const found = findEntities(obj[key]);
+            if (found.length > 0) return found;
+        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+            // One level deeper search
+            const found = findEntities(obj[key]);
+            if (found.length > 0) return found;
+        }
+    }
+    return [];
+};
+
+/**
  * Registry of engine functions.
  * Each function receives (node, inputText, parentOutputs, context) and returns a result.
  */
 const engines = {
     'list-iterator': async (node, inputText, parentOutputs, context) => {
         const { nodeMap, adjacency } = context;
-        let items = inputText;
-        if (typeof items === 'string') {
-            try { items = JSON.parse(items); } catch (e) { items = [items]; }
+        let config = {};
+        try { config = node.config ? JSON.parse(node.config) : {}; } catch (e) { }
+
+        let data = inputText;
+        if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (e) { }
         }
-        if (!Array.isArray(items) && typeof items === 'object') {
-            const arrayKey = Object.keys(items).find(k => Array.isArray(items[k]));
-            items = arrayKey ? items[arrayKey] : [items];
+
+        let items = [];
+        if (config.input_field && data && data[config.input_field]) {
+            items = Array.isArray(data[config.input_field]) ? data[config.input_field] : [data[config.input_field]];
+        } else {
+            items = findEntities(data);
         }
-        if (!Array.isArray(items)) items = [items];
+
+        // If still no items found but we have data, use the data itself if it's an array
+        if (items.length === 0) {
+            if (Array.isArray(data)) items = data;
+            else if (data) items = [data];
+        }
 
         const targetIds = adjacency[node.id] || [];
-        const nextToolNode = targetIds.map(id => nodeMap[id]).find(n => n.node_type === 'tool' && n.Tool);
+        const nextNode = targetIds.map(id => nodeMap[id]).find(n => (n.node_type === 'tool' && n.Tool) || (n.node_type === 'engine' && n.Engine));
 
-        if (nextToolNode) {
+        if (nextNode) {
             const iterResults = [];
             for (let i = 0; i < items.length; i++) {
-                const itemText = typeof items[i] === 'string' ? items[i] : JSON.stringify(items[i]);
-                const r = await executeSingleTool(nextToolNode.Tool, itemText);
-                iterResults.push(r.response);
+                const itemData = items[i];
+                const itemInput = typeof itemData === 'string' ? itemData : JSON.stringify(itemData);
+
+                let result;
+                if (nextNode.node_type === 'tool') {
+                    const r = await executeSingleTool(nextNode.Tool, itemInput);
+                    result = r.response;
+                } else {
+                    // Recursive engine execution
+                    const r = await executeEngine(nextNode, itemInput, [itemData], context);
+                    result = r.output;
+                }
+                iterResults.push(result);
             }
-            // Return BOTH the results and a signal to skip the next tool node if it was already handled
             return {
                 output: iterResults,
                 stepInfo: { itemsProcessed: items.length, results: iterResults },
-                consumedNodeId: nextToolNode.id,
+                consumedNodeId: nextNode.id,
                 consumedOutput: iterResults
             };
         }
@@ -142,37 +196,6 @@ const engines = {
         if (typeof data === 'string') {
             try { data = JSON.parse(data); } catch (e) { /* ignore */ }
         }
-
-        const findEntities = (obj) => {
-            if (Array.isArray(obj)) {
-                // If it's an array of objects, assume these are the entities
-                if (obj.length > 0 && typeof obj[0] === 'object' && obj[0] !== null) return obj;
-                return [];
-            }
-            if (typeof obj !== 'object' || obj === null) return [];
-
-            // Prioritize common collection keys
-            const priorityKeys = ['items', 'data', 'rows', 'results', 'entities', 'entries', 'objects'];
-            for (const key of priorityKeys) {
-                if (Array.isArray(obj[key])) {
-                    const found = findEntities(obj[key]);
-                    if (found.length > 0) return found;
-                }
-            }
-
-            // Fallback: look at any array property
-            for (const key in obj) {
-                if (Array.isArray(obj[key])) {
-                    const found = findEntities(obj[key]);
-                    if (found.length > 0) return found;
-                } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-                    // One level deeper search
-                    const found = findEntities(obj[key]);
-                    if (found.length > 0) return found;
-                }
-            }
-            return [];
-        };
 
         const entities = findEntities(data);
         const finalOutput = entities.length > 0 ? entities : (typeof data === 'object' ? [data] : []);
