@@ -1,5 +1,6 @@
 const { Machine, MachineNode, MachineConnection, Tool, Engine, Visor, JsonSchema, AiProvider } = require('../models');
 const { executeSingleTool } = require('../utils/aiExecutor');
+const { executeEngine } = require('../utils/engineExecutor');
 const fs = require('fs');
 
 // ═══════════════════════════════════════════════════════════════
@@ -244,7 +245,7 @@ exports.executeMachine = async (req, res) => {
 
         // 5. Execute in topological order
         const nodeOutputs = {}; // nodeId → output data
-        const userPrompt = req.body.prompt || 'Process the data.';
+        const userPrompt = req.body.prompt || null;
 
         for (const nodeId of executionOrder) {
             const node = nodeMap[nodeId];
@@ -285,148 +286,17 @@ exports.executeMachine = async (req, res) => {
                     step.provider = result.provider;
 
                 } else if (node.node_type === 'engine' && node.Engine) {
-                    const engineSlug = node.Engine.slug;
+                    // ── Engine Node: execute pure code logic ──
+                    const engineResult = await executeEngine(node, inputText, parentOutputs, { nodeMap, adjacency });
 
-                    if (engineSlug === 'list-iterator') {
-                        // ── List Iterator: unpack array, exec next tool per item ──
-                        let items = inputText;
-                        if (typeof items === 'string') {
-                            try { items = JSON.parse(items); } catch (e) { items = [items]; }
-                        }
-                        // If it's an object with an array property, find it
-                        if (!Array.isArray(items) && typeof items === 'object') {
-                            const arrayKey = Object.keys(items).find(k => Array.isArray(items[k]));
-                            items = arrayKey ? items[arrayKey] : [items];
-                        }
-                        if (!Array.isArray(items)) items = [items];
+                    nodeOutputs[nodeId] = engineResult.output;
+                    step.output = engineResult.stepInfo;
 
-                        // Find the next connected tool node
-                        const targetIds = adjacency[nodeId];
-                        const nextToolNode = targetIds.map(id => nodeMap[id]).find(n => n.node_type === 'tool' && n.Tool);
-
-                        if (nextToolNode) {
-                            const iterResults = [];
-                            for (let i = 0; i < items.length; i++) {
-                                const itemText = typeof items[i] === 'string' ? items[i] : JSON.stringify(items[i]);
-                                const r = await executeSingleTool(nextToolNode.Tool, itemText);
-                                iterResults.push(r.response);
-                            }
-                            nodeOutputs[nodeId] = iterResults;
-                            // Also set the output for the next tool node so it's marked as done
-                            nodeOutputs[nextToolNode.id] = iterResults;
-                            step.output = { itemsProcessed: items.length, results: iterResults };
-                        } else {
-                            nodeOutputs[nodeId] = items;
-                            step.output = items;
-                        }
-
-                    } else if (engineSlug === 'list-collector') {
-                        // ── List Collector: aggregate all incoming outputs into array ──
-                        const collected = [];
-                        for (const po of parentOutputs) {
-                            if (Array.isArray(po)) collected.push(...po);
-                            else collected.push(po);
-                        }
-                        nodeOutputs[nodeId] = collected;
-                        step.output = { collectedItems: collected.length, data: collected };
-
-                    } else if (engineSlug === 'data-mapper') {
-                        // ── Data Mapper: merge all incoming data ──
-                        if (parentOutputs.length === 1) {
-                            nodeOutputs[nodeId] = parentOutputs[0];
-                        } else {
-                            const merged = {};
-                            for (const po of parentOutputs) {
-                                if (typeof po === 'object' && !Array.isArray(po)) {
-                                    Object.assign(merged, po);
-                                } else if (Array.isArray(po)) {
-                                    merged.data = [...(merged.data || []), ...po];
-                                } else {
-                                    merged.raw = (merged.raw || '') + '\n' + String(po);
-                                }
-                            }
-                            nodeOutputs[nodeId] = merged;
-                        }
-                        step.output = nodeOutputs[nodeId];
-
-                    } else if (engineSlug === 'api-consumer') {
-                        // ── API Consumer: run external fetch ──
-                        let config = {};
-                        try { config = node.config ? JSON.parse(node.config) : {}; } catch (e) { }
-
-                        const method = (config.method || 'GET').toUpperCase();
-                        const url = config.url;
-                        if (!url) throw new Error('API Consumer requires a URL configuration.');
-
-                        let hdrs = {};
-                        if (config.headers) {
-                            try { hdrs = typeof config.headers === 'string' ? JSON.parse(config.headers) : config.headers; }
-                            catch (e) { }
-                        }
-
-                        const fetchOptions = { method, headers: { ...hdrs } };
-
-                        if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-                            fetchOptions.body = typeof inputText === 'string' ? inputText : JSON.stringify(inputText);
-                            if (!fetchOptions.headers['Content-Type']) {
-                                fetchOptions.headers['Content-Type'] = 'application/json';
-                            }
-                        }
-
-                        const response = await fetch(url, fetchOptions);
-                        const respText = await response.text();
-                        let respData = respText;
-                        try { respData = JSON.parse(respText); } catch (e) { }
-
-                        if (!response.ok) {
-                            throw new Error(`API returned ${response.status}: ${respText}`);
-                        }
-
-                        nodeOutputs[nodeId] = respData;
-                        step.output = respData;
-
-                    } else if (engineSlug === 'printer') {
-                        // ── PRINTER: Smart print of the input ──
-                        let data = inputText;
-                        if (typeof data === 'string') {
-                            try { data = JSON.parse(data); } catch (e) { }
-                        }
-
-                        let printResult = data;
-                        if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
-                            const keys = Object.keys(data);
-                            if (keys.length === 1) {
-                                printResult = data[keys[0]];
-                            }
-                        }
-
-                        nodeOutputs[nodeId] = printResult;
-                        step.output = printResult;
-
-                    } else if (engineSlug === 'json-converter') {
-                        // ── JSON Converter: bidirectional string/object conversion ──
-                        let data = inputText;
-                        if (typeof data === 'string') {
-                            try {
-                                const parsed = JSON.parse(data);
-                                nodeOutputs[nodeId] = parsed;
-                                step.output = parsed;
-                            } catch (e) {
-                                // If fail, it's already a string, maybe it's not JSON
-                                nodeOutputs[nodeId] = data;
-                                step.output = data;
-                            }
-                        } else {
-                            const stringified = JSON.stringify(data, null, 2);
-                            nodeOutputs[nodeId] = stringified;
-                            step.output = stringified;
-                        }
-
-                    } else {
-                        // Unknown engine — pass through
-                        nodeOutputs[nodeId] = inputText;
-                        step.output = inputText;
+                    // Support for engines that consume/handle other nodes (like list-iterator)
+                    if (engineResult.consumedNodeId) {
+                        nodeOutputs[engineResult.consumedNodeId] = engineResult.consumedOutput;
                     }
+
                 } else if (node.node_type === 'visor' && node.Visor) {
                     // ── Visor Node: passthrough for visual feedback ──
                     nodeOutputs[nodeId] = inputText;
