@@ -777,10 +777,18 @@ const MachineEditor = () => {
                         <div className="h-5 w-px bg-slate-800" />
                         <span className="text-lg leading-none">{machine?.icono || '⚙️'}</span>
                         <div className="min-w-0">
-                            <input value={machineName} onChange={e => setMachineName(e.target.value)}
+                            <input
+                                id="machineName"
+                                name="machineName"
+                                value={machineName}
+                                onChange={e => setMachineName(e.target.value)}
                                 className="text-sm font-bold text-white bg-transparent border-none outline-none w-full placeholder:text-slate-700"
                                 placeholder="Machine name..." />
-                            <input value={machineDesc} onChange={e => setMachineDesc(e.target.value)}
+                            <input
+                                id="machineDesc"
+                                name="machineDesc"
+                                value={machineDesc}
+                                onChange={e => setMachineDesc(e.target.value)}
                                 className="text-[10px] text-slate-600 bg-transparent border-none outline-none w-full placeholder:text-slate-800"
                                 placeholder="Description..." />
                         </div>
@@ -883,6 +891,8 @@ const MachineEditor = () => {
 
                                             {fieldType === 'select' ? (
                                                 <select
+                                                    id={`config-${key}`}
+                                                    name={`config-${key}`}
                                                     value={val}
                                                     onChange={e => updateNodeConfig(selectedNode.id, key, e.target.value)}
                                                     className="w-full bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/50"
@@ -894,6 +904,8 @@ const MachineEditor = () => {
                                                 </select>
                                             ) : fieldType === 'text' || fieldType === 'textarea' ? (
                                                 <textarea
+                                                    id={`config-${key}`}
+                                                    name={`config-${key}`}
                                                     value={val}
                                                     onChange={e => updateNodeConfig(selectedNode.id, key, e.target.value)}
                                                     className="w-full bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/50 min-h-[60px]"
@@ -902,6 +914,8 @@ const MachineEditor = () => {
                                             ) : (
                                                 <input
                                                     type="text"
+                                                    id={`config-${key}`}
+                                                    name={`config-${key}`}
                                                     value={val}
                                                     onChange={e => updateNodeConfig(selectedNode.id, key, e.target.value)}
                                                     className="w-full bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/50"
@@ -935,6 +949,8 @@ const MachineEditor = () => {
                                         <div>
                                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Pipeline Instructions</label>
                                             <textarea
+                                                id="executionPrompt"
+                                                name="executionPrompt"
                                                 value={executionPrompt}
                                                 onChange={e => setExecutionPrompt(e.target.value)}
                                                 className="w-full bg-slate-900 border border-slate-700 rounded-lg p-4 text-sm text-slate-200 focus:outline-none focus:border-violet-500/50 min-h-[140px] resize-none"
@@ -946,6 +962,8 @@ const MachineEditor = () => {
                                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Reference File (Optional)</label>
                                             <div className="border border-dashed border-slate-700 bg-slate-800/30 rounded-lg h-24 flex items-center justify-center relative hover:bg-violet-500/5 hover:border-violet-500/40 transition-colors">
                                                 <input
+                                                    id="executionFile"
+                                                    name="executionFile"
                                                     type="file"
                                                     onChange={e => setExecutionFile(e.target.files[0])}
                                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
