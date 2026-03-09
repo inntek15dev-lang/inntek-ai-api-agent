@@ -170,12 +170,17 @@ const VisorNode = ({ data }) => {
         if (!data.execOutput) return <p className="text-[9px] text-emerald-500/50 italic animate-pulse">Waiting for data stream...</p>;
 
         const visorSlug = data.slug;
-        const rawData = data.execOutput;
+        let rawData = data.execOutput;
+
+        // Resilience: attempt to parse JSON string if visor expects object/array
+        if (typeof rawData === 'string' && (rawData.trim().startsWith('{') || rawData.trim().startsWith('['))) {
+            try { rawData = JSON.parse(rawData); } catch (e) { /* use as string */ }
+        }
 
         try {
             if (visorSlug === 'table-visor') {
                 const items = Array.isArray(rawData) ? rawData : (typeof rawData === 'object' ? [rawData] : []);
-                if (items.length === 0) return <p className="text-[9px] text-slate-400">No tabular data</p>;
+                if (items.length === 0) return <p className="text-[9px] text-zinc-500 italic">No tabular data to display...</p>;
                 const keys = Object.keys(items[0]);
                 return (
                     <div className="overflow-x-auto custom-scrollbar">
