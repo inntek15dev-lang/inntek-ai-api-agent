@@ -92,6 +92,45 @@ const seed = async () => {
             ])
         });
 
+        // 5c. Reporte TGR Certificado de Deuda
+        const formatTGRDeuda = await OutputFormat.create({
+            id: '556a56ca-93b4-4e4d-9ac5-54a77aa15e60',
+            nombre: 'Reporte TGR Certificado de Deuda',
+            tipo: 'reporte',
+            category_id: catIdentidad.id,
+            estructura: JSON.stringify([
+                { "id": 1, "type": "heading", "data": { "text": "Certificado de Deuda TGR", "param": "" } },
+                { "id": 2, "type": "label", "data": { "text": "Nombre Contribuyente", "param": "identificacion_deudor.nombre_razon_social" } },
+                { "id": 3, "type": "label", "data": { "text": "RUT", "param": "identificacion_deudor.rut" } },
+                { "id": 4, "type": "subheading", "data": { "text": "Resumen Financiero", "param": "" } },
+                { "id": 5, "type": "label", "data": { "text": "Total Moroso", "param": "resumen_deuda.total_moroso" } },
+                { "id": 6, "type": "label", "data": { "text": "Total No Vencido", "param": "resumen_deuda.total_no_vencido" } },
+                { "id": 7, "type": "label", "data": { "text": "TOTAL DEUDA", "param": "resumen_deuda.total_deuda" } },
+                { "id": 8, "type": "subheading", "data": { "text": "Autenticidad", "param": "" } },
+                { "id": 9, "type": "label", "data": { "text": "Fecha Emisión", "param": "verificacion_autenticidad.fecha_emision" } },
+                { "id": 10, "type": "label", "data": { "text": "Cód. Verificación", "param": "verificacion_autenticidad.codigo_verificacion" } }
+            ])
+        });
+
+        // 5d. Reporte TGR Resolución de Convenio
+        const formatTGRConvenio = await OutputFormat.create({
+            id: '556a56ca-93b4-4e4d-9ac5-54a77aa15e61',
+            nombre: 'Reporte TGR Resolución de Convenio',
+            tipo: 'reporte',
+            category_id: catIdentidad.id,
+            estructura: JSON.stringify([
+                { "id": 1, "type": "heading", "data": { "text": "Resolución de Convenio TGR", "param": "" } },
+                { "id": 2, "type": "label", "data": { "text": "Nro Resolución", "param": "metadata_resolucion.nro_resolucion" } },
+                { "id": 3, "type": "label", "data": { "text": "Fecha Resolución", "param": "metadata_resolucion.fecha_resolucion" } },
+                { "id": 4, "type": "label", "data": { "text": "RUT Contribuyente", "param": "identificacion_contribuyente.rut" } },
+                { "id": 5, "type": "subheading", "data": { "text": "Detalles del Plan", "param": "" } },
+                { "id": 6, "type": "label", "data": { "text": "Monto Total", "param": "plan_pagos.monto_total" } },
+                { "id": 7, "type": "label", "data": { "text": "Cantidad Cuotas", "param": "plan_pagos.cantidad_cuotas" } },
+                { "id": 8, "type": "label", "data": { "text": "Valor Cuota aprox", "param": "plan_pagos.valor_cuota_tipo" } },
+                { "id": 9, "type": "label", "data": { "text": "Primer Vencimiento", "param": "plan_pagos.fecha_primer_vencimiento" } }
+            ])
+        });
+
         // ═══════════════════════════════════════════════════════════════
         // 6. JSON Schemas
         // ═══════════════════════════════════════════════════════════════
@@ -241,6 +280,119 @@ const seed = async () => {
                             "documento": { "type": "number" },
                             "base_datos": { "type": "number" },
                             "resultado": { "enum": ["MATCH", "MISMATCH"] }
+                        }
+                    }
+                }
+            })
+        });
+
+        // 6c. TGR Certificado de Deuda
+        const schemaTGRDeuda = await JsonSchema.create({
+            id: '91b20865-b18c-4927-b711-abb751fd2220',
+            nombre: 'Esquema TGR Certificado de Deuda',
+            descripcion: 'Estructura para validación de deudas fiscales y territoriales de la TGR',
+            schema: JSON.stringify({
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "required": ["identificacion_deudor", "resumen_deuda", "detalle_obligaciones", "verificacion_autenticidad"],
+                "properties": {
+                    "identificacion_deudor": {
+                        "type": "object",
+                        "required": ["rut", "nombre_razon_social"],
+                        "properties": {
+                            "rut": { "type": "string" },
+                            "nombre_razon_social": { "type": "string" },
+                            "direccion": { "type": "string" },
+                            "rol_propiedad": { "type": "string", "description": "Si aplica (Contribuciones)" }
+                        }
+                    },
+                    "resumen_deuda": {
+                        "type": "object",
+                        "required": ["total_moroso", "total_no_vencido"],
+                        "properties": {
+                            "total_moroso": { "type": "number" },
+                            "total_no_vencido": { "type": "number" },
+                            "total_deuda": { "type": "number" },
+                            "moneda": { "type": "string", "default": "CLP" }
+                        }
+                    },
+                    "detalle_obligaciones": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["folio", "vencimiento", "neto", "total"],
+                            "properties": {
+                                "tipo_impuesto": { "type": "string" },
+                                "folio": { "type": "string" },
+                                "periodo": { "type": "string" },
+                                "vencimiento": { "type": "string" },
+                                "neto": { "type": "number" },
+                                "reajustes": { "type": "number" },
+                                "intereses_multas": { "type": "number" },
+                                "total": { "type": "number" }
+                            }
+                        }
+                    },
+                    "verificacion_autenticidad": {
+                        "type": "object",
+                        "required": ["codigo_verificacion", "fecha_emision"],
+                        "properties": {
+                            "codigo_verificacion": { "type": "string" },
+                            "fecha_emision": { "type": "string" },
+                            "url_verificacion": { "type": "string", "default": "https://www.tgr.cl/oficina-virtual/verificar-documento/" }
+                        }
+                    }
+                }
+            })
+        });
+
+        // 6d. TGR Resolución de Convenio
+        const schemaTGRConvenio = await JsonSchema.create({
+            id: '91b20865-b18c-4927-b711-abb751fd2221',
+            nombre: 'Esquema TGR Resolución de Convenio',
+            descripcion: 'Estructura para validación de convenios de pago y resoluciones TGR',
+            schema: JSON.stringify({
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "required": ["metadata_resolucion", "identificacion_contribuyente", "plan_pagos"],
+                "properties": {
+                    "metadata_resolucion": {
+                        "type": "object",
+                        "required": ["nro_resolucion", "fecha_resolucion"],
+                        "properties": {
+                            "nro_resolucion": { "type": "string" },
+                            "fecha_resolucion": { "type": "string" },
+                            "tipo_convenio": { "type": "string" }
+                        }
+                    },
+                    "identificacion_contribuyente": {
+                        "type": "object",
+                        "required": ["rut", "nombre"],
+                        "properties": {
+                            "rut": { "type": "string" },
+                            "nombre": { "type": "string" }
+                        }
+                    },
+                    "plan_pagos": {
+                        "type": "object",
+                        "required": ["monto_total", "cantidad_cuotas"],
+                        "properties": {
+                            "monto_total": { "type": "number" },
+                            "cantidad_cuotas": { "type": "number" },
+                            "valor_cuota_tipo": { "type": "number" },
+                            "fecha_primer_vencimiento": { "type": "string" },
+                            "estado": { "type": "string" }
+                        }
+                    },
+                    "detalle_cuotas": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "nro_cuota": { "type": "number" },
+                                "vencimiento": { "type": "string" },
+                                "monto": { "type": "number" }
+                            }
                         }
                     }
                 }
@@ -755,6 +907,55 @@ Suma los dos valores de "COTIZACION OBLIGATORIA" si aparecen dos. Reemplaza coma
             response_format: 'Markdown',
             output_format_id: null,
             json_schema_id: null
+        });
+
+        // 12g. Validador de Certificado de Deuda TGR
+        await Tool.create({
+            id: 'edb84cda-0000-4a2c-8187-000000000040',
+            nombre: 'Validador de Certificado de Deuda TGR',
+            descripcion: 'Analista experto en Certificados de Deuda de la Tesorería General de la República. Verifica deudas fiscales, territoriales y autenticidad del documento.',
+            logo_herramienta: '🏛️',
+            training_prompt: `ACTUA COMO UN EXPERTO ANALISTA TRIBUTARIO DE LA TESORERÍA GENERAL DE LA REPÚBLICA DE CHILE.
+Tu objetivo es analizar certificados de deuda emitidos por TGR para extraer información precisa y validar la autenticidad del documento.
+
+CAMPOS CRÍTICOS A EXTRAER:
+1. Identificación: RUT (con puntos y guion), Nombre/Razón Social, Rol de Propiedad (si aplica).
+2. Resumen Financiero: Total Moroso, Total No Vencido, Reajustes, Intereses y Multas.
+3. Detalle de Obligaciones: Listado de cada impuesto adeudado (Folio, Periodo, Vencimiento, Monto).
+4. Seguridad: Código de Verificación de autenticidad y Fecha de Emisión.
+
+REGLAS DE NEGOCIO:
+- Los montos deben ser tratados como números sin decimales (CLP).
+- Si el documento indica "SIN DEUDA", el total moroso debe ser 0.
+- El Código de Verificación es esencial para la validez legal.`,
+            behavior_prompt: 'Procesa el documento adjunto. Genera un JSON que siga estrictamente el esquema de TGR Deuda. Asegúrate de capturar cada ítem de la tabla de deudas en el array detalle_obligaciones. Si algún campo no es visible, usa null o 0 según corresponda.',
+            response_format: 'JSON',
+            output_format_id: formatTGRDeuda.id,
+            json_schema_id: schemaTGRDeuda.id
+        });
+
+        // 12h. Validador de COMPROBANTE DE RESOLUCIÓN de convenio TGR
+        await Tool.create({
+            id: 'edb84cda-0000-4a2c-8187-000000000041',
+            nombre: 'Validador de COMPROBANTE DE RESOLUCIÓN de convenio TGR',
+            descripcion: 'Analista experto en convenios de pago TGR. Verifica términos de resolución, cantidad de cuotas y montos pactados.',
+            logo_herramienta: '📝',
+            training_prompt: `ACTUA COMO UN EXPERTO EN CONVENIOS DE PAGO Y RESOLUCIONES ADMINISTRATIVAS DE LA TGR CHILE.
+Tu tarea es decodificar el Comprobante de Resolución de Convenio y estructurar sus términos.
+
+ANÁLISIS DE RESOLUCIÓN:
+1. Metadata: Número de Resolución, Fecha, Tipo de Convenio (ej. Administrativo, Judicial).
+2. Contribuyente: RUT y Nombre.
+3. Plan de Pagos: Monto total consolidado, número de cuotas pactadas, valor de la cuota tipo, fecha de pago inicial.
+
+REGLAS DE EXPERTO:
+- Valida que el RUT sea consistente con la resolución.
+- Extrae el desglose de cuotas si está disponible en una tabla.
+- Indica claramente el estado del convenio si el documento lo menciona (ej. Aprobado, Pendiente).`,
+            behavior_prompt: 'Analiza el comprobante de resolución. Genera el JSON correspondiente al esquema TGR Convenio. Presta especial atención al número de resolución y al plan de pagos.',
+            response_format: 'JSON',
+            output_format_id: formatTGRConvenio.id,
+            json_schema_id: schemaTGRConvenio.id
         });
 
         // ═══════════════════════════════════════════════════════════════
