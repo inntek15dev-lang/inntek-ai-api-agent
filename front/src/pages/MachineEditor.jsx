@@ -179,26 +179,42 @@ const VisorNode = ({ data }) => {
 
         try {
             if (visorSlug === 'table-visor') {
-                const items = Array.isArray(rawData) ? rawData : (typeof rawData === 'object' ? [rawData] : []);
-                if (items.length === 0) return <p className="text-[9px] text-zinc-500 italic">No tabular data to display...</p>;
-                const keys = Object.keys(items[0]);
+                console.log(`[PARKO] Rendering TableVisor with data type: ${typeof rawData}`, rawData);
+                const items = Array.isArray(rawData) ? rawData : (typeof rawData === 'object' && rawData !== null ? [rawData] : []);
+
+                if (items.length === 0) {
+                    return (
+                        <div className="flex flex-col items-center justify-center p-4 py-8 border border-dashed border-emerald-500/20 rounded-lg bg-emerald-500/5">
+                            <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest mb-1">No Tabular Data</p>
+                            <p className="text-[8px] text-emerald-500/40 text-center">The received data is not an array or is empty.</p>
+                        </div>
+                    );
+                }
+
+                const keys = Object.keys(items[0] || {});
+                if (keys.length === 0) return <p className="text-[9px] text-zinc-500 italic">Data exists but has no identifiable properties...</p>;
+
                 return (
                     <div className="overflow-x-auto custom-scrollbar">
                         <table className="w-full text-[9px] text-emerald-100 border-collapse">
                             <thead>
                                 <tr className="border-b border-emerald-500/30">
-                                    {keys.map(k => <th key={k} className="text-left p-1 uppercase font-black opacity-60 bg-emerald-500/5">{k}</th>)}
+                                    {keys.map(k => <th key={k} className="text-left p-1.5 uppercase font-black opacity-60 bg-emerald-500/5 whitespace-nowrap">{k}</th>)}
                                 </tr>
                             </thead>
                             <tbody>
-                                {items.slice(0, 10).map((it, i) => (
+                                {items.slice(0, 50).map((it, i) => (
                                     <tr key={i} className="border-b border-emerald-500/10 hover:bg-emerald-500/5 transition-colors">
-                                        {keys.map(k => <td key={k} className="p-1 truncate max-w-[100px] border-r border-emerald-500/5 last:border-0">{String(it[k])}</td>)}
+                                        {keys.map(k => {
+                                            const val = it[k];
+                                            const displayVal = typeof val === 'object' ? JSON.stringify(val) : String(val);
+                                            return <td key={k} className="p-1.5 truncate max-w-[150px] border-r border-emerald-500/5 last:border-0">{displayVal}</td>;
+                                        })}
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
-                        {items.length > 10 && <p className="text-[7px] text-emerald-500/40 mt-1 text-center italic">+ {items.length - 10} more rows hidden</p>}
+                        {items.length > 50 && <p className="text-[7px] text-emerald-500/40 mt-2 text-center italic font-bold tracking-tighter animate-pulse">+ {items.length - 50} MORE RECORDS IN BUFFER</p>}
                     </div>
                 );
             }
