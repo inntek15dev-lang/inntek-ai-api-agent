@@ -1035,6 +1035,22 @@ REGLAS DE EXPERTO:
         await MachineConnection.create({ machine_id: machineDemoLiqui.id, source_node_id: m3n2.id, target_node_id: m3n3.id, source_handle: null, target_handle: null });
         await MachineConnection.create({ machine_id: machineDemoLiqui.id, source_node_id: m3n3.id, target_node_id: m3n4.id, source_handle: null, target_handle: null });
 
+        // ── Machine 4: Proceso Liquidaciones en lote Demo v1 ──
+        const machineBatchLiqui = await Machine.create({
+            id: 'machine-0000-0000-0000-000000000004',
+            nombre: 'Proceso Liquidaciones en lote Demo v1',
+            descripcion: 'Extracción masiva de liquidaciones → Extracción automática de tabla → Visualización en VISOR Tabla.',
+            icono: '📊',
+            activo: true
+        });
+
+        const m4n1 = await MachineNode.create({ id: 'mn-batch-0001', machine_id: machineBatchLiqui.id, node_type: 'tool', tool_id: toolDemoLiqui.id, position_x: 50, position_y: 200, config: null });
+        const m4n2 = await MachineNode.create({ id: 'mn-batch-0002', machine_id: machineBatchLiqui.id, node_type: 'engine', engine_id: engineEntityExtractor.id, position_x: 350, position_y: 200, config: null });
+        const m4n3 = await MachineNode.create({ id: 'mn-batch-0003', machine_id: machineBatchLiqui.id, node_type: 'visor', visor_id: visorTable.id, position_x: 650, position_y: 200, config: null });
+
+        await MachineConnection.create({ machine_id: machineBatchLiqui.id, source_node_id: m4n1.id, target_node_id: m4n2.id, source_handle: null, target_handle: null });
+        await MachineConnection.create({ machine_id: machineBatchLiqui.id, source_node_id: m4n2.id, target_node_id: m4n3.id, source_handle: null, target_handle: null });
+
         console.log('Database seeded successfully!');
         process.exit(0);
     } catch (error) {
