@@ -275,10 +275,9 @@ exports.executeMachine = async (req, res) => {
 
             try {
                 // Gather inputs from all parent nodes
-                const parentOutputs = incomingFrom[nodeId].map(pid => nodeOutputs[pid]).filter(Boolean);
-                const inputText = parentOutputs.length > 0
-                    ? (typeof parentOutputs[0] === 'string' ? parentOutputs[0] : JSON.stringify(parentOutputs.length === 1 ? parentOutputs[0] : parentOutputs))
-                    : userPrompt;
+                const parentOutputs = incomingFrom[nodeId].map(pid => nodeOutputs[pid]).filter(val => val !== undefined && val !== null);
+                const rawInput = parentOutputs.length === 0 ? userPrompt : (parentOutputs.length === 1 ? parentOutputs[0] : parentOutputs);
+                const inputText = typeof rawInput === 'string' ? rawInput : JSON.stringify(rawInput);
 
                 if (node.node_type === 'tool' && node.Tool) {
                     // ── Tool Node: execute AI ──
@@ -310,13 +309,13 @@ exports.executeMachine = async (req, res) => {
 
                 } else if (node.node_type === 'visor' && node.Visor) {
                     // ── Visor Node: passthrough for visual feedback ──
-                    nodeOutputs[nodeId] = inputText;
-                    step.output = inputText;
+                    nodeOutputs[nodeId] = rawInput;
+                    step.output = rawInput;
                     step.visorSlug = node.Visor.slug;
                 } else {
                     // Node with missing Tool/Engine/Visor reference — pass through
-                    nodeOutputs[nodeId] = inputText;
-                    step.output = inputText;
+                    nodeOutputs[nodeId] = rawInput;
+                    step.output = rawInput;
                 }
 
                 step.status = 'done';
