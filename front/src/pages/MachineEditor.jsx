@@ -105,8 +105,21 @@ const EngineNode = ({ data, selected }) => {
                 <span className="text-4xl mb-2.5 leading-none drop-shadow-md">{data.icon || '⚙️'}</span>
                 <span className="text-[10px] font-black text-violet-400 uppercase tracking-widest line-clamp-2 leading-tight w-full drop-shadow-sm">{data.label}</span>
                 <span className="inline-block mt-1.5 text-[8px] font-black text-violet-300 uppercase tracking-[0.15em] bg-violet-500/20 px-1.5 py-0.5 rounded border border-violet-500/30">{data.engineType}</span>
+
+                {data.execProgress && (
+                    <div className="mt-2 px-2 py-1 bg-violet-500/20 rounded-full border border-violet-400/30 animate-pulse">
+                        <span className="text-[9px] font-mono text-violet-300">
+                            {data.execProgress.index}/{data.execProgress.total}
+                        </span>
+                    </div>
+                )}
+
                 <div className="mt-2 w-full flex-1 relative overflow-hidden">
-                    <p className="text-[9px] text-slate-400 line-clamp-2 leading-snug">{data.description || 'Engine'}</p>
+                    <p className="text-[9px] text-slate-400 line-clamp-2 leading-snug">
+                        {data.execProgress?.currentItem
+                            ? `Iterando: ${typeof data.execProgress.currentItem === 'object' ? (data.execProgress.currentItem.nombre || 'Item') : data.execProgress.currentItem}`
+                            : (data.description || 'Engine')}
+                    </p>
                 </div>
             </div>
 
@@ -186,14 +199,24 @@ const VisorNode = ({ data }) => {
             }
 
             if (visorSlug === 'message-visor') {
-                const content = typeof rawData === 'string' ? rawData : JSON.stringify(rawData, null, 2);
+                const items = Array.isArray(rawData) ? rawData : [rawData];
                 return (
-                    <div className="bg-emerald-500/5 border border-emerald-500/20 p-2 rounded text-[10px] font-mono text-emerald-200/90 leading-tight">
-                        <div className="flex items-center space-x-1 mb-1 opacity-50">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                            <span className="text-[7px] font-black uppercase">Standard Stream</span>
-                        </div>
-                        {content}
+                    <div className="flex flex-col space-y-2">
+                        {items.map((it, idx) => {
+                            const content = typeof it === 'string' ? it : JSON.stringify(it, null, 2);
+                            return (
+                                <div key={idx} className="bg-emerald-500/5 border border-emerald-500/20 p-2 rounded text-[10px] font-mono text-emerald-200/90 leading-tight">
+                                    <div className="flex items-center justify-between mb-1 opacity-50">
+                                        <div className="flex items-center space-x-1">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                            <span className="text-[7px] font-black uppercase">Standard Stream</span>
+                                        </div>
+                                        {items.length > 1 && <span className="text-[7px] font-mono">#{idx + 1}</span>}
+                                    </div>
+                                    {content}
+                                </div>
+                            );
+                        })}
                     </div>
                 );
             }
@@ -577,6 +600,19 @@ const MachineEditor = () => {
                             if (event.type === 'node-start') {
                                 setNodes(nds => nds.map(n => n.id === event.nodeId
                                     ? { ...n, data: { ...n.data, execStatus: 'running' } }
+                                    : n
+                                ));
+                            } else if (event.type === 'node-progress') {
+                                setNodes(nds => nds.map(n => n.id === event.nodeId
+                                    ? {
+                                        ...n,
+                                        data: {
+                                            ...n.data,
+                                            execProgress: event.progress,
+                                            // Handle special case where iterator updates its next node's output in real time if desired, 
+                                            // though usually we wait for end.
+                                        }
+                                    }
                                     : n
                                 ));
                             } else if (event.type === 'node-end') {

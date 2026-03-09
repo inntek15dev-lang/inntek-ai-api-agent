@@ -816,6 +816,24 @@ Suma los dos valores de "COTIZACION OBLIGATORIA" si aparecen dos. Reemplaza coma
         // Mapper outputs to final report
         await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n7.id, target_node_id: m2n8.id, source_handle: null, target_handle: null });
 
+        // ── Machine 3: Auditoría de Liquidaciones (Demo) ──
+        const machineDemoLiqui = await Machine.create({
+            id: 'machine-0000-0000-0000-000000000003',
+            nombre: 'Auditoría de Liquidaciones (Demo)',
+            descripcion: 'Demostración de flujo completo: Extracción de PDF con Tool especializada → Iterador Inteligente → Visor de Mensajes individuales.',
+            icono: '📑',
+            activo: true
+        });
+
+        const m3n1 = await MachineNode.create({ id: 'mn-demo-0001', machine_id: machineDemoLiqui.id, node_type: 'tool', tool_id: toolDemoLiqui.id, position_x: 50, position_y: 200, config: null });
+        const m3n2 = await MachineNode.create({ id: 'mn-demo-0002', machine_id: machineDemoLiqui.id, node_type: 'engine', engine_id: engineIterator.id, position_x: 350, position_y: 200, config: JSON.stringify({ input_field: 'lista' }) });
+        const m3n3 = await MachineNode.create({ id: 'mn-demo-0003', machine_id: machineDemoLiqui.id, node_type: 'engine', engine_id: enginePrinter.id, position_x: 650, position_y: 200, config: null });
+        const m3n4 = await MachineNode.create({ id: 'mn-demo-0004', machine_id: machineDemoLiqui.id, node_type: 'visor', visor_id: visorMessage.id, position_x: 950, position_y: 200, config: null });
+
+        await MachineConnection.create({ machine_id: machineDemoLiqui.id, source_node_id: m3n1.id, target_node_id: m3n2.id, source_handle: null, target_handle: null });
+        await MachineConnection.create({ machine_id: machineDemoLiqui.id, source_node_id: m3n2.id, target_node_id: m3n3.id, source_handle: null, target_handle: null });
+        await MachineConnection.create({ machine_id: machineDemoLiqui.id, source_node_id: m3n3.id, target_node_id: m3n4.id, source_handle: null, target_handle: null });
+
         console.log('Database seeded successfully!');
         process.exit(0);
     } catch (error) {
