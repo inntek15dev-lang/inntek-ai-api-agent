@@ -309,6 +309,7 @@ exports.executeMachine = async (req, res) => {
 
                 } else if (node.node_type === 'visor' && node.Visor) {
                     // ── Visor Node: passthrough for visual feedback ──
+                    console.log(`[PARKO] Visor ${node.Visor.slug} receiving:`, Array.isArray(rawInput) ? `Array(${rawInput.length})` : typeof rawInput);
                     nodeOutputs[nodeId] = rawInput;
                     step.output = rawInput;
                     step.visorSlug = node.Visor.slug;

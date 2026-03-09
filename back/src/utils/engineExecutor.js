@@ -216,7 +216,7 @@ const engines = {
 
         return {
             output: finalOutput,
-            stepInfo: { entitiesFound: entities.length, type: Array.isArray(data) ? 'array' : 'object' }
+            stepInfo: finalOutput
         };
     }
 };
