@@ -3,159 +3,200 @@ require('dotenv').config();
 
 const seed = async () => {
     try {
-        await sequelize.sync({ force: true });
+        await sequelize.sync();
 
         // 1. Create Roles
-        const superAdminRole = await Role.create({ nombre: 'SuperAdmin' });
-        const adminRole = await Role.create({ nombre: 'Admin' });
-        const userRole = await Role.create({ nombre: 'User' });
+        const [superAdminRole] = await Role.findOrCreate({ where: { nombre: 'SuperAdmin' } });
+        const [adminRole] = await Role.findOrCreate({ where: { nombre: 'Admin' } });
+        const [userRole] = await Role.findOrCreate({ where: { nombre: 'User' } });
 
         // 2. Create Privileges (SuperAdmin wildcard)
-        await Privilegio.create({
-            ref_modulo: '*',
-            read: true,
-            write: true,
-            exec: true,
-            role_id: superAdminRole.id
+        await Privilegio.findOrCreate({
+            where: { role_id: superAdminRole.id, ref_modulo: '*' },
+            defaults: { read: true, write: true, exec: true }
         });
 
         // Admin Privileges
         const modules = ['Auth', 'AI_Tool_Maker', 'AI_Tool_Catalog', 'AI_Tool_Execution', 'Config', 'Outputs_Maker', 'Json_Schemas', 'AI_Providers', 'Machines'];
         for (const mod of modules) {
-            await Privilegio.create({
-                ref_modulo: mod,
-                read: true,
-                write: true,
-                exec: true,
-                role_id: adminRole.id
+            await Privilegio.findOrCreate({
+                where: { role_id: adminRole.id, ref_modulo: mod },
+                defaults: { read: true, write: true, exec: true }
             });
         }
 
         // User Privileges
-        await Privilegio.create({ ref_modulo: 'AI_Tool_Catalog', read: true, role_id: userRole.id });
-        await Privilegio.create({ ref_modulo: 'AI_Tool_Execution', read: true, exec: true, role_id: userRole.id });
+        await Privilegio.findOrCreate({
+            where: { role_id: userRole.id, ref_modulo: 'AI_Tool_Catalog' },
+            defaults: { read: true }
+        });
+        await Privilegio.findOrCreate({
+            where: { role_id: userRole.id, ref_modulo: 'AI_Tool_Execution' },
+            defaults: { read: true, exec: true }
+        });
 
         // 3. Create SuperAdmin User
-        const user = await User.create({
-            nombre: 'Inntek System',
-            email: 'inntek',
-            password: 'admin',
-            role_id: superAdminRole.id
+        const [user] = await User.findOrCreate({
+            where: { email: 'inntek' },
+            defaults: {
+                nombre: 'Inntek System',
+                password: 'admin',
+                role_id: superAdminRole.id
+            }
         });
 
         // 4. Create Output Categories
-        const catIdentidad = await OutputCategory.create({
-            id: '943c7bb0-0b87-455e-843f-c04437b123c8',
-            nombre: 'Identidad y Documentación'
+        const [catIdentidad] = await OutputCategory.findOrCreate({
+            where: { id: '943c7bb0-0b87-455e-843f-c04437b123c8' },
+            defaults: { nombre: 'Identidad y Documentación' }
         });
-        const catReportes = await OutputCategory.create({ nombre: 'Reportes Ejecutivos' });
+        const [catReportes] = await OutputCategory.findOrCreate({
+            where: { nombre: 'Reportes Ejecutivos' }
+        });
 
         // ═══════════════════════════════════════════════════════════════
         // 5. Output Formats
         // ═══════════════════════════════════════════════════════════════
 
         // 5a. Reporte Validacion Cedula Chilena
-        const formatIDCard = await OutputFormat.create({
-            id: '911a1355-d121-49ef-9b6c-c4b2ae3b252c',
-            nombre: 'Reporte Validacion Cedula Chilena',
-            tipo: 'reporte',
-            category_id: catIdentidad.id,
-            estructura: JSON.stringify([
-                { "id": 1772032176765, "type": "heading", "data": { "text": "Reporte Validacion Cedula Chilena", "param": "" } },
-                { "id": 1772033276952, "type": "label", "data": { "text": "Tipo Documento", "param": "analisis_documento.tipo_documento" } },
-                { "id": 1772033345026, "type": "label", "data": { "text": "Nombre", "param": "validacion_punto_por_punto.nombre.match" } },
-                { "id": 1772033342930, "type": "label", "data": { "text": "Rut", "param": "validacion_punto_por_punto.rut.match" } },
-                { "id": 1772033422363, "type": "label", "data": { "text": "Digito Verificador", "param": "verificacion_consistencia.validacion_dv_rut" } },
-                { "id": 1772033420124, "type": "label", "data": { "text": "estándar ICAO", "param": "verificacion_consistencia.validacion_mrz" } },
-                { "id": 1772033521647, "type": "label", "data": { "text": "Integridad", "param": "verificacion_consistencia.integridad_datos" } },
-                { "id": 1772033332001, "type": "subheading", "data": { "text": "Nota Final", "param": "" } },
-                { "id": 1772032330904, "type": "heading", "data": { "text": "Nota Final", "param": "nota_final" } },
-                { "id": 1772046675807, "type": "label", "data": { "text": "MATCH NUMERO SERIE", "param": "verificacion_consistencia.match_numero_documento_anverso_reverso.resultado" } }
-            ])
+        const [formatIDCard] = await OutputFormat.findOrCreate({
+            where: { id: '911a1355-d121-49ef-9b6c-c4b2ae3b252c' },
+            defaults: {
+                nombre: 'Reporte Validacion Cedula Chilena',
+                tipo: 'reporte',
+                category_id: catIdentidad.id,
+                estructura: JSON.stringify([
+                    { "id": 1772032176765, "type": "heading", "data": { "text": "Reporte Validacion Cedula Chilena", "param": "" } },
+                    { "id": 1772033276952, "type": "label", "data": { "text": "Tipo Documento", "param": "analisis_documento.tipo_documento" } },
+                    { "id": 1772033345026, "type": "label", "data": { "text": "Nombre", "param": "validacion_punto_por_punto.nombre.match" } },
+                    { "id": 1772033342930, "type": "label", "data": { "text": "Rut", "param": "validacion_punto_por_punto.rut.match" } },
+                    { "id": 1772033422363, "type": "label", "data": { "text": "Digito Verificador", "param": "verificacion_consistencia.validacion_dv_rut" } },
+                    { "id": 1772033420124, "type": "label", "data": { "text": "estándar ICAO", "param": "verificacion_consistencia.validacion_mrz" } },
+                    { "id": 1772033521647, "type": "label", "data": { "text": "Integridad", "param": "verificacion_consistencia.integridad_datos" } },
+                    { "id": 1772033332001, "type": "subheading", "data": { "text": "Nota Final", "param": "" } },
+                    { "id": 1772032330904, "type": "heading", "data": { "text": "Nota Final", "param": "nota_final" } },
+                    { "id": 1772046675807, "type": "label", "data": { "text": "MATCH NUMERO SERIE", "param": "verificacion_consistencia.match_numero_documento_anverso_reverso.resultado" } }
+                ])
+            }
         });
 
         // 5b. Reporte Check Liquidacion Chile
-        const formatCheckLiqui = await OutputFormat.create({
-            id: '556a56ca-93b4-4e4d-9ac5-54a77aa15e53',
-            nombre: 'Reporte Check Liquidacion Chile',
-            tipo: 'reporte',
-            category_id: catIdentidad.id,
-            estructura: JSON.stringify([
-                { "id": 1772039924406, "type": "heading", "data": { "text": "Reporte Check Liquidacion Chile", "param": "" } },
-                { "id": 1772039936287, "type": "label", "data": { "text": "estado_general", "param": "resumen_match.estado_general" } },
-                { "id": 1772039937423, "type": "label", "data": { "text": "SIMILITUD", "param": "resumen_match.porcentaje_similitud" } },
-                { "id": 1772039938743, "type": "subheading", "data": { "text": "verificacion_totales", "param": "" } },
-                { "id": 1772039940390, "type": "label", "data": { "text": "sueldo_liquido", "param": "verificacion_totales.sueldo_liquido.resultado" } },
-                { "id": 1772039943703, "type": "label", "data": { "text": "Total Haberes", "param": "verificacion_totales.total_haberes.resultado" } },
-                { "id": 1772044692949, "type": "label", "data": { "text": "total_imponible", "param": "verificacion_totales.total_imponible.resultado" } },
-                { "id": 1772044761015, "type": "label", "data": { "text": "validacion_7_porciento_salud", "param": "verificacion_reglas_legales.validacion_7_porciento_salud" } }
-            ])
+        const [formatCheckLiqui] = await OutputFormat.findOrCreate({
+            where: { id: '556a56ca-93b4-4e4d-9ac5-54a77aa15e53' },
+            defaults: {
+                nombre: 'Reporte Check Liquidacion Chile',
+                tipo: 'reporte',
+                category_id: catIdentidad.id,
+                estructura: JSON.stringify([
+                    { "id": 1772039924406, "type": "heading", "data": { "text": "Reporte Check Liquidacion Chile", "param": "" } },
+                    { "id": 1772039936287, "type": "label", "data": { "text": "estado_general", "param": "resumen_match.estado_general" } },
+                    { "id": 1772039937423, "type": "label", "data": { "text": "SIMILITUD", "param": "resumen_match.porcentaje_similitud" } },
+                    { "id": 1772039938743, "type": "subheading", "data": { "text": "verificacion_totales", "param": "" } },
+                    { "id": 1772039940390, "type": "label", "data": { "text": "sueldo_liquido", "param": "verificacion_totales.sueldo_liquido.resultado" } },
+                    { "id": 1772039943703, "type": "label", "data": { "text": "Total Haberes", "param": "verificacion_totales.total_haberes.resultado" } },
+                    { "id": 1772044692949, "type": "label", "data": { "text": "total_imponible", "param": "verificacion_totales.total_imponible.resultado" } },
+                    { "id": 1772044761015, "type": "label", "data": { "text": "validacion_7_porciento_salud", "param": "verificacion_reglas_legales.validacion_7_porciento_salud" } }
+                ])
+            }
         });
 
         // 5c. Reporte TGR Certificado de Deuda
-        const formatTGRDeuda = await OutputFormat.create({
-            id: '556a56ca-93b4-4e4d-9ac5-54a77aa15e60',
-            nombre: 'Reporte TGR Certificado de Deuda',
-            tipo: 'reporte',
-            category_id: catIdentidad.id,
-            estructura: JSON.stringify([
-                { "id": 1, "type": "heading", "data": { "text": "Certificado de Deuda TGR", "param": "" } },
-                { "id": 2, "type": "label", "data": { "text": "Nombre Contribuyente", "param": "identificacion_deudor.nombre_razon_social" } },
-                { "id": 3, "type": "label", "data": { "text": "RUT", "param": "identificacion_deudor.rut" } },
-                { "id": 4, "type": "subheading", "data": { "text": "Resumen Financiero", "param": "" } },
-                { "id": 5, "type": "label", "data": { "text": "Total Moroso", "param": "resumen_deuda.total_moroso" } },
-                { "id": 6, "type": "label", "data": { "text": "Total No Vencido", "param": "resumen_deuda.total_no_vencido" } },
-                { "id": 7, "type": "label", "data": { "text": "TOTAL DEUDA", "param": "resumen_deuda.total_deuda" } },
-                { "id": 8, "type": "subheading", "data": { "text": "Autenticidad", "param": "" } },
-                { "id": 9, "type": "label", "data": { "text": "Fecha Emisión", "param": "verificacion_autenticidad.fecha_emision" } },
-                { "id": 10, "type": "label", "data": { "text": "Cód. Verificación", "param": "verificacion_autenticidad.codigo_verificacion" } }
-            ])
+        const [formatTGRDeuda] = await OutputFormat.findOrCreate({
+            where: { id: '556a56ca-93b4-4e4d-9ac5-54a77aa15e60' },
+            defaults: {
+                nombre: 'Reporte TGR Certificado de Deuda',
+                tipo: 'reporte',
+                category_id: catIdentidad.id,
+                estructura: JSON.stringify([
+                    { "id": 1, "type": "heading", "data": { "text": "Certificado de Deuda TGR", "param": "" } },
+                    { "id": 2, "type": "label", "data": { "text": "Nombre Contribuyente", "param": "identificacion_deudor.nombre_razon_social" } },
+                    { "id": 3, "type": "label", "data": { "text": "RUT", "param": "identificacion_deudor.rut" } },
+                    { "id": 4, "type": "subheading", "data": { "text": "Resumen Financiero", "param": "" } },
+                    { "id": 5, "type": "label", "data": { "text": "Total Moroso", "param": "resumen_deuda.total_moroso" } },
+                    { "id": 6, "type": "label", "data": { "text": "Total No Vencido", "param": "resumen_deuda.total_no_vencido" } },
+                    { "id": 7, "type": "label", "data": { "text": "TOTAL DEUDA", "param": "resumen_deuda.total_deuda" } },
+                    { "id": 8, "type": "subheading", "data": { "text": "Autenticidad", "param": "" } },
+                    { "id": 9, "type": "label", "data": { "text": "Fecha Emisión", "param": "verificacion_autenticidad.fecha_emision" } },
+                    { "id": 10, "type": "label", "data": { "text": "Cód. Verificación", "param": "verificacion_autenticidad.codigo_verificacion" } }
+                ])
+            }
         });
 
         // 5d. Reporte TGR Resolución de Convenio
-        const formatTGRConvenio = await OutputFormat.create({
-            id: '556a56ca-93b4-4e4d-9ac5-54a77aa15e61',
-            nombre: 'Reporte TGR Resolución de Convenio',
-            tipo: 'reporte',
-            category_id: catIdentidad.id,
-            estructura: JSON.stringify([
-                { "id": 1, "type": "heading", "data": { "text": "Resolución de Convenio TGR", "param": "" } },
-                { "id": 2, "type": "label", "data": { "text": "Nro Resolución", "param": "metadata_resolucion.nro_resolucion" } },
-                { "id": 3, "type": "label", "data": { "text": "Fecha Resolución", "param": "metadata_resolucion.fecha_resolucion" } },
-                { "id": 4, "type": "label", "data": { "text": "RUT Contribuyente", "param": "identificacion_contribuyente.rut" } },
-                { "id": 5, "type": "subheading", "data": { "text": "Detalles del Plan", "param": "" } },
-                { "id": 6, "type": "label", "data": { "text": "Monto Total", "param": "plan_pagos.monto_total" } },
-                { "id": 7, "type": "label", "data": { "text": "Cantidad Cuotas", "param": "plan_pagos.cantidad_cuotas" } },
-                { "id": 8, "type": "label", "data": { "text": "Valor Cuota aprox", "param": "plan_pagos.valor_cuota_tipo" } },
-                { "id": 9, "type": "label", "data": { "text": "Primer Vencimiento", "param": "plan_pagos.fecha_primer_vencimiento" } }
-            ])
+        const [formatTGRConvenio] = await OutputFormat.findOrCreate({
+            where: { id: '556a56ca-93b4-4e4d-9ac5-54a77aa15e61' },
+            defaults: {
+                nombre: 'Reporte TGR Resolución de Convenio',
+                tipo: 'reporte',
+                category_id: catIdentidad.id,
+                estructura: JSON.stringify([
+                    { "id": 1, "type": "heading", "data": { "text": "Resolución de Convenio TGR", "param": "" } },
+                    { "id": 2, "type": "label", "data": { "text": "Nro Resolución", "param": "metadata_resolucion.nro_resolucion" } },
+                    { "id": 3, "type": "label", "data": { "text": "Fecha Resolución", "param": "metadata_resolucion.fecha_resolucion" } },
+                    { "id": 4, "type": "label", "data": { "text": "RUT Contribuyente", "param": "identificacion_contribuyente.rut" } },
+                    { "id": 5, "type": "subheading", "data": { "text": "Detalles del Plan", "param": "" } },
+                    { "id": 6, "type": "label", "data": { "text": "Monto Total", "param": "plan_pagos.monto_total" } },
+                    { "id": 7, "type": "label", "data": { "text": "Cantidad Cuotas", "param": "plan_pagos.cantidad_cuotas" } },
+                    { "id": 8, "type": "label", "data": { "text": "Valor Cuota aprox", "param": "plan_pagos.valor_cuota_tipo" } },
+                    { "id": 9, "type": "label", "data": { "text": "Primer Vencimiento", "param": "plan_pagos.fecha_primer_vencimiento" } }
+                ])
+            }
         });
 
         // 5e. Reporte Matriz de Liquidaciones (Demo)
-        const formatLiquidacionesDemo = await OutputFormat.create({
-            id: 'ab000001-0000-4000-a000-000000000005',
-            nombre: 'Matriz de Liquidaciones (Demo)',
-            tipo: 'reporte',
-            category_id: catReportes.id,
-            estructura: JSON.stringify([
-                { "id": 1, "type": "heading", "data": { "text": "Análisis de Liquidaciones en Lote", "param": "" } },
-                {
-                    "id": 2,
-                    "type": "table",
-                    "data": {
-                        "param": "lista",
-                        "columns": [
-                            { "header": "ID", "mapping": "id" },
-                            { "header": "Nombre", "mapping": "nombre" },
-                            { "header": "Tipo", "mapping": "tipo" },
-                            { "header": "Estado", "mapping": "estado" },
-                            { "header": "RUT", "mapping": "datos.rut" },
-                            { "header": "Cargo", "mapping": "datos.cargo" },
-                            { "header": "Empresa", "mapping": "datos.area" }
-                        ]
+        const [formatLiquidacionesDemo] = await OutputFormat.findOrCreate({
+            where: { id: 'ab000001-0000-4000-a000-000000000005' },
+            defaults: {
+                nombre: 'Matriz de Liquidaciones (Demo)',
+                tipo: 'reporte',
+                category_id: catReportes.id,
+                estructura: JSON.stringify([
+                    { "id": 1, "type": "heading", "data": { "text": "Análisis de Liquidaciones y Movimientos en Lote", "param": "" } },
+                    {
+                        "id": 2,
+                        "type": "table",
+                        "data": {
+                            "param": "lista",
+                            "columns": [
+                                { "header": "Periodo", "mapping": "id_periodo" },
+                                { "header": "RUT", "mapping": "datos_personales.rut" },
+                                { "header": "Nombre", "mapping": "datos_personales.nombre" },
+                                { "header": "F. Ingreso", "mapping": "datos_personales.fecha_ingreso" },
+                                { "header": "Contrato", "mapping": "datos_personales.tipo_contrato" },
+                                { "header": "Estado Trab.", "mapping": "datos_personales.estado_trabajador" },
+                                { "header": "Días Trab.", "mapping": "liquidacion.dias_trabajados" },
+                                { "header": "Sueldo Base", "mapping": "liquidacion.sueldo_base" },
+                                { "header": "Gratificación", "mapping": "liquidacion.gratificacion" },
+                                { "header": "Imponible", "mapping": "liquidacion.imponible" },
+                                { "header": "No Imp.", "mapping": "liquidacion.total_no_imponible" },
+                                { "header": "Total Haberes", "mapping": "liquidacion.total_haberes" },
+                                { "header": "Líquido", "mapping": "liquidacion.liquido_a_pagar" },
+                                { "header": "Pago", "mapping": "liquidacion.metodo_pago" },
+                                { "header": "AFP", "mapping": "cotizaciones.afp.nombre" },
+                                { "header": "% AFP", "mapping": "cotizaciones.afp.tasa_porcentaje" },
+                                { "header": "AFP Liq.", "mapping": "cotizaciones.afp.monto_liquidacion" },
+                                { "header": "AFP Prev.", "mapping": "cotizaciones.afp.monto_previred" },
+                                { "header": "Fonasa 1.6", "mapping": "cotizaciones.salud.fonasa_1_6" },
+                                { "header": "Caja 5.4", "mapping": "cotizaciones.salud.caja_5_4" },
+                                { "header": "Total Salud", "mapping": "cotizaciones.salud.total_salud_liq" },
+                                { "header": "Isapre 7%", "mapping": "cotizaciones.salud.isapre_7_pct" },
+                                { "header": "Seg. Soc.", "mapping": "cotizaciones.seguros.seguro_social" },
+                                { "header": "Mutual", "mapping": "cotizaciones.seguros.mutual" },
+                                { "header": "SIS", "mapping": "cotizaciones.seguros.sis" },
+                                { "header": "Sc. Cesantía", "mapping": "cotizaciones.seguros.cesantia_empleador" },
+                                { "header": "Licencia Días", "mapping": "novedades.licencia_medica.dias" },
+                                { "header": "Licencia Monto", "mapping": "novedades.licencia_medica.monto_contingencia" },
+                                { "header": "F. Desvincul.", "mapping": "finiquito.fecha_desvinculacion" },
+                                { "header": "Causal", "mapping": "finiquito.causal_termino" },
+                                { "header": "Monto Ratif.", "mapping": "finiquito.monto_ratificado" },
+                                { "header": "F. Prop.", "mapping": "finiquito.feriado_proporcional" },
+                                { "header": "IAS", "mapping": "finiquito.ias" },
+                                { "header": "Concepto Prev.", "mapping": "movimiento_personal.concepto_previred" }
+                            ]
+                        }
                     }
-                }
-            ])
+                ])
+            }
         });
 
         // ═══════════════════════════════════════════════════════════════
@@ -163,625 +204,663 @@ const seed = async () => {
         // ═══════════════════════════════════════════════════════════════
 
         // 6a. Esquema de Identidad Avanzado V2 (para Validador CI Chile)
-        const schemaID = await JsonSchema.create({
-            id: 'cfa9753a-cc98-46cb-806e-cbed4208be4a',
-            nombre: 'Esquema de Identidad Avanzado V2',
-            descripcion: 'Estructura jerárquica experta para validación de documentos de identidad',
-            schema: JSON.stringify({
-                "$schema": "http://json-schema.org/draft-07/schema#",
-                "title": "Schema de Validación de Documento de Identidad",
-                "type": "object",
-                "required": ["analisis_documento", "validacion_punto_por_punto", "verificacion_consistencia", "nota_final"],
-                "properties": {
-                    "analisis_documento": {
-                        "type": "object",
-                        "required": ["tipo_documento", "estado_imagen", "datos_ocr_extraidos"],
-                        "properties": {
-                            "tipo_documento": { "type": "string" },
-                            "estado_imagen": { "type": "string" },
-                            "datos_ocr_extraidos": {
-                                "type": "object",
-                                "required": ["naci_en", "profesion", "mrz_linea_1", "mrz_linea_2", "mrz_linea_3"],
-                                "properties": {
-                                    "naci_en": { "type": "string" },
-                                    "profesion": { "type": "string" },
-                                    "mrz_linea_1": { "type": "string" },
-                                    "mrz_linea_2": { "type": "string" },
-                                    "mrz_linea_3": { "type": "string" }
+        const [schemaID] = await JsonSchema.findOrCreate({
+            where: { id: 'cfa9753a-cc98-46cb-806e-cbed4208be4a' },
+            defaults: {
+                nombre: 'Esquema de Identidad Avanzado V2',
+                descripcion: 'Estructura jerárquica experta para validación de documentos de identidad',
+                schema: JSON.stringify({
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "title": "Schema de Validación de Documento de Identidad",
+                    "type": "object",
+                    "required": ["analisis_documento", "validacion_punto_por_punto", "verificacion_consistencia", "nota_final"],
+                    "properties": {
+                        "analisis_documento": {
+                            "type": "object",
+                            "required": ["tipo_documento", "estado_imagen", "datos_ocr_extraidos"],
+                            "properties": {
+                                "tipo_documento": { "type": "string" },
+                                "estado_imagen": { "type": "string" },
+                                "datos_ocr_extraidos": {
+                                    "type": "object",
+                                    "required": ["naci_en", "profesion", "mrz_linea_1", "mrz_linea_2", "mrz_linea_3"],
+                                    "properties": {
+                                        "naci_en": { "type": "string" },
+                                        "profesion": { "type": "string" },
+                                        "mrz_linea_1": { "type": "string" },
+                                        "mrz_linea_2": { "type": "string" },
+                                        "mrz_linea_3": { "type": "string" }
+                                    }
                                 }
                             }
-                        }
+                        },
+                        "validacion_punto_por_punto": {
+                            "type": "object",
+                            "required": ["nombre", "rut", "fecha_nacimiento", "ciudad_nacimiento"],
+                            "properties": {
+                                "nombre": { "$ref": "#/definitions/item_validacion" },
+                                "rut": { "$ref": "#/definitions/item_validacion" },
+                                "fecha_nacimiento": { "$ref": "#/definitions/item_validacion" },
+                                "ciudad_nacimiento": { "$ref": "#/definitions/item_validacion" }
+                            }
+                        },
+                        "verificacion_consistencia": {
+                            "type": "object",
+                            "required": ["validacion_dv_rut", "match_numero_documento_anverso_reverso", "integridad_datos"],
+                            "properties": {
+                                "validacion_dv_rut": { "type": "string" },
+                                "validacion_mrz": { "type": "string" },
+                                "match_numero_documento_anverso_reverso": {
+                                    "type": "object",
+                                    "required": ["resultado", "numero_anverso", "numero_reverso"],
+                                    "properties": {
+                                        "resultado": { "enum": ["MATCH", "MISMATCH", "NOT_AVAILABLE"] },
+                                        "numero_anverso": { "type": "string" },
+                                        "numero_reverso": { "type": "string" },
+                                        "observacion": { "type": "string" }
+                                    }
+                                },
+                                "integridad_datos": { "type": "string" }
+                            }
+                        },
+                        "nota_final": { "type": "string" }
                     },
-                    "validacion_punto_por_punto": {
-                        "type": "object",
-                        "required": ["nombre", "rut", "fecha_nacimiento", "ciudad_nacimiento"],
-                        "properties": {
-                            "nombre": { "$ref": "#/definitions/item_validacion" },
-                            "rut": { "$ref": "#/definitions/item_validacion" },
-                            "fecha_nacimiento": { "$ref": "#/definitions/item_validacion" },
-                            "ciudad_nacimiento": { "$ref": "#/definitions/item_validacion" }
-                        }
-                    },
-                    "verificacion_consistencia": {
-                        "type": "object",
-                        "required": ["validacion_dv_rut", "match_numero_documento_anverso_reverso", "integridad_datos"],
-                        "properties": {
-                            "validacion_dv_rut": { "type": "string" },
-                            "validacion_mrz": { "type": "string" },
-                            "match_numero_documento_anverso_reverso": {
-                                "type": "object",
-                                "required": ["resultado", "numero_anverso", "numero_reverso"],
-                                "properties": {
-                                    "resultado": { "enum": ["MATCH", "MISMATCH", "NOT_AVAILABLE"] },
-                                    "numero_anverso": { "type": "string" },
-                                    "numero_reverso": { "type": "string" },
-                                    "observacion": { "type": "string" }
-                                }
-                            },
-                            "integridad_datos": { "type": "string" }
-                        }
-                    },
-                    "nota_final": { "type": "string" }
-                },
-                "definitions": {
-                    "item_validacion": {
-                        "type": "object",
-                        "required": ["data_proporcionada", "data_imagen", "match", "observacion"],
-                        "properties": {
-                            "data_proporcionada": { "type": "string" },
-                            "data_imagen": { "type": "string" },
-                            "match": { "type": "string" },
-                            "observacion": { "type": "string" }
+                    "definitions": {
+                        "item_validacion": {
+                            "type": "object",
+                            "required": ["data_proporcionada", "data_imagen", "match", "observacion"],
+                            "properties": {
+                                "data_proporcionada": { "type": "string" },
+                                "data_imagen": { "type": "string" },
+                                "match": { "type": "string" },
+                                "observacion": { "type": "string" }
+                            }
                         }
                     }
-                }
-            })
+                })
+            }
         });
 
         // 6b. Reporte Check Liqui Chile (para Check de Liquidaciones)
-        const schemaCheckLiqui = await JsonSchema.create({
-            id: '91b20865-b18c-4927-b711-abb751fd2212',
-            nombre: 'Reporte Check Liqui Chile',
-            descripcion: 'Estructura para reporte de consistencia: Liquidación vs Base de Datos',
-            schema: JSON.stringify({
-                "$schema": "http://json-schema.org/draft-07/schema#",
-                "title": "Reporte de Consistencia: Liquidación vs Base de Datos",
-                "type": "object",
-                "required": ["metadata_auditoria", "resumen_match", "verificacion_totales", "discrepancias_detectadas"],
-                "properties": {
-                    "metadata_auditoria": {
-                        "type": "object",
-                        "required": ["id_empleado", "periodo_proceso", "fecha_ejecucion"],
-                        "properties": {
-                            "id_empleado": { "type": "string" },
-                            "nombre_empleado": { "type": "string" },
-                            "periodo_proceso": { "type": "string", "description": "Formato YYYY-MM" },
-                            "fecha_ejecucion": { "type": "string", "format": "date-time" },
-                            "fuente_erp": { "type": "string", "default": "SAP/Oracle/Buk" }
-                        }
-                    },
-                    "resumen_match": {
-                        "type": "object",
-                        "properties": {
-                            "porcentaje_similitud": { "type": "number", "minimum": 0, "maximum": 100 },
-                            "estado_general": { "enum": ["COMPLETO", "DISCREPANCIA_MENOR", "CRÍTICO"] }
-                        }
-                    },
-                    "verificacion_totales": {
-                        "type": "object",
-                        "properties": {
-                            "total_imponible": { "$ref": "#/definitions/comparacion_valor" },
-                            "total_haberes": { "$ref": "#/definitions/comparacion_valor" },
-                            "sueldo_liquido": { "$ref": "#/definitions/comparacion_valor" }
-                        }
-                    },
-                    "discrepancias_detectadas": {
-                        "type": "array",
-                        "items": {
+        const [schemaCheckLiqui] = await JsonSchema.findOrCreate({
+            where: { id: '91b20865-b18c-4927-b711-abb751fd2212' },
+            defaults: {
+                nombre: 'Reporte Check Liqui Chile',
+                descripcion: 'Estructura para reporte de consistencia: Liquidación vs Base de Datos',
+                schema: JSON.stringify({
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "title": "Reporte de Consistencia: Liquidación vs Base de Datos",
+                    "type": "object",
+                    "required": ["metadata_auditoria", "resumen_match", "verificacion_totales", "discrepancias_detectadas"],
+                    "properties": {
+                        "metadata_auditoria": {
                             "type": "object",
-                            "required": ["campo", "valor_ocr", "valor_db", "tolerancia_aceptada"],
+                            "required": ["id_empleado", "periodo_proceso", "fecha_ejecucion"],
                             "properties": {
-                                "campo": { "type": "string" },
-                                "valor_ocr": { "type": "number" },
-                                "valor_db": { "type": "number" },
-                                "diferencia": { "type": "number" },
-                                "severidad": { "enum": ["ALTA", "MEDIA", "BAJA"] },
-                                "tolerancia_aceptada": { "type": "boolean" }
+                                "id_empleado": { "type": "string" },
+                                "nombre_empleado": { "type": "string" },
+                                "periodo_proceso": { "type": "string", "description": "Formato YYYY-MM" },
+                                "fecha_ejecucion": { "type": "string", "format": "date-time" },
+                                "fuente_erp": { "type": "string", "default": "SAP/Oracle/Buk" }
+                            }
+                        },
+                        "resumen_match": {
+                            "type": "object",
+                            "properties": {
+                                "porcentaje_similitud": { "type": "number", "minimum": 0, "maximum": 100 },
+                                "estado_general": { "enum": ["COMPLETO", "DISCREPANCIA_MENOR", "CRÍTICO"] }
+                            }
+                        },
+                        "verificacion_totales": {
+                            "type": "object",
+                            "properties": {
+                                "total_imponible": { "$ref": "#/definitions/comparacion_valor" },
+                                "total_haberes": { "$ref": "#/definitions/comparacion_valor" },
+                                "sueldo_liquido": { "$ref": "#/definitions/comparacion_valor" }
+                            }
+                        },
+                        "discrepancias_detectadas": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["campo", "valor_ocr", "valor_db", "tolerancia_aceptada"],
+                                "properties": {
+                                    "campo": { "type": "string" },
+                                    "valor_ocr": { "type": "number" },
+                                    "valor_db": { "type": "number" },
+                                    "diferencia": { "type": "number" },
+                                    "severidad": { "enum": ["ALTA", "MEDIA", "BAJA"] },
+                                    "tolerancia_aceptada": { "type": "boolean" }
+                                }
+                            }
+                        },
+                        "verificacion_reglas_legales": {
+                            "type": "object",
+                            "properties": {
+                                "cumple_tope_gratificacion": { "type": "boolean" },
+                                "cumple_tope_imponible": { "type": "boolean" },
+                                "validacion_7_porciento_salud": { "type": "string", "description": "Resultado del cálculo: (Imponible * 0.07) vs Descuento" }
                             }
                         }
                     },
-                    "verificacion_reglas_legales": {
-                        "type": "object",
-                        "properties": {
-                            "cumple_tope_gratificacion": { "type": "boolean" },
-                            "cumple_tope_imponible": { "type": "boolean" },
-                            "validacion_7_porciento_salud": { "type": "string", "description": "Resultado del cálculo: (Imponible * 0.07) vs Descuento" }
+                    "definitions": {
+                        "comparacion_valor": {
+                            "type": "object",
+                            "required": ["documento", "base_datos", "resultado"],
+                            "properties": {
+                                "documento": { "type": "number" },
+                                "base_datos": { "type": "number" },
+                                "resultado": { "enum": ["MATCH", "MISMATCH"] }
+                            }
                         }
                     }
-                },
-                "definitions": {
-                    "comparacion_valor": {
-                        "type": "object",
-                        "required": ["documento", "base_datos", "resultado"],
-                        "properties": {
-                            "documento": { "type": "number" },
-                            "base_datos": { "type": "number" },
-                            "resultado": { "enum": ["MATCH", "MISMATCH"] }
-                        }
-                    }
-                }
-            })
+                })
+            }
         });
 
         // 6c. TGR Certificado de Deuda
-        const schemaTGRDeuda = await JsonSchema.create({
-            id: '91b20865-b18c-4927-b711-abb751fd2220',
-            nombre: 'Esquema TGR Certificado de Deuda',
-            descripcion: 'Estructura para validación de deudas fiscales y territoriales de la TGR',
-            schema: JSON.stringify({
-                "$schema": "http://json-schema.org/draft-07/schema#",
-                "type": "object",
-                "required": ["identificacion_deudor", "resumen_deuda", "detalle_obligaciones", "verificacion_autenticidad"],
-                "properties": {
-                    "identificacion_deudor": {
-                        "type": "object",
-                        "required": ["rut", "nombre_razon_social"],
-                        "properties": {
-                            "rut": { "type": "string" },
-                            "nombre_razon_social": { "type": "string" },
-                            "direccion": { "type": "string" },
-                            "rol_propiedad": { "type": "string", "description": "Si aplica (Contribuciones)" }
-                        }
-                    },
-                    "resumen_deuda": {
-                        "type": "object",
-                        "required": ["total_moroso", "total_no_vencido"],
-                        "properties": {
-                            "total_moroso": { "type": "number" },
-                            "total_no_vencido": { "type": "number" },
-                            "total_deuda": { "type": "number" },
-                            "moneda": { "type": "string", "default": "CLP" }
-                        }
-                    },
-                    "detalle_obligaciones": {
-                        "type": "array",
-                        "items": {
+        const [schemaTGRDeuda] = await JsonSchema.findOrCreate({
+            where: { id: '91b20865-b18c-4927-b711-abb751fd2220' },
+            defaults: {
+                nombre: 'Esquema TGR Certificado de Deuda',
+                descripcion: 'Estructura para validación de deudas fiscales y territoriales de la TGR',
+                schema: JSON.stringify({
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "required": ["identificacion_deudor", "resumen_deuda", "detalle_obligaciones", "verificacion_autenticidad"],
+                    "properties": {
+                        "identificacion_deudor": {
                             "type": "object",
-                            "required": ["folio", "vencimiento", "neto", "total"],
+                            "required": ["rut", "nombre_razon_social"],
                             "properties": {
-                                "tipo_impuesto": { "type": "string" },
-                                "folio": { "type": "string" },
-                                "periodo": { "type": "string" },
-                                "vencimiento": { "type": "string" },
-                                "neto": { "type": "number" },
-                                "reajustes": { "type": "number" },
-                                "intereses_multas": { "type": "number" },
-                                "total": { "type": "number" }
+                                "rut": { "type": "string" },
+                                "nombre_razon_social": { "type": "string" },
+                                "direccion": { "type": "string" },
+                                "rol_propiedad": { "type": "string", "description": "Si aplica (Contribuciones)" }
+                            }
+                        },
+                        "resumen_deuda": {
+                            "type": "object",
+                            "required": ["total_moroso", "total_no_vencido"],
+                            "properties": {
+                                "total_moroso": { "type": "number" },
+                                "total_no_vencido": { "type": "number" },
+                                "total_deuda": { "type": "number" },
+                                "moneda": { "type": "string", "default": "CLP" }
+                            }
+                        },
+                        "detalle_obligaciones": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["folio", "vencimiento", "neto", "total"],
+                                "properties": {
+                                    "tipo_impuesto": { "type": "string" },
+                                    "folio": { "type": "string" },
+                                    "periodo": { "type": "string" },
+                                    "vencimiento": { "type": "string" },
+                                    "neto": { "type": "number" },
+                                    "reajustes": { "type": "number" },
+                                    "intereses_multas": { "type": "number" },
+                                    "total": { "type": "number" }
+                                }
+                            }
+                        },
+                        "verificacion_autenticidad": {
+                            "type": "object",
+                            "required": ["codigo_verificacion", "fecha_emision"],
+                            "properties": {
+                                "codigo_verificacion": { "type": "string" },
+                                "fecha_emision": { "type": "string" },
+                                "url_verificacion": { "type": "string", "default": "https://www.tgr.cl/oficina-virtual/verificar-documento/" }
                             }
                         }
-                    },
-                    "verificacion_autenticidad": {
-                        "type": "object",
-                        "required": ["codigo_verificacion", "fecha_emision"],
-                        "properties": {
-                            "codigo_verificacion": { "type": "string" },
-                            "fecha_emision": { "type": "string" },
-                            "url_verificacion": { "type": "string", "default": "https://www.tgr.cl/oficina-virtual/verificar-documento/" }
-                        }
                     }
-                }
-            })
+                })
+            }
         });
 
         // 6d. TGR Resolución de Convenio
-        const schemaTGRConvenio = await JsonSchema.create({
-            id: '91b20865-b18c-4927-b711-abb751fd2221',
-            nombre: 'Esquema TGR Resolución de Convenio',
-            descripcion: 'Estructura para validación de convenios de pago y resoluciones TGR',
-            schema: JSON.stringify({
-                "$schema": "http://json-schema.org/draft-07/schema#",
-                "type": "object",
-                "required": ["metadata_resolucion", "identificacion_contribuyente", "plan_pagos"],
-                "properties": {
-                    "metadata_resolucion": {
-                        "type": "object",
-                        "required": ["nro_resolucion", "fecha_resolucion"],
-                        "properties": {
-                            "nro_resolucion": { "type": "string" },
-                            "fecha_resolucion": { "type": "string" },
-                            "tipo_convenio": { "type": "string" }
-                        }
-                    },
-                    "identificacion_contribuyente": {
-                        "type": "object",
-                        "required": ["rut", "nombre"],
-                        "properties": {
-                            "rut": { "type": "string" },
-                            "nombre": { "type": "string" }
-                        }
-                    },
-                    "plan_pagos": {
-                        "type": "object",
-                        "required": ["monto_total", "cantidad_cuotas"],
-                        "properties": {
-                            "monto_total": { "type": "number" },
-                            "cantidad_cuotas": { "type": "number" },
-                            "valor_cuota_tipo": { "type": "number" },
-                            "fecha_primer_vencimiento": { "type": "string" },
-                            "estado": { "type": "string" }
-                        }
-                    },
-                    "detalle_cuotas": {
-                        "type": "array",
-                        "items": {
+        const [schemaTGRConvenio] = await JsonSchema.findOrCreate({
+            where: { id: '91b20865-b18c-4927-b711-abb751fd2221' },
+            defaults: {
+                nombre: 'Esquema TGR Resolución de Convenio',
+                descripcion: 'Estructura para validación de convenios de pago y resoluciones TGR',
+                schema: JSON.stringify({
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "required": ["metadata_resolucion", "identificacion_contribuyente", "plan_pagos"],
+                    "properties": {
+                        "metadata_resolucion": {
                             "type": "object",
+                            "required": ["nro_resolucion", "fecha_resolucion"],
                             "properties": {
-                                "nro_cuota": { "type": "number" },
-                                "vencimiento": { "type": "string" },
-                                "monto": { "type": "number" }
+                                "nro_resolucion": { "type": "string" },
+                                "fecha_resolucion": { "type": "string" },
+                                "tipo_convenio": { "type": "string" }
+                            }
+                        },
+                        "identificacion_contribuyente": {
+                            "type": "object",
+                            "required": ["rut", "nombre"],
+                            "properties": {
+                                "rut": { "type": "string" },
+                                "nombre": { "type": "string" }
+                            }
+                        },
+                        "plan_pagos": {
+                            "type": "object",
+                            "required": ["monto_total", "cantidad_cuotas"],
+                            "properties": {
+                                "monto_total": { "type": "number" },
+                                "cantidad_cuotas": { "type": "number" },
+                                "valor_cuota_tipo": { "type": "number" },
+                                "fecha_primer_vencimiento": { "type": "string" },
+                                "estado": { "type": "string" }
+                            }
+                        },
+                        "detalle_cuotas": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "nro_cuota": { "type": "number" },
+                                    "vencimiento": { "type": "string" },
+                                    "monto": { "type": "number" }
+                                }
                             }
                         }
                     }
-                }
-            })
+                })
+            }
         });
 
         // 6e. Listado de Liquidaciones y Movimientos de Personal
-        const schemaLiquidacionesLote = await JsonSchema.create({
-            id: 'ab000001-0000-4000-a000-000000000002',
-            nombre: 'Esquema Listado de Liquidaciones y Movimientos de Personal',
-            descripcion: 'Estructura para el análisis masivo de liquidaciones coordinado con movimientos de personal y Previred.',
-            schema: JSON.stringify({
-                "$schema": "http://json-schema.org/draft-07/schema#",
-                "title": "Listado de Liquidaciones y Movimientos de Personal",
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "required": ["id_periodo", "datos_personales", "liquidacion"],
-                    "properties": {
-                        "id_periodo": {
-                            "type": "string",
-                            "description": "Identificador único del periodo de liquidación (ej: 1090701-2026)"
-                        },
-                        "datos_personales": {
-                            "type": "object",
-                            "properties": {
-                                "rut": { "type": "string", "pattern": "^\\d{1,2}\\.\\d{3}\\.\\d{3}-[0-9kK]$" },
-                                "nombre": { "type": "string" },
-                                "fecha_ingreso": { "type": "string", "format": "date" },
-                                "tipo_contrato": { "type": "string", "enum": ["Indefinido", "Plazo Fijo", "NUEVO", "Jubilado"] },
-                                "estado_trabajador": { "type": "string" }
-                            }
-                        },
-                        "liquidacion": {
-                            "type": "object",
-                            "properties": {
-                                "dias_trabajados": { "type": "integer", "minimum": 0, "maximum": 30 },
-                                "sueldo_base": { "type": "number" },
-                                "gratificacion": { "type": "number" },
-                                "imponible": { "type": "number" },
-                                "total_no_imponible": { "type": "number" },
-                                "total_haberes": { "type": "number" },
-                                "liquido_a_pagar": { "type": "number" },
-                                "metodo_pago": { "type": "string" },
-                                "estado": { "type": "string" }
-                            }
-                        },
-                        "cotizaciones": {
-                            "type": "object",
-                            "properties": {
-                                "afp": {
-                                    "type": "object",
-                                    "properties": {
-                                        "nombre": { "type": "string" },
-                                        "tasa_porcentaje": { "type": "number" },
-                                        "monto_liquidacion": { "type": "number" },
-                                        "monto_previred": { "type": "number" }
-                                    }
-                                },
-                                "salud": {
-                                    "type": "object",
-                                    "properties": {
-                                        "fonasa_1_6": { "type": "number" },
-                                        "caja_5_4": { "type": "number" },
-                                        "total_salud_liq": { "type": "number" },
-                                        "isapre_7_pct": { "type": "number" }
-                                    }
-                                },
-                                "seguros": {
-                                    "type": "object",
-                                    "properties": {
-                                        "seguro_social": { "type": "number" },
-                                        "mutual": { "type": "number" },
-                                        "sis": { "type": "number" },
-                                        "cesantia_empleador": { "type": "number" }
+        const [schemaLiquidacionesLote] = await JsonSchema.findOrCreate({
+            where: { id: 'ab000001-0000-4000-a000-000000000002' },
+            defaults: {
+                nombre: 'Esquema Listado de Liquidaciones y Movimientos de Personal',
+                descripcion: 'Estructura para el análisis masivo de liquidaciones coordinado con movimientos de personal y Previred.',
+                schema: JSON.stringify({
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "title": "Listado de Liquidaciones y Movimientos de Personal",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["id_periodo", "datos_personales", "liquidacion"],
+                        "properties": {
+                            "id_periodo": {
+                                "type": "string",
+                                "description": "Identificador único del periodo de liquidación (ej: 1090701-2026)"
+                            },
+                            "datos_personales": {
+                                "type": "object",
+                                "properties": {
+                                    "rut": { "type": "string", "pattern": "^\\d{1,2}\\.\\d{3}\\.\\d{3}-[0-9kK]$" },
+                                    "nombre": { "type": "string" },
+                                    "fecha_ingreso": { "type": "string", "format": "date" },
+                                    "tipo_contrato": { "type": "string", "enum": ["Indefinido", "Plazo Fijo", "NUEVO", "Jubilado"] },
+                                    "estado_trabajador": { "type": "string" }
+                                }
+                            },
+                            "liquidacion": {
+                                "type": "object",
+                                "properties": {
+                                    "dias_trabajados": { "type": "integer", "minimum": 0, "maximum": 30 },
+                                    "sueldo_base": { "type": "number" },
+                                    "gratificacion": { "type": "number" },
+                                    "imponible": { "type": "number" },
+                                    "total_no_imponible": { "type": "number" },
+                                    "total_haberes": { "type": "number" },
+                                    "liquido_a_pagar": { "type": "number" },
+                                    "metodo_pago": { "type": "string" },
+                                    "estado": { "type": "string" }
+                                }
+                            },
+                            "cotizaciones": {
+                                "type": "object",
+                                "properties": {
+                                    "afp": {
+                                        "type": "object",
+                                        "properties": {
+                                            "nombre": { "type": "string" },
+                                            "tasa_porcentaje": { "type": "number" },
+                                            "monto_liquidacion": { "type": "number" },
+                                            "monto_previred": { "type": "number" }
+                                        }
+                                    },
+                                    "salud": {
+                                        "type": "object",
+                                        "properties": {
+                                            "fonasa_1_6": { "type": "number" },
+                                            "caja_5_4": { "type": "number" },
+                                            "total_salud_liq": { "type": "number" },
+                                            "isapre_7_pct": { "type": "number" }
+                                        }
+                                    },
+                                    "seguros": {
+                                        "type": "object",
+                                        "properties": {
+                                            "seguro_social": { "type": "number" },
+                                            "mutual": { "type": "number" },
+                                            "sis": { "type": "number" },
+                                            "cesantia_empleador": { "type": "number" }
+                                        }
                                     }
                                 }
-                            }
-                        },
-                        "novedades": {
-                            "type": "object",
-                            "properties": {
-                                "licencia_medica": {
-                                    "type": "object",
-                                    "properties": {
-                                        "dias": { "type": "integer" },
-                                        "comentario": { "type": "string" },
-                                        "monto_contingencia": { "type": "number" }
+                            },
+                            "novedades": {
+                                "type": "object",
+                                "properties": {
+                                    "licencia_medica": {
+                                        "type": "object",
+                                        "properties": {
+                                            "dias": { "type": "integer" },
+                                            "comentario": { "type": "string" },
+                                            "monto_contingencia": { "type": "number" }
+                                        }
                                     }
                                 }
-                            }
-                        },
-                        "finiquito": {
-                            "type": "object",
-                            "properties": {
-                                "fecha_desvinculacion": { "type": "string" },
-                                "causal_termino": { "type": "string" },
-                                "monto_ratificado": { "type": "number" },
-                                "feriado_proporcional": { "type": "number" },
-                                "ias": { "type": "number" },
-                                "aviso_previo": { "type": "number" },
-                                "estado": { "type": "string" }
-                            }
-                        },
-                        "movimiento_personal": {
-                            "type": "object",
-                            "properties": {
-                                "concepto_previred": { "type": "string" },
-                                "comentario": { "type": "string" }
+                            },
+                            "finiquito": {
+                                "type": "object",
+                                "properties": {
+                                    "fecha_desvinculacion": { "type": "string" },
+                                    "causal_termino": { "type": "string" },
+                                    "monto_ratificado": { "type": "number" },
+                                    "feriado_proporcional": { "type": "number" },
+                                    "ias": { "type": "number" },
+                                    "aviso_previo": { "type": "number" },
+                                    "estado": { "type": "string" }
+                                }
+                            },
+                            "movimiento_personal": {
+                                "type": "object",
+                                "properties": {
+                                    "concepto_previred": { "type": "string" },
+                                    "comentario": { "type": "string" }
+                                }
                             }
                         }
                     }
-                }
-            })
+                })
+            }
         });
 
         // ═══════════════════════════════════════════════════════════════
         // 7. AI Providers
         // ═══════════════════════════════════════════════════════════════
 
-        const providerGoogle = await AiProvider.create({
-            nombre: 'Google Gemini',
-            slug: 'google',
-            tipo: 'google_native',
-            api_key: 'AIzaSyCtfqx8Nq8CojqR9kmU80jDYIFpQugfHCU',
-            base_url: null,
-            modelo: 'gemini-2.5-flash',
-            is_default: true,
-            activo: true,
-            extra_headers: null
+        // 7. AI Providers
+        const [providerGoogle] = await AiProvider.findOrCreate({
+            where: { slug: 'google' },
+            defaults: {
+                nombre: 'Google Gemini',
+                tipo: 'google_native',
+                base_url: null,
+                modelo: 'gemini-2.5-flash',
+                is_default: true,
+                activo: true,
+                extra_headers: null
+            }
         });
 
-        const providerOpenRouter = await AiProvider.create({
-            nombre: 'OpenRouter',
-            slug: 'openrouter',
-            tipo: 'openai_compatible',
-            api_key: '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',
-            base_url: 'https://openrouter.ai/api/v1',
-            modelo: 'google/gemini-2.0-flash-lite',
-            is_default: false,
-            activo: true,
-            extra_headers: JSON.stringify({
-                'HTTP-Referer': 'https://inntek-ai-api-agent-client.onrender.com',
-                'X-Title': 'Inntek AI Agent'
-            })
+        const [providerOpenRouter] = await AiProvider.findOrCreate({
+            where: { slug: 'openrouter' },
+            defaults: {
+                nombre: 'OpenRouter',
+                tipo: 'openai_compatible',
+                base_url: 'https://openrouter.ai/api/v1',
+                modelo: 'google/gemini-2.0-flash-lite',
+                is_default: false,
+                activo: true,
+                extra_headers: JSON.stringify({
+                    'HTTP-Referer': 'https://inntek-ai-api-agent-client.onrender.com',
+                    'X-Title': 'Inntek AI Agent'
+                })
+            }
         });
 
         // ═══════════════════════════════════════════════════════════════
         // 8. Engines (System-level list processors for Machines)
         // ═══════════════════════════════════════════════════════════════
 
-        const engineIterator = await Engine.create({
-            nombre: 'List Iterator',
-            slug: 'list-iterator',
-            descripcion: 'Receives an array from a connected Tool output and executes the next connected Tool once per item in the list.',
-            tipo: 'iterator',
-            icono: '🔄',
-            config_schema: JSON.stringify({ input_field: 'string', description: 'Field name from source output that contains the array' }),
-            activo: true
+        const [engineIterator] = await Engine.findOrCreate({
+            where: { slug: 'list-iterator' },
+            defaults: {
+                nombre: 'List Iterator',
+                descripcion: 'Receives an array from a connected Tool output and executes the next connected Tool once per item in the list.',
+                tipo: 'iterator',
+                icono: '🔄',
+                config_schema: JSON.stringify({ input_field: 'string', description: 'Field name from source output that contains the array' }),
+                activo: true
+            }
         });
 
-        const engineCollector = await Engine.create({
-            nombre: 'List Collector',
-            slug: 'list-collector',
-            descripcion: 'Aggregates individual outputs from a connected Tool into a single consolidated array.',
-            tipo: 'collector',
-            icono: '📦',
-            config_schema: JSON.stringify({ output_field: 'string', description: 'Field name for the collected array in the output' }),
-            activo: true
+        const [engineCollector] = await Engine.findOrCreate({
+            where: { slug: 'list-collector' },
+            defaults: {
+                nombre: 'List Collector',
+                descripcion: 'Aggregates individual outputs from a connected Tool into a single consolidated array.',
+                tipo: 'collector',
+                icono: '📦',
+                config_schema: JSON.stringify({ output_field: 'string', description: 'Field name for the collected array in the output' }),
+                activo: true
+            }
         });
 
-        const engineMapper = await Engine.create({
-            nombre: 'Data Mapper',
-            slug: 'data-mapper',
-            descripcion: 'Transforms and maps fields between Tool inputs and outputs. Define field mappings to reshape data between nodes.',
-            tipo: 'mapper',
-            icono: '🔀',
-            config_schema: JSON.stringify({ mappings: 'array', description: 'Array of {from, to} field mapping objects' }),
-            activo: true
+        const [engineMapper] = await Engine.findOrCreate({
+            where: { slug: 'data-mapper' },
+            defaults: {
+                nombre: 'Data Mapper',
+                descripcion: 'Transforms and maps fields between Tool inputs and outputs. Define field mappings to reshape data between nodes.',
+                tipo: 'mapper',
+                icono: '🔀',
+                config_schema: JSON.stringify({ mappings: 'array', description: 'Array of {from, to} field mapping objects' }),
+                activo: true
+            }
         });
 
-        const engineApiConsumer = await Engine.create({
-            nombre: 'API Consumer',
-            slug: 'api-consumer',
-            descripcion: 'Ejecuta peticiones HTTP a APIs externas. Si es POST/PUT, el input del nodo anterior se enviará como body JSON.',
-            tipo: 'api-consumer',
-            icono: '🌐',
-            config_schema: JSON.stringify({
-                url: { type: 'string', description: 'URL del endpoint (ej. https://api.ejemplo.com/v1/data)' },
-                method: { type: 'select', options: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], description: 'Método HTTP' },
-                headers: { type: 'text', description: 'Headers adicionales en formato JSON (ej. {"Authorization": "Bearer token"})' }
-            }),
-            activo: true
+        const [engineApiConsumer] = await Engine.findOrCreate({
+            where: { slug: 'api-consumer' },
+            defaults: {
+                nombre: 'API Consumer',
+                descripcion: 'Ejecuta peticiones HTTP a APIs externas. Si es POST/PUT, el input del nodo anterior se enviará como body JSON.',
+                tipo: 'api-consumer',
+                icono: '🌐',
+                config_schema: JSON.stringify({
+                    url: { type: 'string', description: 'URL del endpoint (ej. https://api.ejemplo.com/v1/data)' },
+                    method: { type: 'select', options: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], description: 'Método HTTP' },
+                    headers: { type: 'text', description: 'Headers adicionales en formato JSON (ej. {"Authorization": "Bearer token"})' }
+                }),
+                activo: true
+            }
         });
 
-        const enginePrinter = await Engine.create({
-            nombre: 'PRINTER',
-            slug: 'printer',
-            descripcion: 'Engine de salida que pasa los datos como JSON. Úsalo con un VISOR para ver los resultados.',
-            tipo: 'output',
-            icono: '🖨️',
-            config_schema: JSON.stringify({}),
-            activo: true
+        const [enginePrinter] = await Engine.findOrCreate({
+            where: { slug: 'printer' },
+            defaults: {
+                nombre: 'PRINTER',
+                descripcion: 'Engine de salida que pasa los datos como JSON. Úsalo con un VISOR para ver los resultados.',
+                tipo: 'output',
+                icono: '🖨️',
+                config_schema: JSON.stringify({}),
+                activo: true
+            }
         });
 
-        const engineConverter = await Engine.create({
-            nombre: 'JSON Converter',
-            slug: 'json-converter',
-            descripcion: 'Convierte bidireccionalmente entre string JSON y objeto. Si recibe string lo convierte a objeto, y viceversa.',
-            tipo: 'converter',
-            icono: '🔄',
-            config_schema: JSON.stringify({}),
-            activo: true
+        const [engineConverter] = await Engine.findOrCreate({
+            where: { slug: 'json-converter' },
+            defaults: {
+                nombre: 'JSON Converter',
+                descripcion: 'Convierte bidireccionalmente entre string JSON y objeto. Si recibe string lo convierte a objeto, y viceversa.',
+                tipo: 'converter',
+                icono: '🔄',
+                config_schema: JSON.stringify({}),
+                activo: true
+            }
         });
 
-        const engineEntityExtractor = await Engine.create({
-            nombre: 'Entity Extractor',
-            slug: 'json-entity-extractor',
-            descripcion: 'Analiza una estructura JSON para identificar y extraer la colección principal de entidades como un array plano.',
-            tipo: 'extractor',
-            icono: '📂',
-            config_schema: JSON.stringify({}),
-            activo: true
+        const [engineEntityExtractor] = await Engine.findOrCreate({
+            where: { slug: 'json-entity-extractor' },
+            defaults: {
+                nombre: 'Entity Extractor',
+                descripcion: 'Analiza una estructura JSON para identificar y extraer la colección principal de entidades como un array plano.',
+                tipo: 'extractor',
+                icono: '📂',
+                config_schema: JSON.stringify({}),
+                activo: true
+            }
         });
 
         // ═══════════════════════════════════════════════════════════════
         // 9. Visores
         // ═══════════════════════════════════════════════════════════════
 
-        const visorMessage = await Visor.create({
-            nombre: 'MENSAJE',
-            slug: 'message-visor',
-            descripcion: 'Muestra el resultado como un mensaje flotante minimalista.',
-            icono: '💬',
-            config_schema: JSON.stringify({}),
-            activo: true
+        const [visorMessage] = await Visor.findOrCreate({
+            where: { slug: 'message-visor' },
+            defaults: {
+                nombre: 'MENSAJE',
+                descripcion: 'Muestra el resultado como un mensaje flotante minimalista.',
+                icono: '💬',
+                config_schema: JSON.stringify({}),
+                activo: true
+            }
         });
 
-        const visorTable = await Visor.create({
-            nombre: 'TABLA',
-            slug: 'table-visor',
-            descripcion: 'Muestra los datos en un formato de tabla estructurada.',
-            icono: '📊',
-            config_schema: JSON.stringify({}),
-            activo: true
+        const [visorTable] = await Visor.findOrCreate({
+            where: { slug: 'table-visor' },
+            defaults: {
+                nombre: 'TABLA',
+                descripcion: 'Muestra los datos en un formato de tabla estructurada.',
+                icono: '📊',
+                config_schema: JSON.stringify({}),
+                activo: true
+            }
         });
 
-        const visorDocument = await Visor.create({
-            nombre: 'DOCUMENTO',
-            slug: 'document-visor',
-            descripcion: 'Visualizador de documentos con formato HTML canónico.',
-            icono: '📄',
-            config_schema: JSON.stringify({}),
-            activo: true
+        const [visorDocument] = await Visor.findOrCreate({
+            where: { slug: 'document-visor' },
+            defaults: {
+                nombre: 'DOCUMENTO',
+                descripcion: 'Visualizador de documentos con formato HTML canónico.',
+                icono: '📄',
+                config_schema: JSON.stringify({}),
+                activo: true
+            }
         });
 
-        // ═══════════════════════════════════════════════════════════════
-        // 9. AI Tools
-        // ═══════════════════════════════════════════════════════════════
+        // 10. AI Tools
 
         // 7a. Validador de CI Chile
-        await Tool.create({
-            id: 'edb84cda-0000-4a2c-8187-000000000001',
-            nombre: 'Validador de CI Chile',
-            descripcion: 'Experto Validador de CI Chilenas con Estructura de Alta Definición',
-            logo_herramienta: '🆔',
-            training_prompt: 'Actúa como experto validador de cédulas chilenas. Analiza la imagen y extrae datos. Mapea la respuesta estrictamente a los campos: analisis_documento.tipo_documento, validacion_punto_por_punto.nombre.match, validacion_punto_por_punto.rut.match, verificacion_consistencia.validacion_dv_rut, verificacion_consistencia.validacion_mrz, verificacion_consistencia.integridad_datos y nota_final.',
-            behavior_prompt: 'Responde siempre con un JSON estructurado siguiendo el esquema proporcionado. Sé preciso con los matches de texto y verifica la integridad MRZ e ICAO.',
-            response_format: 'JSON',
-            output_format_id: formatIDCard.id,
-            json_schema_id: schemaID.id
+        await Tool.findOrCreate({
+            where: { id: 'edb84cda-0000-4a2c-8187-000000000001' },
+            defaults: {
+                nombre: 'Validador de CI Chile',
+                descripcion: 'Experto Validador de CI Chilenas con Estructura de Alta Definición',
+                logo_herramienta: '🆔',
+                training_prompt: 'Actúa como experto validador de cédulas chilenas. Analiza la imagen y extrae datos. Mapea la respuesta estrictamente a los campos: analisis_documento.tipo_documento, validacion_punto_por_punto.nombre.match, validacion_punto_por_punto.rut.match, verificacion_consistencia.validacion_dv_rut, verificacion_consistencia.validacion_mrz, verificacion_consistencia.integridad_datos y nota_final.',
+                behavior_prompt: 'Responde siempre con un JSON estructurado siguiendo el esquema proporcionado. Sé preciso con los matches de texto y verifica la integridad MRZ e ICAO.',
+                response_format: 'JSON',
+                output_format_id: formatIDCard.id,
+                json_schema_id: schemaID.id
+            }
         });
 
         // 7b. CSS EXTRACTOR
-        await Tool.create({
-            id: 'edb84cda-584d-4a2c-8187-15f51fdf0884',
-            nombre: 'CSS EXTRACTOR',
-            descripcion: 'Extrae los estilos css de una captura en imagen de una interfaz de usuario',
-            logo_herramienta: '🎨',
-            training_prompt: 'ACTUA COMO INGENIERO DE SOFTWARE EXPERTO EN CSS y TAMBIEN COMO EXPERTO ANALISTA DE IMAGENES Y EXPERTO EN EXPERIENCIA DE USUARIO E INTERFACES WEB',
-            behavior_prompt: 'analiza la imagen adjunta y extrae todo estilo css para generar un bloque de codigo css que contenga las reglas anidadas que se requiere para generar una interfaz con el estilo descubierto en el analisis de la imagen, con el mismo aspecto de fuentes, tamaños, colores, bordes. sombras etc.',
-            response_format: 'JSON',
-            output_format_id: null,
-            json_schema_id: null
+        await Tool.findOrCreate({
+            where: { id: 'edb84cda-584d-4a2c-8187-15f51fdf0884' },
+            defaults: {
+                nombre: 'CSS EXTRACTOR',
+                descripcion: 'Extrae los estilos css de una captura en imagen de una interfaz de usuario',
+                logo_herramienta: '🎨',
+                training_prompt: 'ACTUA COMO INGENIERO DE SOFTWARE EXPERTO EN CSS y TAMBIEN COMO EXPERTO ANALISTA DE IMAGENES Y EXPERTO EN EXPERIENCIA DE USUARIO E INTERFACES WEB',
+                behavior_prompt: 'analiza la imagen adjunta y extrae todo estilo css para generar un bloque de codigo css que contenga las reglas anidadas que se requiere para generar una interfaz con el estilo descubierto en el analisis de la imagen, con el mismo aspecto de fuentes, tamaños, colores, bordes. sombras etc.',
+                response_format: 'JSON',
+                output_format_id: null,
+                json_schema_id: null
+            }
         });
 
         // 7c. Check de Liquidaciones Chile
-        await Tool.create({
-            id: 'f339b2d6-b8da-4697-ab86-d9fc2136f90a',
-            nombre: 'Check de Liquidaciones Chile',
-            descripcion: 'Elementos Clave a Validar:\nIdentificación: Datos del empleador y trabajador (RUT, fecha contrato).\nHaberes Imponibles: Sueldo base, gratificaciones, bonos, comisiones, horas extras. Sobre esto se calculan descuentos.\nHaberes No Imponibles: Asignaciones de movilización, colación, viáticos (no tributan).\nDescuentos Legales:\nPrevisión: AFP (sistema de pensiones).\nSalud: Fonasa (7%) o Isapre (monto pactado).\nSeguro de Cesantía: AFC.\nImpuesto Único: (Cuando corresponda).\nDescuentos Voluntarios: Ahorros previsionales, Caja de Compensación, créditos.\nTotal Haberes, Descuentos y Sueldo Líquido.\nFirma: O constancia de recepción, lo cual valida el pago ante discrepancias.',
-            logo_herramienta: '💵',
-            training_prompt: 'actua como un experto verificador y validador de liquidaciones de sueldo en chile, tu objetivo unico será analizar un archivo de liquidacion de sueldo adjunto para extraer toda su informacion y validarla contra la indormacion recibida en #DATA#',
-            behavior_prompt: 'Analiza este recibo de salario,Elementos Clave a Validar:\nIdentificación: Datos del empleador y trabajador (RUT, fecha contrato).\nHaberes Imponibles: Sueldo base, gratificaciones, bonos, comisiones, horas extras. Sobre esto se calculan descuentos.\nHaberes No Imponibles: Asignaciones de movilización, colación, viáticos (no tributan).\nDescuentos Legales:\nPrevisión: AFP (sistema de pensiones).\nSalud: Fonasa (7%) o Isapre (monto pactado).\nSeguro de Cesantía: AFC.\nImpuesto Único: (Cuando corresponda).\nDescuentos Voluntarios: Ahorros previsionales, Caja de Compensación, créditos.\nTotal Haberes, Descuentos y Sueldo Líquido.\nFirma: O constancia de recepción, lo cual valida el pago ante discrepancias.\n\ncompara la data obtenida del analisis del archivo adjunto con la data proporcionada en #DATA# y genera una respuesta con el resultado de tu analisis comparativo de ambas datas',
-            response_format: 'JSON',
-            output_format_id: formatCheckLiqui.id,
-            json_schema_id: schemaCheckLiqui.id
+        await Tool.findOrCreate({
+            where: { id: 'f339b2d6-b8da-4697-ab86-d9fc2136f90a' },
+            defaults: {
+                nombre: 'Check de Liquidaciones Chile',
+                descripcion: 'Elementos Clave a Validar:\nIdentificación: Datos del empleador y trabajador (RUT, fecha contrato).\nHaberes Imponibles: Sueldo base, gratificaciones, bonos, comisiones, horas extras. Sobre esto se calculan descuentos.\nHaberes No Imponibles: Asignaciones de movilización, colación, viáticos (no tributan).\nDescuentos Legales:\nPrevisión: AFP (sistema de pensiones).\nSalud: Fonasa (7%) o Isapre (monto pactado).\nSeguro de Cesantía: AFC.\nImpuesto Único: (Cuando corresponda).\nDescuentos Voluntarios: Ahorros previsionales, Caja de Compensación, créditos.\nTotal Haberes, Descuentos y Sueldo Líquido.\nFirma: O constancia de recepción, lo cual valida el pago ante discrepancias.',
+                logo_herramienta: '💵',
+                training_prompt: 'actua como un experto verificador y validador de liquidaciones de sueldo en chile, tu objetivo unico será analizar un archivo de liquidacion de sueldo adjunto para extraer toda su informacion y validarla contra la indormacion recibida en #DATA#',
+                behavior_prompt: 'Analiza este recibo de salario,Elementos Clave a Validar:\nIdentificación: Datos del empleador y trabajador (RUT, fecha contrato).\nHaberes Imponibles: Sueldo base, gratificaciones, bonos, comisiones, horas extras. Sobre esto se calculan descuentos.\nHaberes No Imponibles: Asignaciones de movilización, colación, viáticos (no tributan).\nDescuentos Legales:\nPrevisión: AFP (sistema de pensiones).\nSalud: Fonasa (7%) o Isapre (monto pactado).\nSeguro de Cesantía: AFC.\nImpuesto Único: (Cuando corresponda).\nDescuentos Voluntarios: Ahorros previsionales, Caja de Compensación, créditos.\nTotal Haberes, Descuentos y Sueldo Líquido.\nFirma: O constancia de recepción, lo cual valida el pago ante discrepancias.\n\ncompara la data obtenida del analisis del archivo adjunto con la data proporcionada en #DATA# y genera una respuesta con el resultado de tu analisis comparativo de ambas datas',
+                response_format: 'JSON',
+                output_format_id: formatCheckLiqui.id,
+                json_schema_id: schemaCheckLiqui.id
+            }
         });
 
-        // ═══════════════════════════════════════════════════════════════
-        // 10. Generic List Schema (for Machine list-output tools)
+        // 11. Generic List Schema (for Machine list-output tools)
         // ═══════════════════════════════════════════════════════════════
 
-        const schemaGenericList = await JsonSchema.create({
-            id: 'ab000001-0000-4000-a000-000000000001',
-            nombre: 'Schema Lista Genérica',
-            descripcion: 'Estructura genérica para outputs de tipo lista/array. Cada item tiene id, nombre, tipo, estado, datos clave-valor, y un array de documentos asociados.',
-            schema: JSON.stringify({
-                "type": "object",
-                "required": ["lista", "total", "resumen"],
-                "properties": {
-                    "lista": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "required": ["id", "nombre", "tipo", "estado"],
-                            "properties": {
-                                "id": { "type": "string" },
-                                "nombre": { "type": "string" },
-                                "tipo": { "type": "string" },
-                                "estado": { "type": "string" },
-                                "datos": {
-                                    "type": "object",
-                                    "properties": {
-                                        "rut": { "type": "string" },
-                                        "cargo": { "type": "string" },
-                                        "patente": { "type": "string" },
-                                        "marca": { "type": "string" },
-                                        "modelo": { "type": "string" },
-                                        "anio": { "type": "string" },
-                                        "area": { "type": "string" },
-                                        "observaciones": { "type": "string" }
-                                    }
-                                },
-                                "documentos": {
-                                    "type": "array",
-                                    "items": {
+        const [schemaGenericList] = await JsonSchema.findOrCreate({
+            where: { id: 'ab000001-0000-4000-a000-000000000001' },
+            defaults: {
+                nombre: 'Schema Lista Genérica',
+                descripcion: 'Estructura genérica para outputs de tipo lista/array. Cada item tiene id, nombre, tipo, estado, datos clave-valor, y un array de documentos asociados.',
+                schema: JSON.stringify({
+                    "type": "object",
+                    "required": ["lista", "total", "resumen"],
+                    "properties": {
+                        "lista": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["id", "nombre", "tipo", "estado"],
+                                "properties": {
+                                    "id": { "type": "string" },
+                                    "nombre": { "type": "string" },
+                                    "tipo": { "type": "string" },
+                                    "estado": { "type": "string" },
+                                    "datos": {
                                         "type": "object",
-                                        "required": ["nombre_documento", "estado"],
                                         "properties": {
-                                            "nombre_documento": { "type": "string" },
-                                            "estado": { "type": "string" },
-                                            "fecha_vencimiento": { "type": "string" },
-                                            "observacion": { "type": "string" }
+                                            "rut": { "type": "string" },
+                                            "cargo": { "type": "string" },
+                                            "patente": { "type": "string" },
+                                            "marca": { "type": "string" },
+                                            "modelo": { "type": "string" },
+                                            "anio": { "type": "string" },
+                                            "area": { "type": "string" },
+                                            "observaciones": { "type": "string" }
+                                        }
+                                    },
+                                    "documentos": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "required": ["nombre_documento", "estado"],
+                                            "properties": {
+                                                "nombre_documento": { "type": "string" },
+                                                "estado": { "type": "string" },
+                                                "fecha_vencimiento": { "type": "string" },
+                                                "observacion": { "type": "string" }
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                    },
-                    "total": { "type": "number" },
-                    "resumen": {
-                        "type": "object",
-                        "properties": {
-                            "completos": { "type": "number" },
-                            "incompletos": { "type": "number" },
-                            "criticos": { "type": "number" },
-                            "observacion_general": { "type": "string" }
+                        },
+                        "total": { "type": "number" },
+                        "resumen": {
+                            "type": "object",
+                            "properties": {
+                                "completos": { "type": "number" },
+                                "incompletos": { "type": "number" },
+                                "criticos": { "type": "number" },
+                                "observacion_general": { "type": "string" }
+                            }
                         }
                     }
-                }
-            })
+                })
+            }
         });
 
         // ═══════════════════════════════════════════════════════════════
@@ -789,12 +868,13 @@ const seed = async () => {
         // ═══════════════════════════════════════════════════════════════
 
         // 11a. CSV Data Extractor — extracts structured lists from CSV data
-        await Tool.create({
-            id: 'edb84cda-0000-4a2c-8187-000000000010',
-            nombre: 'CSV Data Extractor',
-            descripcion: 'Recibe datos CSV (adjunto o en el prompt) de trabajadores, vehículos y/o maquinarias. Extrae y estructura cada registro en un array JSON detallado con sus documentos asociados. Diseñada para producir listas que alimenten Machines.',
-            logo_herramienta: '📊',
-            training_prompt: `Eres un experto en procesamiento de datos tabulares y documentación de operaciones industriales.
+        await Tool.findOrCreate({
+            where: { id: 'edb84cda-0000-4a2c-8187-000000000010' },
+            defaults: {
+                nombre: 'CSV Data Extractor',
+                descripcion: 'Recibe datos CSV (adjunto o en el prompt) de trabajadores, vehículos y/o maquinarias. Extrae y estructura cada registro en un array JSON detallado con sus documentos asociados. Diseñada para producir listas que alimenten Machines.',
+                logo_herramienta: '📊',
+                training_prompt: `Eres un experto en procesamiento de datos tabulares y documentación de operaciones industriales.
 Tu tarea es analizar datos CSV de trabajadores, vehículos y maquinarias, y transformarlos en un JSON estructurado.
 
 DATOS CSV DE EJEMPLO INTEGRADOS:
@@ -812,38 +892,42 @@ MAQUINARIA,M002,Grúa Telescópica,,,,Liebherr,LTM 1100,2020,Operaciones,,,,NO V
 MAQUINARIA,M003,Retroexcavadora,,,,JCB,3CX,2018,Mantenimiento,,,,SI 2026-04,
 
 Para cada registro debes generar un objeto en el array "lista" con: id, nombre, tipo (TRABAJADOR/VEHICULO/MAQUINARIA), estado (COMPLETO/INCOMPLETO/CRITICO según documentación), datos (campos relevantes), y documentos (array de documentos requeridos con su estado).`,
-            behavior_prompt: 'Analiza los datos CSV proporcionados (en el prompt o en archivo adjunto). Genera un JSON con el array "lista" conteniendo cada registro estructurado. Evalúa el estado documental: COMPLETO si tiene toda la documentación, INCOMPLETO si falta algo no crítico, CRITICO si faltan documentos obligatorios (contrato, licencia vigente, revisión técnica vigente). Incluye resumen con conteos.',
-            response_format: 'JSON',
-            output_format_id: null,
-            json_schema_id: schemaGenericList.id
+                behavior_prompt: 'Analiza los datos CSV proporcionados (en el prompt o en archivo adjunto). Genera un JSON con el array "lista" conteniendo cada registro estructurado. Evalúa el estado documental: COMPLETO si tiene toda la documentación, INCOMPLETO si falta algo no crítico, CRITICO si faltan documentos obligatorios (contrato, licencia vigente, revisión técnica vigente). Incluye resumen con conteos.',
+                response_format: 'JSON',
+                output_format_id: null,
+                json_schema_id: schemaGenericList.id
+            }
         });
 
         // 11b. Fleet Inventory Analyzer — analyzes vehicle/machinery fleets
-        await Tool.create({
-            id: 'edb84cda-0000-4a2c-8187-000000000011',
-            nombre: 'Fleet Inventory Analyzer',
-            descripcion: 'Analiza inventarios de flotas de vehículos y maquinarias. Recibe datos de flota y genera un listado detallado con estado de cada unidad, documentación vigente/vencida, y alertas de mantenimiento.',
-            logo_herramienta: '🚛',
-            training_prompt: `Eres un experto en gestión de flotas vehiculares y maquinaria pesada para operaciones industriales.
+        await Tool.findOrCreate({
+            where: { id: 'edb84cda-0000-4a2c-8187-000000000011' },
+            defaults: {
+                nombre: 'Fleet Inventory Analyzer',
+                descripcion: 'Analiza inventarios de flotas de vehículos y maquinarias. Recibe datos de flota y genera un listado detallado con estado de cada unidad, documentación vigente/vencida, y alertas de mantenimiento.',
+                logo_herramienta: '🚛',
+                training_prompt: `Eres un experto en gestión de flotas vehiculares y maquinaria pesada para operaciones industriales.
 Tu objetivo es recibir información de flota (texto, CSV o archivo adjunto) y generar un inventario estructurado con:
 - Identificación de cada unidad (patente, marca, modelo, año)
 - Estado operacional (OPERATIVO, EN MANTENIMIENTO, FUERA DE SERVICIO)
 - Documentación (revisión técnica, seguro, permiso de circulación, certificaciones)
 - Alertas por documentos próximos a vencer (30 días) o ya vencidos
 Cada unidad debe tener su array de documentos con estado y fecha de vencimiento.`,
-            behavior_prompt: 'Procesa la información de flota recibida. Para cada vehículo/maquinaria, determina su estado según la documentación: COMPLETO si todo vigente, INCOMPLETO si hay documentos por vencer en 30 días, CRITICO si hay documentos vencidos o faltantes obligatorios. Genera la lista como array JSON con resumen de conteos.',
-            response_format: 'JSON',
-            output_format_id: null,
-            json_schema_id: schemaGenericList.id
+                behavior_prompt: 'Procesa la información de flota recibida. Para cada vehículo/maquinaria, determina su estado según la documentación: COMPLETO si todo vigente, INCOMPLETO si hay documentos por vencer en 30 días, CRITICO si hay documentos vencidos o faltantes obligatorios. Genera la lista como array JSON con resumen de conteos.',
+                response_format: 'JSON',
+                output_format_id: null,
+                json_schema_id: schemaGenericList.id
+            }
         });
 
         // 11c. Document Compliance Checker — checks docs per entity from a list
-        await Tool.create({
-            id: 'edb84cda-0000-4a2c-8187-000000000012',
-            nombre: 'Document Compliance Checker',
-            descripcion: 'Recibe un elemento individual (trabajador, vehículo o maquinaria) con su lista de documentos y verifica el cumplimiento documental según normativa chilena. Diseñada para ser usada iterativamente dentro de una Machine, recibiendo un item a la vez desde un List Iterator.',
-            logo_herramienta: '✅',
-            training_prompt: `Eres un auditor experto en cumplimiento documental para operaciones industriales en Chile.
+        await Tool.findOrCreate({
+            where: { id: 'edb84cda-0000-4a2c-8187-000000000012' },
+            defaults: {
+                nombre: 'Document Compliance Checker',
+                descripcion: 'Recibe un elemento individual (trabajador, vehículo o maquinaria) con su lista de documentos y verifica el cumplimiento documental según normativa chilena. Diseñada para ser usada iterativamente dentro de una Machine, recibiendo un item a la vez desde un List Iterator.',
+                logo_herramienta: '✅',
+                training_prompt: `Eres un auditor experto en cumplimiento documental para operaciones industriales en Chile.
 Recibirás los datos de UN solo registro (trabajador, vehículo o maquinaria) y debes verificar:
 
 PARA TRABAJADORES:
@@ -863,10 +947,11 @@ PARA MAQUINARIAS:
 - Seguro de responsabilidad civil (obligatorio)
 - Certificación de operatividad
 - Registro de mantenimiento preventivo`,
-            behavior_prompt: 'Analiza el registro individual recibido. Verifica cada documento requerido según el tipo de entidad. Responde con un JSON que contenga el mismo elemento pero con un array actualizado de documentos donde cada uno tiene estado detallado (VIGENTE/VENCIDO/FALTANTE/NO_APLICA), fecha de vencimiento si corresponde, y observaciones. Calcula un estado general: COMPLETO, INCOMPLETO o CRITICO.',
-            response_format: 'JSON',
-            output_format_id: null,
-            json_schema_id: schemaGenericList.id
+                behavior_prompt: 'Analiza el registro individual recibido. Verifica cada documento requerido según el tipo de entidad. Responde con un JSON que contenga el mismo elemento pero con un array actualizado de documentos donde cada uno tiene estado detallado (VIGENTE/VENCIDO/FALTANTE/NO_APLICA), fecha de vencimiento si corresponde, y observaciones. Calcula un estado general: COMPLETO, INCOMPLETO o CRITICO.',
+                response_format: 'JSON',
+                output_format_id: null,
+                json_schema_id: schemaGenericList.id
+            }
         });
 
         // ═══════════════════════════════════════════════════════════════
@@ -874,12 +959,13 @@ PARA MAQUINARIAS:
         // ═══════════════════════════════════════════════════════════════
 
         // 12a. Extractor de Nómina — ingests payroll CSV/data and outputs worker list
-        const toolNomina = await Tool.create({
-            id: 'edb84cda-0000-4a2c-8187-000000000020',
-            nombre: 'Extractor de Nómina',
-            descripcion: 'Recibe un archivo CSV o datos textuales con la nómina de trabajadores de un período. Extrae y estructura cada trabajador con sus datos laborales, salariales y documentación asociada en un array JSON.',
-            logo_herramienta: '📋',
-            training_prompt: `Eres un experto en gestión de recursos humanos y procesamiento de nóminas laborales en Chile.
+        const [toolNomina] = await Tool.findOrCreate({
+            where: { id: 'edb84cda-0000-4a2c-8187-000000000020' },
+            defaults: {
+                nombre: 'Extractor de Nómina',
+                descripcion: 'Recibe un archivo CSV o datos textuales con la nómina de trabajadores de un período. Extrae y estructura cada trabajador con sus datos laborales, salariales y documentación asociada en un array JSON.',
+                logo_herramienta: '📋',
+                training_prompt: `Eres un experto en gestión de recursos humanos y procesamiento de nóminas laborales en Chile.
 Tu tarea es analizar datos de nómina (CSV, planilla o texto) y transformarlos en un array JSON estructurado.
 
 Cada trabajador debe incluir:
@@ -898,19 +984,21 @@ rut,nombre,cargo,area,tipo_contrato,fecha_inicio,sueldo_base,gratificacion,bono_
 16.777.888-9,Sofía Hernández Muñoz,Administrativa,RRHH,Indefinido,2024-01-10,580000,48333,0,SI,SI,SI,SI
 10.111.222-3,Roberto Sánchez Pino,Electricista,Mantenimiento,Indefinido,2023-06-01,750000,62500,90000,SI,SI,NO,SI
 14.333.444-5,Claudia Reyes Orrego,Prevencionista,HSEC,Indefinido,2022-02-15,950000,79167,100000,SI,SI,SI,SI`,
-            behavior_prompt: 'Analiza los datos de nómina proporcionados. Genera un JSON con array "lista" donde cada trabajador es un objeto con: id (RUT), nombre, tipo (TRABAJADOR), estado (COMPLETO/INCOMPLETO/CRITICO según documentación), datos (cargo, area, sueldo_base, tipo_contrato), y documentos (array con cada doc requerido y su estado). Un trabajador es CRITICO si no tiene contrato. INCOMPLETO si le falta algún certificado. COMPLETO si tiene todo.',
-            response_format: 'JSON',
-            output_format_id: null,
-            json_schema_id: schemaGenericList.id
+                behavior_prompt: 'Analiza los datos de nómina proporcionados. Genera un JSON con array "lista" donde cada trabajador es un objeto con: id (RUT), nombre, tipo (TRABAJADOR), estado (COMPLETO/INCOMPLETO/CRITICO según documentación), datos (cargo, area, sueldo_base, tipo_contrato), y documentos (array con cada doc requerido y su estado). Un trabajador es CRITICO si no tiene contrato. INCOMPLETO si le falta algún certificado. COMPLETO si tiene todo.',
+                response_format: 'JSON',
+                output_format_id: null,
+                json_schema_id: schemaGenericList.id
+            }
         });
 
         // 12b. Validador de Liquidación Individual — validates one payslip
-        const toolValLiqui = await Tool.create({
-            id: 'edb84cda-0000-4a2c-8187-000000000021',
-            nombre: 'Validador de Liquidación Individual',
-            descripcion: 'Recibe los datos de UN trabajador y valida su liquidación de sueldo: verifica cálculos de haberes imponibles, descuentos legales (AFP, Salud 7%, AFC), gratificación legal, y sueldo líquido. Diseñada para uso iterativo en Machines.',
-            logo_herramienta: '🧮',
-            training_prompt: `Eres un experto en legislación laboral chilena y validación de liquidaciones de sueldo.
+        const [toolValLiqui] = await Tool.findOrCreate({
+            where: { id: 'edb84cda-0000-4a2c-8187-000000000021' },
+            defaults: {
+                nombre: 'Validador de Liquidación Individual',
+                descripcion: 'Recibe los datos de UN trabajador y valida su liquidación de sueldo: verifica cálculos de haberes imponibles, descuentos legales (AFP, Salud 7%, AFC), gratificación legal, y sueldo líquido. Diseñada para uso iterativo en Machines.',
+                logo_herramienta: '🧮',
+                training_prompt: `Eres un experto en legislación laboral chilena and validación de liquidaciones de sueldo.
 Recibirás los datos de UN solo trabajador con su información salarial y debes verificar:
 
 CÁLCULOS OBLIGATORIOS:
@@ -925,19 +1013,21 @@ VALIDACIONES:
 - Gratificación legal: máx 4.75 IMM/12 por mes
 - Tope imponible: 81.6 UF mensual para cotizaciones
 - Consistencia entre montos declarados y calculados`,
-            behavior_prompt: 'Analiza los datos salariales del trabajador individual recibido. Calcula y verifica cada componente de la liquidación. Responde con un JSON que contenga el trabajador con estado actualizado: COMPLETO si todos los cálculos son correctos, INCOMPLETO si hay discrepancias menores (< 5%), CRITICO si hay errores graves o incumplimientos legales. Incluye detalle de cada validación.',
-            response_format: 'JSON',
-            output_format_id: null,
-            json_schema_id: schemaGenericList.id
+                behavior_prompt: 'Analiza los datos salariales del trabajador individual recibido. Calcula y verifica cada componente de la liquidación. Responde con un JSON que contenga el trabajador con estado actualizado: COMPLETO si todos los cálculos son correctos, INCOMPLETO si hay discrepancias menores (< 5%), CRITICO si hay errores graves o incumplimientos legales. Incluye detalle de cada validación.',
+                response_format: 'JSON',
+                output_format_id: null,
+                json_schema_id: schemaGenericList.id
+            }
         });
 
         // 12c. Verificador de Contrato — validates employment contract
-        const toolContrato = await Tool.create({
-            id: 'edb84cda-0000-4a2c-8187-000000000022',
-            nombre: 'Verificador de Contrato',
-            descripcion: 'Verifica la existencia y vigencia del contrato de trabajo de un trabajador individual. Evalúa: tipo de contrato, fechas, cláusulas obligatorias según Código del Trabajo chileno.',
-            logo_herramienta: '📄',
-            training_prompt: `Eres un experto en derecho laboral chileno y contratos de trabajo.
+        const [toolContrato] = await Tool.findOrCreate({
+            where: { id: 'edb84cda-0000-4a2c-8187-000000000022' },
+            defaults: {
+                nombre: 'Verificador de Contrato',
+                descripcion: 'Verifica la existencia y vigencia del contrato de trabajo de un trabajador individual. Evalúa: tipo de contrato, fechas, cláusulas obligatorias según Código del Trabajo chileno.',
+                logo_herramienta: '📄',
+                training_prompt: `Eres un experto en derecho laboral chileno y contratos de trabajo.
 Recibirás los datos de UN trabajador y debes verificar su situación contractual:
 
 VERIFICACIONES:
@@ -953,19 +1043,21 @@ ESTADOS:
 - VENCIDO: contrato plazo fijo expirado
 - FALTANTE: no tiene contrato registrado (CRITICO)
 - IRREGULAR: contrato con anomalías`,
-            behavior_prompt: 'Analiza la situación contractual del trabajador recibido. Verifica existencia, tipo, vigencia y regularidad del contrato según normativa chilena. Responde con JSON incluyendo estado del contrato y observaciones detalladas.',
-            response_format: 'JSON',
-            output_format_id: null,
-            json_schema_id: schemaGenericList.id
+                behavior_prompt: 'Analiza la situación contractual del trabajador recibido. Verifica existencia, tipo, vigencia y regularidad del contrato según normativa chilena. Responde con JSON incluyendo estado del contrato y observaciones detalladas.',
+                response_format: 'JSON',
+                output_format_id: null,
+                json_schema_id: schemaGenericList.id
+            }
         });
 
         // 12d. Verificador de Certificaciones — checks licenses and certs
-        const toolCerts = await Tool.create({
-            id: 'edb84cda-0000-4a2c-8187-000000000023',
-            nombre: 'Verificador de Certificaciones',
-            descripcion: 'Verifica certificaciones, licencias y documentación complementaria de un trabajador individual: certificado AFP, certificado de salud (Fonasa/Isapre), licencia de conducir, certificaciones de competencia.',
-            logo_herramienta: '🏅',
-            training_prompt: `Eres un auditor de cumplimiento documental laboral en Chile.
+        const [toolCerts] = await Tool.findOrCreate({
+            where: { id: 'edb84cda-0000-4a2c-8187-000000000023' },
+            defaults: {
+                nombre: 'Verificador de Certificaciones',
+                descripcion: 'Verifica certificaciones, licencias y documentación complementaria de un trabajador individual: certificado AFP, certificado de salud (Fonasa/Isapre), licencia de conducir, certificaciones de competencia.',
+                logo_herramienta: '🏅',
+                training_prompt: `Eres un auditor de cumplimiento documental laboral en Chile.
 Recibirás los datos de UN trabajador y debes verificar su documentación complementaria:
 
 DOCUMENTOS A VERIFICAR:
@@ -981,19 +1073,21 @@ CRITERIOS:
 - VENCIDO: documento existe pero caducó
 - FALTANTE: documento no existe y es obligatorio
 - NO_APLICA: documento no requerido para este cargo`,
-            behavior_prompt: 'Verifica cada certificación y documento complementario del trabajador recibido. Evalúa según su cargo qué documentos son obligatorios vs opcionales. Estado general: COMPLETO si todo vigente, INCOMPLETO si falta algo no crítico, CRITICO si falta AFP, salud o certificación obligatoria para el cargo.',
-            response_format: 'JSON',
-            output_format_id: null,
-            json_schema_id: schemaGenericList.id
+                behavior_prompt: 'Verifica cada certificación y documento complementario del trabajador recibido. Evalúa según su cargo qué documentos son obligatorios vs opcionales. Estado general: COMPLETO si todo vigente, INCOMPLETO si falta algo no crítico, CRITICO si falta AFP, salud o certificación obligatoria para el cargo.',
+                response_format: 'JSON',
+                output_format_id: null,
+                json_schema_id: schemaGenericList.id
+            }
         });
 
         // 12e. Generador de Reporte de Lote — aggregates batch results
-        const toolReporteLote = await Tool.create({
-            id: 'edb84cda-0000-4a2c-8187-000000000024',
-            nombre: 'Generador de Reporte de Lote',
-            descripcion: 'Recibe el resultado agregado de un proceso de verificación en lote y genera un reporte ejecutivo consolidado con estadísticas, hallazgos críticos, y recomendaciones.',
-            logo_herramienta: '📈',
-            training_prompt: `Eres un experto en generación de reportes ejecutivos de cumplimiento laboral.
+        const [toolReporteLote] = await Tool.findOrCreate({
+            where: { id: 'edb84cda-0000-4a2c-8187-000000000024' },
+            defaults: {
+                nombre: 'Generador de Reporte de Lote',
+                descripcion: 'Recibe el resultado agregado de un proceso de verificación en lote y genera un reporte ejecutivo consolidado con estadísticas, hallazgos críticos, y recomendaciones.',
+                logo_herramienta: '📈',
+                training_prompt: `Eres un experto en generación de reportes ejecutivos de cumplimiento laboral.
 Recibirás un array consolidado con los resultados de verificación de múltiples trabajadores y debes generar un reporte ejecutivo que incluya:
 
 SECCIONES DEL REPORTE:
@@ -1005,19 +1099,21 @@ SECCIONES DEL REPORTE:
 6. Discrepancias salariales encontradas
 7. Recomendaciones: acciones inmediatas y plan de regularización
 8. Detalle por trabajador: resumen individual de cada uno`,
-            behavior_prompt: 'Procesa el array de resultados recibido. Genera un reporte ejecutivo completo en JSON con estadísticas globales, hallazgos ordenados por severidad, y recomendaciones accionables. El resumen debe permitir a un gerente de RRHH tomar decisiones inmediatas.',
-            response_format: 'JSON',
-            output_format_id: null,
-            json_schema_id: schemaGenericList.id
+                behavior_prompt: 'Procesa the array de resultados recibido. Genera un reporte ejecutivo completo en JSON con estadísticas globales, hallazgos ordenados por severidad, y recomendaciones accionables. El resumen debe permitir a un gerente de RRHH tomar decisiones inmediatas.',
+                response_format: 'JSON',
+                output_format_id: null,
+                json_schema_id: schemaGenericList.id
+            }
         });
 
         // 12f. Demo Liquidaciones — Specialized extractor for payroll and COTI
-        const toolDemoLiqui = await Tool.create({
-            id: 'edb84cda-0000-4a2c-8187-000000000030',
-            nombre: 'Demo Liquidaciones',
-            descripcion: 'Extracción experta de datos de liquidaciones y cotizaciones (COTI) con formato pipe-separated.',
-            logo_herramienta: '📑',
-            training_prompt: `Eres un experto en extracción de datos de documentos laborales chilenos.
+        const [toolDemoLiqui] = await Tool.findOrCreate({
+            where: { id: 'edb84cda-0000-4a2c-8187-000000000030' },
+            defaults: {
+                nombre: 'Demo Liquidaciones',
+                descripcion: 'Extracción experta de datos de liquidaciones y cotizaciones (COTI) con formato pipe-separated.',
+                logo_herramienta: '📑',
+                training_prompt: `Eres un experto en extracción de datos de documentos laborales chilenos.
 Tu objetivo es analizar Liquidaciones de Sueldo y Documentos de Cotización (COTI) y extraer la información estrictamente como se solicita.
 
 REGLAS PARA LIQUIDACIONES:
@@ -1032,7 +1128,7 @@ IMPORTANTE:
 - Si no ves el RUT, escribe "SIN RUT".
 - Si no ves un valor, escribe "NO VEO VALOR".
 - RUTs con puntos, guion y sin cero a la izquierda.`,
-            behavior_prompt: `PROCESAMIENTO DE LIQUIDACIONES:
+                behavior_prompt: `PROCESAMIENTO DE LIQUIDACIONES:
 Para cada una de las liquidaciones del PDF, genera el resumen pipe-separated siguiendo este orden y formato:
 NUMERO DE LIQUIDACION|RUT DEL TRABAJADOR|PERIODO DE LA LIQUIDACION|DIAS TRABAJADOS|SUELDO BASE|total por DESCUENTO POR DIAS NO TRABAJADOS|GRATIFICACION|TOTAL IMPONIBLE|TOTAL NO IMPONIBLES|TOTAL HABERES|INDEMNIZACION POR VACACIONES...|LIQUIDO A PAGO
 
@@ -1041,18 +1137,20 @@ RESUME Y ESTRUCTURA SEPARANDO POR "|" DE LA SIGUIENTE FORMA:
 CODIGO|RUT|FECHA DE CARGO|IMPONIBLE|### COTIZACION OBLIGATORIA|!!! ISAPRE|... SEGURO SOCIAL|% FONASA|&&& MUTUAL|/// CAJA COMPENSACION
 
 Suma los dos valores de "COTIZACION OBLIGATORIA" si aparecen dos. Reemplaza comas por puntos en los miles.`,
-            response_format: 'JSON',
-            output_format_id: formatLiquidacionesDemo.id,
-            json_schema_id: schemaGenericList.id
+                response_format: 'JSON',
+                output_format_id: formatLiquidacionesDemo.id,
+                json_schema_id: schemaGenericList.id
+            }
         });
 
         // 12g. Validador de Certificado de Deuda TGR
-        await Tool.create({
-            id: 'edb84cda-0000-4a2c-8187-000000000040',
-            nombre: 'Validador de Certificado de Deuda TGR',
-            descripcion: 'Analista experto en Certificados de Deuda de la Tesorería General de la República. Verifica deudas fiscales, territoriales y autenticidad del documento.',
-            logo_herramienta: '🏛️',
-            training_prompt: `ACTUA COMO UN EXPERTO ANALISTA TRIBUTARIO DE LA TESORERÍA GENERAL DE LA REPÚBLICA DE CHILE.
+        await Tool.findOrCreate({
+            where: { id: 'edb84cda-0000-4a2c-8187-000000000040' },
+            defaults: {
+                nombre: 'Validador de Certificado de Deuda TGR',
+                descripcion: 'Analista experto en Certificados de Deuda de la Tesorería General de la República. Verifica deudas fiscales, territoriales y autenticidad del documento.',
+                logo_herramienta: '🏛️',
+                training_prompt: `ACTUA COMO UN EXPERTO ANALISTA TRIBUTARIO DE LA TESORERÍA GENERAL DE LA REPÚBLICA DE CHILE.
 Tu objetivo es analizar certificados de deuda emitidos por TGR para extraer información precisa y validar la autenticidad del documento.
 
 CAMPOS CRÍTICOS A EXTRAER:
@@ -1065,34 +1163,37 @@ REGLAS DE NEGOCIO:
             - Los montos deben ser tratados como números sin decimales(CLP).
 - Si el documento indica "SIN DEUDA", el total moroso debe ser 0.
         - El Código de Verificación es esencial para la validez legal.`,
-            behavior_prompt: 'Procesa el documento adjunto. Genera un JSON que siga estrictamente el esquema de TGR Deuda. Asegúrate de capturar cada ítem de la tabla de deudas en el array detalle_obligaciones. Si algún campo no es visible, usa null o 0 según corresponda.',
-            response_format: 'JSON',
-            output_format_id: formatTGRDeuda.id,
-            json_schema_id: schemaTGRDeuda.id
+                behavior_prompt: 'Procesa el documento adjunto. Genera un JSON que siga estrictamente el esquema de TGR Deuda. Asegúrate de capturar cada ítem de la tabla de deudas en el array detalle_obligaciones. Si algún campo no es visible, usa null o 0 según corresponda.',
+                response_format: 'JSON',
+                output_format_id: formatTGRDeuda.id,
+                json_schema_id: schemaTGRDeuda.id
+            }
         });
 
         // 12h. Validador de COMPROBANTE DE RESOLUCIÓN de convenio TGR
-        await Tool.create({
-            id: 'edb84cda-0000-4a2c-8187-000000000041',
-            nombre: 'Validador de COMPROBANTE DE RESOLUCIÓN de convenio TGR',
-            descripcion: 'Analista experto en convenios de pago TGR. Verifica términos de resolución, cantidad de cuotas y montos pactados.',
-            logo_herramienta: '📝',
-            training_prompt: `ACTUA COMO UN EXPERTO EN CONVENIOS DE PAGO Y RESOLUCIONES ADMINISTRATIVAS DE LA TGR CHILE.
+        await Tool.findOrCreate({
+            where: { id: 'edb84cda-0000-4a2c-8187-000000000041' },
+            defaults: {
+                nombre: 'Validador de COMPROBANTE DE RESOLUCIÓN de convenio TGR',
+                descripcion: 'Analista experto en convenios de pago TGR. Verifica términos de resolución, cantidad de cuotas y montos pactados.',
+                logo_herramienta: '📝',
+                training_prompt: `ACTUA COMO UN EXPERTO EN CONVENIOS DE PAGO Y RESOLUCIONES ADMINISTRATIVAS DE LA TGR CHILE.
 Tu tarea es decodificar el Comprobante de Resolución de Convenio y estructurar sus términos.
 
 ANÁLISIS DE RESOLUCIÓN:
             1. Metadata: Número de Resolución, Fecha, Tipo de Convenio(ej.Administrativo, Judicial).
-2. Contribuyente: RUT y Nombre.
+2. Contribuyente: RUT and Nombre.
 3. Plan de Pagos: Monto total consolidado, número de cuotas pactadas, valor de la cuota tipo, fecha de pago inicial.
 
 REGLAS DE EXPERTO:
             - Valida que el RUT sea consistente con la resolución.
 - Extrae el desglose de cuotas si está disponible en una tabla.
 - Indica claramente el estado del convenio si el documento lo menciona(ej.Aprobado, Pendiente).`,
-            behavior_prompt: 'Analiza el comprobante de resolución. Genera el JSON correspondiente al esquema TGR Convenio. Presta especial atención al número de resolución y al plan de pagos.',
-            response_format: 'JSON',
-            output_format_id: formatTGRConvenio.id,
-            json_schema_id: schemaTGRConvenio.id
+                behavior_prompt: 'Analiza el comprobante de resolución. Genera el JSON correspondiente al esquema TGR Convenio. Presta especial atención al número de resolución y al plan de pagos.',
+                response_format: 'JSON',
+                output_format_id: formatTGRConvenio.id,
+                json_schema_id: schemaTGRConvenio.id
+            }
         });
 
         // ═══════════════════════════════════════════════════════════════
@@ -1100,93 +1201,101 @@ REGLAS DE EXPERTO:
         // ═══════════════════════════════════════════════════════════════
 
         // ── Machine 1: Verificación Laboral en Lotes ──
-        const machineLotes = await Machine.create({
-            id: 'machine-0000-0000-0000-000000000001',
-            nombre: 'Verificación Laboral en Lotes',
-            descripcion: 'Proceso estándar mensual: ingesta de nómina CSV → iteración por trabajador → validación de liquidación individual → recolección de resultados → reporte ejecutivo consolidado.',
-            icono: '🏭',
-            activo: true
+        const [machineLotes] = await Machine.findOrCreate({
+            where: { id: 'machine-0000-0000-0000-000000000001' },
+            defaults: {
+                nombre: 'Verificación Laboral en Lotes',
+                descripcion: 'Proceso estándar mensual: ingesta de nómina CSV → iteración por trabajador → validación de liquidación individual → recolección de resultados → reporte ejecutivo consolidado.',
+                icono: '🏭',
+                activo: true
+            }
         });
 
         // Nodes for Machine 1
-        const m1n1 = await MachineNode.create({ id: 'mn-lotes-0001', machine_id: machineLotes.id, node_type: 'tool', tool_id: toolNomina.id, position_x: 50, position_y: 200, config: null });
-        const m1n2 = await MachineNode.create({ id: 'mn-lotes-0002', machine_id: machineLotes.id, node_type: 'engine', engine_id: engineIterator.id, position_x: 320, position_y: 200, config: JSON.stringify({ input_field: 'lista' }) });
-        const m1n3 = await MachineNode.create({ id: 'mn-lotes-0003', machine_id: machineLotes.id, node_type: 'tool', tool_id: toolValLiqui.id, position_x: 590, position_y: 200, config: null });
-        const m1n4 = await MachineNode.create({ id: 'mn-lotes-0004', machine_id: machineLotes.id, node_type: 'engine', engine_id: engineCollector.id, position_x: 860, position_y: 200, config: JSON.stringify({ output_field: 'resultados_validacion' }) });
-        const m1n5 = await MachineNode.create({ id: 'mn-lotes-0005', machine_id: machineLotes.id, node_type: 'tool', tool_id: toolReporteLote.id, position_x: 1130, position_y: 200, config: null });
+        const [m1n1] = await MachineNode.findOrCreate({ where: { id: 'mn-lotes-0001' }, defaults: { machine_id: machineLotes.id, node_type: 'tool', tool_id: toolNomina.id, position_x: 50, position_y: 200, config: null } });
+        const [m1n2] = await MachineNode.findOrCreate({ where: { id: 'mn-lotes-0002' }, defaults: { machine_id: machineLotes.id, node_type: 'engine', engine_id: engineIterator.id, position_x: 320, position_y: 200, config: JSON.stringify({ input_field: 'lista' }) } });
+        const [m1n3] = await MachineNode.findOrCreate({ where: { id: 'mn-lotes-0003' }, defaults: { machine_id: machineLotes.id, node_type: 'tool', tool_id: toolValLiqui.id, position_x: 590, position_y: 200, config: null } });
+        const [m1n4] = await MachineNode.findOrCreate({ where: { id: 'mn-lotes-0004' }, defaults: { machine_id: machineLotes.id, node_type: 'engine', engine_id: engineCollector.id, position_x: 860, position_y: 200, config: JSON.stringify({ output_field: 'resultados_validacion' }) } });
+        const [m1n5] = await MachineNode.findOrCreate({ where: { id: 'mn-lotes-0005' }, defaults: { machine_id: machineLotes.id, node_type: 'tool', tool_id: toolReporteLote.id, position_x: 1130, position_y: 200, config: null } });
 
         // Connections for Machine 1: linear flow
-        await MachineConnection.create({ machine_id: machineLotes.id, source_node_id: m1n1.id, target_node_id: m1n2.id, source_handle: null, target_handle: null });
-        await MachineConnection.create({ machine_id: machineLotes.id, source_node_id: m1n2.id, target_node_id: m1n3.id, source_handle: null, target_handle: null });
-        await MachineConnection.create({ machine_id: machineLotes.id, source_node_id: m1n3.id, target_node_id: m1n4.id, source_handle: null, target_handle: null });
-        await MachineConnection.create({ machine_id: machineLotes.id, source_node_id: m1n4.id, target_node_id: m1n5.id, source_handle: null, target_handle: null });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineLotes.id, source_node_id: m1n1.id, target_node_id: m1n2.id }, defaults: { source_handle: null, target_handle: null } });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineLotes.id, source_node_id: m1n2.id, target_node_id: m1n3.id }, defaults: { source_handle: null, target_handle: null } });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineLotes.id, source_node_id: m1n3.id, target_node_id: m1n4.id }, defaults: { source_handle: null, target_handle: null } });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineLotes.id, source_node_id: m1n4.id, target_node_id: m1n5.id }, defaults: { source_handle: null, target_handle: null } });
 
         // ── Machine 2: Verificación Documental Completa ──
-        const machineDocCompleta = await Machine.create({
-            id: 'machine-0000-0000-0000-000000000002',
-            nombre: 'Verificación Documental Completa',
-            descripcion: 'Proceso completo de auditoría: ingesta de nómina → iteración por trabajador → verificación paralela de contrato + certificaciones → recolección → reporte ejecutivo.',
-            icono: '🔍',
-            activo: true
+        const [machineDocCompleta] = await Machine.findOrCreate({
+            where: { id: 'machine-0000-0000-0000-000000000002' },
+            defaults: {
+                nombre: 'Verificación Documental Completa',
+                descripcion: 'Proceso completo de auditoría: ingesta de nómina → iteración por trabajador → verificación paralela de contrato + certificaciones → recolección → reporte ejecutivo.',
+                icono: '🔍',
+                activo: true
+            }
         });
 
         // Nodes for Machine 2 (parallel branches for contrato + certificaciones)
-        const m2n1 = await MachineNode.create({ id: 'mn-docs-0001', machine_id: machineDocCompleta.id, node_type: 'tool', tool_id: toolNomina.id, position_x: 50, position_y: 250, config: null });
-        const m2n2 = await MachineNode.create({ id: 'mn-docs-0002', machine_id: machineDocCompleta.id, node_type: 'engine', engine_id: engineIterator.id, position_x: 320, position_y: 250, config: JSON.stringify({ input_field: 'lista' }) });
-        const m2n3 = await MachineNode.create({ id: 'mn-docs-0003', machine_id: machineDocCompleta.id, node_type: 'tool', tool_id: toolContrato.id, position_x: 590, position_y: 120, config: null });
-        const m2n4 = await MachineNode.create({ id: 'mn-docs-0004', machine_id: machineDocCompleta.id, node_type: 'tool', tool_id: toolCerts.id, position_x: 590, position_y: 380, config: null });
-        const m2n5 = await MachineNode.create({ id: 'mn-docs-0005', machine_id: machineDocCompleta.id, node_type: 'engine', engine_id: engineCollector.id, position_x: 860, position_y: 120, config: JSON.stringify({ output_field: 'contratos_verificados' }) });
-        const m2n6 = await MachineNode.create({ id: 'mn-docs-0006', machine_id: machineDocCompleta.id, node_type: 'engine', engine_id: engineCollector.id, position_x: 860, position_y: 380, config: JSON.stringify({ output_field: 'certificaciones_verificadas' }) });
-        const m2n7 = await MachineNode.create({ id: 'mn-docs-0007', machine_id: machineDocCompleta.id, node_type: 'engine', engine_id: engineMapper.id, position_x: 1130, position_y: 250, config: JSON.stringify({ mappings: [{ from: 'contratos_verificados', to: 'contratos' }, { from: 'certificaciones_verificadas', to: 'certificaciones' }] }) });
-        const m2n8 = await MachineNode.create({ id: 'mn-docs-0008', machine_id: machineDocCompleta.id, node_type: 'tool', tool_id: toolReporteLote.id, position_x: 1400, position_y: 250, config: null });
+        const [m2n1] = await MachineNode.findOrCreate({ where: { id: 'mn-docs-0001' }, defaults: { machine_id: machineDocCompleta.id, node_type: 'tool', tool_id: toolNomina.id, position_x: 50, position_y: 250, config: null } });
+        const [m2n2] = await MachineNode.findOrCreate({ where: { id: 'mn-docs-0002' }, defaults: { machine_id: machineDocCompleta.id, node_type: 'engine', engine_id: engineIterator.id, position_x: 320, position_y: 250, config: JSON.stringify({ input_field: 'lista' }) } });
+        const [m2n3] = await MachineNode.findOrCreate({ where: { id: 'mn-docs-0003' }, defaults: { machine_id: machineDocCompleta.id, node_type: 'tool', tool_id: toolContrato.id, position_x: 590, position_y: 120, config: null } });
+        const [m2n4] = await MachineNode.findOrCreate({ where: { id: 'mn-docs-0004' }, defaults: { machine_id: machineDocCompleta.id, node_type: 'tool', tool_id: toolCerts.id, position_x: 590, position_y: 380, config: null } });
+        const [m2n5] = await MachineNode.findOrCreate({ where: { id: 'mn-docs-0005' }, defaults: { machine_id: machineDocCompleta.id, node_type: 'engine', engine_id: engineCollector.id, position_x: 860, position_y: 120, config: JSON.stringify({ output_field: 'contratos_verificados' }) } });
+        const [m2n6] = await MachineNode.findOrCreate({ where: { id: 'mn-docs-0006' }, defaults: { machine_id: machineDocCompleta.id, node_type: 'engine', engine_id: engineCollector.id, position_x: 860, position_y: 380, config: JSON.stringify({ output_field: 'certificaciones_verificadas' }) } });
+        const [m2n7] = await MachineNode.findOrCreate({ where: { id: 'mn-docs-0007' }, defaults: { machine_id: machineDocCompleta.id, node_type: 'engine', engine_id: engineMapper.id, position_x: 1130, position_y: 250, config: JSON.stringify({ mappings: [{ from: 'contratos_verificados', to: 'contratos' }, { from: 'certificaciones_verificadas', to: 'certificaciones' }] }) } });
+        const [m2n8] = await MachineNode.findOrCreate({ where: { id: 'mn-docs-0008' }, defaults: { machine_id: machineDocCompleta.id, node_type: 'tool', tool_id: toolReporteLote.id, position_x: 1400, position_y: 250, config: null } });
 
         // Connections for Machine 2: split flow with parallel branches
-        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n1.id, target_node_id: m2n2.id, source_handle: null, target_handle: null });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineDocCompleta.id, source_node_id: m2n1.id, target_node_id: m2n2.id }, defaults: { source_handle: null, target_handle: null } });
         // Iterator feeds both branches
-        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n2.id, target_node_id: m2n3.id, source_handle: null, target_handle: null });
-        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n2.id, target_node_id: m2n4.id, source_handle: null, target_handle: null });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineDocCompleta.id, source_node_id: m2n2.id, target_node_id: m2n3.id }, defaults: { source_handle: null, target_handle: null } });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineDocCompleta.id, source_node_id: m2n2.id, target_node_id: m2n4.id }, defaults: { source_handle: null, target_handle: null } });
         // Each branch collects
-        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n3.id, target_node_id: m2n5.id, source_handle: null, target_handle: null });
-        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n4.id, target_node_id: m2n6.id, source_handle: null, target_handle: null });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineDocCompleta.id, source_node_id: m2n3.id, target_node_id: m2n5.id }, defaults: { source_handle: null, target_handle: null } });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineDocCompleta.id, source_node_id: m2n4.id, target_node_id: m2n6.id }, defaults: { source_handle: null, target_handle: null } });
         // Both collectors merge via mapper
-        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n5.id, target_node_id: m2n7.id, source_handle: null, target_handle: null });
-        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n6.id, target_node_id: m2n7.id, source_handle: null, target_handle: null });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineDocCompleta.id, source_node_id: m2n5.id, target_node_id: m2n7.id }, defaults: { source_handle: null, target_handle: null } });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineDocCompleta.id, source_node_id: m2n6.id, target_node_id: m2n7.id }, defaults: { source_handle: null, target_handle: null } });
         // Mapper outputs to final report
-        await MachineConnection.create({ machine_id: machineDocCompleta.id, source_node_id: m2n7.id, target_node_id: m2n8.id, source_handle: null, target_handle: null });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineDocCompleta.id, source_node_id: m2n7.id, target_node_id: m2n8.id }, defaults: { source_handle: null, target_handle: null } });
 
         // ── Machine 3: Auditoría de Liquidaciones (Demo) ──
-        const machineDemoLiqui = await Machine.create({
-            id: 'machine-0000-0000-0000-000000000003',
-            nombre: 'Auditoría de Liquidaciones (Demo)',
-            descripcion: 'Demostración de flujo completo: Extracción de PDF con Tool especializada → Iterador Inteligente → Visor de Mensajes individuales.',
-            icono: '📑',
-            activo: true
+        const [machineDemoLiqui] = await Machine.findOrCreate({
+            where: { id: 'machine-0000-0000-0000-000000000003' },
+            defaults: {
+                nombre: 'Auditoría de Liquidaciones (Demo)',
+                descripcion: 'Demostración de flujo completo: Extracción de PDF con Tool especializada → Iterador Inteligente → Visor de Mensajes individuales.',
+                icono: '📑',
+                activo: true
+            }
         });
 
-        const m3n1 = await MachineNode.create({ id: 'mn-demo-0001', machine_id: machineDemoLiqui.id, node_type: 'tool', tool_id: toolDemoLiqui.id, position_x: 50, position_y: 200, config: null });
-        const m3n2 = await MachineNode.create({ id: 'mn-demo-0002', machine_id: machineDemoLiqui.id, node_type: 'engine', engine_id: engineIterator.id, position_x: 350, position_y: 200, config: JSON.stringify({ input_field: 'lista' }) });
-        const m3n3 = await MachineNode.create({ id: 'mn-demo-0003', machine_id: machineDemoLiqui.id, node_type: 'engine', engine_id: enginePrinter.id, position_x: 650, position_y: 200, config: null });
-        const m3n4 = await MachineNode.create({ id: 'mn-demo-0004', machine_id: machineDemoLiqui.id, node_type: 'visor', visor_id: visorMessage.id, position_x: 950, position_y: 200, config: null });
+        const [m3n1] = await MachineNode.findOrCreate({ where: { id: 'mn-demo-0001' }, defaults: { machine_id: machineDemoLiqui.id, node_type: 'tool', tool_id: toolDemoLiqui.id, position_x: 50, position_y: 200, config: null } });
+        const [m3n2] = await MachineNode.findOrCreate({ where: { id: 'mn-demo-0002' }, defaults: { machine_id: machineDemoLiqui.id, node_type: 'engine', engine_id: engineIterator.id, position_x: 350, position_y: 200, config: JSON.stringify({ input_field: 'lista' }) } });
+        const [m3n3] = await MachineNode.findOrCreate({ where: { id: 'mn-demo-0003' }, defaults: { machine_id: machineDemoLiqui.id, node_type: 'engine', engine_id: enginePrinter.id, position_x: 650, position_y: 200, config: null } });
+        const [m3n4] = await MachineNode.findOrCreate({ where: { id: 'mn-demo-0004' }, defaults: { machine_id: machineDemoLiqui.id, node_type: 'visor', visor_id: visorMessage.id, position_x: 950, position_y: 200, config: null } });
 
-        await MachineConnection.create({ machine_id: machineDemoLiqui.id, source_node_id: m3n1.id, target_node_id: m3n2.id, source_handle: null, target_handle: null });
-        await MachineConnection.create({ machine_id: machineDemoLiqui.id, source_node_id: m3n2.id, target_node_id: m3n3.id, source_handle: null, target_handle: null });
-        await MachineConnection.create({ machine_id: machineDemoLiqui.id, source_node_id: m3n3.id, target_node_id: m3n4.id, source_handle: null, target_handle: null });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineDemoLiqui.id, source_node_id: m3n1.id, target_node_id: m3n2.id }, defaults: { source_handle: null, target_handle: null } });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineDemoLiqui.id, source_node_id: m3n2.id, target_node_id: m3n3.id }, defaults: { source_handle: null, target_handle: null } });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineDemoLiqui.id, source_node_id: m3n3.id, target_node_id: m3n4.id }, defaults: { source_handle: null, target_handle: null } });
 
         // ── Machine 4: Proceso Liquidaciones en lote Demo v1 ──
-        const machineBatchLiqui = await Machine.create({
-            id: 'machine-0000-0000-0000-000000000004',
-            nombre: 'Proceso Liquidaciones en lote Demo v1',
-            descripcion: 'Extracción masiva de liquidaciones → Extracción automática de tabla → Visualización en VISOR Tabla.',
-            icono: '📊',
-            activo: true
+        const [machineBatchLiqui] = await Machine.findOrCreate({
+            where: { id: 'machine-0000-0000-0000-000000000004' },
+            defaults: {
+                nombre: 'Proceso Liquidaciones en lote Demo v1',
+                descripcion: 'Extracción masiva de liquidaciones → Extracción automática de tabla → Visualización en VISOR Tabla.',
+                icono: '📊',
+                activo: true
+            }
         });
 
-        const m4n1 = await MachineNode.create({ id: 'mn-batch-0001', machine_id: machineBatchLiqui.id, node_type: 'tool', tool_id: toolDemoLiqui.id, position_x: 50, position_y: 200, config: null });
-        const m4n2 = await MachineNode.create({ id: 'mn-batch-0002', machine_id: machineBatchLiqui.id, node_type: 'engine', engine_id: engineEntityExtractor.id, position_x: 350, position_y: 200, config: null });
-        const m4n3 = await MachineNode.create({ id: 'mn-batch-0003', machine_id: machineBatchLiqui.id, node_type: 'visor', visor_id: visorTable.id, position_x: 650, position_y: 200, config: null });
+        const [m4n1] = await MachineNode.findOrCreate({ where: { id: 'mn-batch-0001' }, defaults: { machine_id: machineBatchLiqui.id, node_type: 'tool', tool_id: toolDemoLiqui.id, position_x: 50, position_y: 200, config: null } });
+        const [m4n2] = await MachineNode.findOrCreate({ where: { id: 'mn-batch-0002' }, defaults: { machine_id: machineBatchLiqui.id, node_type: 'engine', engine_id: engineEntityExtractor.id, position_x: 350, position_y: 200, config: null } });
+        const [m4n3] = await MachineNode.findOrCreate({ where: { id: 'mn-batch-0003' }, defaults: { machine_id: machineBatchLiqui.id, node_type: 'visor', visor_id: visorTable.id, position_x: 650, position_y: 200, config: null } });
 
-        await MachineConnection.create({ machine_id: machineBatchLiqui.id, source_node_id: m4n1.id, target_node_id: m4n2.id, source_handle: null, target_handle: null });
-        await MachineConnection.create({ machine_id: machineBatchLiqui.id, source_node_id: m4n2.id, target_node_id: m4n3.id, source_handle: null, target_handle: null });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineBatchLiqui.id, source_node_id: m4n1.id, target_node_id: m4n2.id }, defaults: { source_handle: null, target_handle: null } });
+        await MachineConnection.findOrCreate({ where: { machine_id: machineBatchLiqui.id, source_node_id: m4n2.id, target_node_id: m4n3.id }, defaults: { source_handle: null, target_handle: null } });
 
         console.log('Database seeded successfully!');
         process.exit(0);
