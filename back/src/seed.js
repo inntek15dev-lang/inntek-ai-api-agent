@@ -131,6 +131,33 @@ const seed = async () => {
             ])
         });
 
+        // 5e. Reporte Matriz de Liquidaciones (Demo)
+        const formatLiquidacionesDemo = await OutputFormat.create({
+            id: 'ab000001-0000-4000-a000-000000000005',
+            nombre: 'Matriz de Liquidaciones (Demo)',
+            tipo: 'reporte',
+            category_id: catReportes.id,
+            estructura: JSON.stringify([
+                { "id": 1, "type": "heading", "data": { "text": "Análisis de Liquidaciones en Lote", "param": "" } },
+                {
+                    "id": 2,
+                    "type": "table",
+                    "data": {
+                        "param": "lista",
+                        "columns": [
+                            { "header": "ID", "mapping": "id" },
+                            { "header": "Nombre", "mapping": "nombre" },
+                            { "header": "Tipo", "mapping": "tipo" },
+                            { "header": "Estado", "mapping": "estado" },
+                            { "header": "RUT", "mapping": "datos.rut" },
+                            { "header": "Cargo", "mapping": "datos.cargo" },
+                            { "header": "Empresa", "mapping": "datos.area" }
+                        ]
+                    }
+                }
+            ])
+        });
+
         // ═══════════════════════════════════════════════════════════════
         // 6. JSON Schemas
         // ═══════════════════════════════════════════════════════════════
@@ -1014,9 +1041,9 @@ RESUME Y ESTRUCTURA SEPARANDO POR "|" DE LA SIGUIENTE FORMA:
 CODIGO|RUT|FECHA DE CARGO|IMPONIBLE|### COTIZACION OBLIGATORIA|!!! ISAPRE|... SEGURO SOCIAL|% FONASA|&&& MUTUAL|/// CAJA COMPENSACION
 
 Suma los dos valores de "COTIZACION OBLIGATORIA" si aparecen dos. Reemplaza comas por puntos en los miles.`,
-            response_format: 'Markdown',
-            output_format_id: null,
-            json_schema_id: null
+            response_format: 'JSON',
+            output_format_id: formatLiquidacionesDemo.id,
+            json_schema_id: schemaGenericList.id
         });
 
         // 12g. Validador de Certificado de Deuda TGR
@@ -1029,15 +1056,15 @@ Suma los dos valores de "COTIZACION OBLIGATORIA" si aparecen dos. Reemplaza coma
 Tu objetivo es analizar certificados de deuda emitidos por TGR para extraer información precisa y validar la autenticidad del documento.
 
 CAMPOS CRÍTICOS A EXTRAER:
-1. Identificación: RUT (con puntos y guion), Nombre/Razón Social, Rol de Propiedad (si aplica).
+            1. Identificación: RUT(con puntos y guion), Nombre / Razón Social, Rol de Propiedad(si aplica).
 2. Resumen Financiero: Total Moroso, Total No Vencido, Reajustes, Intereses y Multas.
-3. Detalle de Obligaciones: Listado de cada impuesto adeudado (Folio, Periodo, Vencimiento, Monto).
+3. Detalle de Obligaciones: Listado de cada impuesto adeudado(Folio, Periodo, Vencimiento, Monto).
 4. Seguridad: Código de Verificación de autenticidad y Fecha de Emisión.
 
 REGLAS DE NEGOCIO:
-- Los montos deben ser tratados como números sin decimales (CLP).
+            - Los montos deben ser tratados como números sin decimales(CLP).
 - Si el documento indica "SIN DEUDA", el total moroso debe ser 0.
-- El Código de Verificación es esencial para la validez legal.`,
+        - El Código de Verificación es esencial para la validez legal.`,
             behavior_prompt: 'Procesa el documento adjunto. Genera un JSON que siga estrictamente el esquema de TGR Deuda. Asegúrate de capturar cada ítem de la tabla de deudas en el array detalle_obligaciones. Si algún campo no es visible, usa null o 0 según corresponda.',
             response_format: 'JSON',
             output_format_id: formatTGRDeuda.id,
@@ -1054,14 +1081,14 @@ REGLAS DE NEGOCIO:
 Tu tarea es decodificar el Comprobante de Resolución de Convenio y estructurar sus términos.
 
 ANÁLISIS DE RESOLUCIÓN:
-1. Metadata: Número de Resolución, Fecha, Tipo de Convenio (ej. Administrativo, Judicial).
+            1. Metadata: Número de Resolución, Fecha, Tipo de Convenio(ej.Administrativo, Judicial).
 2. Contribuyente: RUT y Nombre.
 3. Plan de Pagos: Monto total consolidado, número de cuotas pactadas, valor de la cuota tipo, fecha de pago inicial.
 
 REGLAS DE EXPERTO:
-- Valida que el RUT sea consistente con la resolución.
+            - Valida que el RUT sea consistente con la resolución.
 - Extrae el desglose de cuotas si está disponible en una tabla.
-- Indica claramente el estado del convenio si el documento lo menciona (ej. Aprobado, Pendiente).`,
+- Indica claramente el estado del convenio si el documento lo menciona(ej.Aprobado, Pendiente).`,
             behavior_prompt: 'Analiza el comprobante de resolución. Genera el JSON correspondiente al esquema TGR Convenio. Presta especial atención al número de resolución y al plan de pagos.',
             response_format: 'JSON',
             output_format_id: formatTGRConvenio.id,

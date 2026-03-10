@@ -27,7 +27,7 @@ const ELEMENT_TYPES = [
     { type: 'label', label: 'Label', icon: TagIcon, defaultData: { text: 'Label Placeholder', param: '' } },
     { type: 'text', label: 'Paragraph', icon: Type, defaultData: { text: 'Text content goes here...', param: '' } },
     { type: 'image', label: 'Image', icon: ImageIcon, defaultData: { src: '', param: '' } },
-    { type: 'table', label: 'Data Table', icon: TableIcon, defaultData: { rows: 2, cols: 2, param: '' } },
+    { type: 'table', label: 'Iterative Table', icon: TableIcon, defaultData: { param: 'lista', columns: [{ header: 'Header 1', mapping: 'field.path' }] } },
     { type: 'boton_accionable', label: 'Action Button', icon: MousePointer2, defaultData: { label: 'Execute', api_url: '', method: 'POST', param: '' } }
 ];
 
@@ -303,14 +303,41 @@ const OutputMaker = () => {
                                     )}
                                     {el.type === 'table' && (
                                         <div className="border border-slate-100 rounded-xl overflow-hidden">
-                                            <div className="bg-slate-50 p-3 flex items-center justify-center border-b border-slate-100">
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Table: {el.data.param || 'Static'}</span>
+                                            <div className="bg-slate-50 p-3 flex items-center justify-between border-b border-slate-100">
+                                                <div className="flex items-center space-x-2">
+                                                    <TableIcon size={12} className="text-guardian-blue" />
+                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Traverse List: {el.data.param}</span>
+                                                </div>
+                                                <span className="text-[8px] bg-guardian-blue text-white px-1.5 py-0.5 rounded font-black uppercase">Auto-Iterate</span>
                                             </div>
-                                            <div className="p-4 bg-white grid grid-cols-2 gap-2 opacity-30">
-                                                <div className="h-4 bg-slate-100 rounded"></div>
-                                                <div className="h-4 bg-slate-100 rounded"></div>
-                                                <div className="h-4 bg-slate-100 rounded"></div>
-                                                <div className="h-4 bg-slate-100 rounded"></div>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-[9px] border-collapse">
+                                                    <thead>
+                                                        <tr className="bg-slate-50/50">
+                                                            {el.data.columns?.map((col, ci) => (
+                                                                <th key={ci} className="px-3 py-2 text-left border-r border-slate-100 last:border-0 font-black text-slate-400 uppercase tracking-tighter whitespace-nowrap">
+                                                                    {col.header}
+                                                                </th>
+                                                            ))}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr className="border-t border-slate-100">
+                                                            {el.data.columns?.map((col, ci) => (
+                                                                <td key={ci} className="px-3 py-2 font-bold text-guardian-blue italic opacity-40 whitespace-nowrap">
+                                                                    {`{${col.mapping || '...'}}`}
+                                                                </td>
+                                                            ))}
+                                                        </tr>
+                                                        <tr className="border-t border-slate-50 opacity-10">
+                                                            {el.data.columns?.map((col, ci) => (
+                                                                <td key={ci} className="px-3 py-2 font-bold text-slate-400 italic whitespace-nowrap">
+                                                                    {`{${col.mapping || '...'}}`}
+                                                                </td>
+                                                            ))}
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
                                     )}
@@ -376,6 +403,78 @@ const OutputMaker = () => {
                                                 />
                                             </div>
                                         )}
+
+                                    {currentFormat.estructura[selectedElementIndex].type === 'table' && (
+                                        <div className="space-y-6">
+                                            <div className="guardian-input-group !mb-0">
+                                                <label className="guardian-label">Traverse List Parameter</label>
+                                                <input
+                                                    value={currentFormat.estructura[selectedElementIndex].data.param}
+                                                    onChange={(e) => updateElementData('param', e.target.value)}
+                                                    className="guardian-input !pl-4"
+                                                    placeholder="e.g. data.lista"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <div className="flex items-center justify-between border-b border-slate-50 pb-2">
+                                                    <label className="guardian-label !mb-0">Column Definitions</label>
+                                                    <button
+                                                        onClick={() => {
+                                                            const cols = [...currentFormat.estructura[selectedElementIndex].data.columns];
+                                                            cols.push({ header: `Header ${cols.length + 1}`, mapping: '' });
+                                                            updateElementData('columns', cols);
+                                                        }}
+                                                        className="p-1.5 bg-guardian-blue/10 text-guardian-blue rounded-lg hover:bg-guardian-blue/20 transition-all hover:scale-110 active:scale-95"
+                                                        title="Add Column"
+                                                    >
+                                                        <Plus size={14} />
+                                                    </button>
+                                                </div>
+                                                <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1 custom-scrollbar">
+                                                    {currentFormat.estructura[selectedElementIndex].data.columns.map((col, colIdx) => (
+                                                        <div key={colIdx} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3 relative group/col animate-in slide-in-from-right-2 duration-300">
+                                                            <div className="space-y-1">
+                                                                <span className="text-[9px] font-black uppercase tracking-[0.1em] text-slate-400">Heading</span>
+                                                                <input
+                                                                    value={col.header}
+                                                                    onChange={(e) => {
+                                                                        const cols = [...currentFormat.estructura[selectedElementIndex].data.columns];
+                                                                        cols[colIdx].header = e.target.value;
+                                                                        updateElementData('columns', cols);
+                                                                    }}
+                                                                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold text-guardian-text focus:ring-1 ring-guardian-blue outline-none"
+                                                                    placeholder="Column Name"
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <span className="text-[9px] font-black uppercase tracking-[0.1em] text-slate-400">JSON Mapping</span>
+                                                                <input
+                                                                    value={col.mapping}
+                                                                    onChange={(e) => {
+                                                                        const cols = [...currentFormat.estructura[selectedElementIndex].data.columns];
+                                                                        cols[colIdx].mapping = e.target.value;
+                                                                        updateElementData('columns', cols);
+                                                                    }}
+                                                                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-guardian-blue font-mono focus:ring-1 ring-guardian-blue outline-none"
+                                                                    placeholder="row.property"
+                                                                />
+                                                            </div>
+                                                            <button
+                                                                onClick={() => {
+                                                                    const cols = currentFormat.estructura[selectedElementIndex].data.columns.filter((_, i) => i !== colIdx);
+                                                                    updateElementData('columns', cols);
+                                                                }}
+                                                                className="absolute top-2 right-2 opacity-0 group-hover/col:opacity-100 transition-opacity bg-cyber-pink/10 text-cyber-pink hover:bg-cyber-pink hover:text-white rounded-lg p-1.5"
+                                                            >
+                                                                <Trash2 size={12} />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {currentFormat.estructura[selectedElementIndex].type === 'boton_accionable' && (
                                         <>
