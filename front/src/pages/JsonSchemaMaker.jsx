@@ -89,9 +89,10 @@ const JsonSchemaMaker = () => {
     };
 
     const addProperty = () => {
-        const propName = `property_${Object.keys(currentSchema.schema.properties).length + 1}`;
+        const properties = currentSchema.schema?.properties || {};
+        const propName = `property_${Object.keys(properties).length + 1}`;
         const newProperties = {
-            ...currentSchema.schema.properties,
+            ...properties,
             [propName]: { type: 'string' }
         };
         setCurrentSchema({
@@ -178,7 +179,14 @@ const JsonSchemaMaker = () => {
                         <h3 className="font-bold text-guardian-text mb-1">{schema.nombre}</h3>
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">{schema.descripcion || 'No Description Linked'}</p>
                         <div className="pt-4 border-t border-slate-50 flex items-center justify-between text-[10px] text-slate-300 font-bold uppercase">
-                            <span>Keys: {Object.keys(typeof schema.schema === 'string' ? JSON.parse(schema.schema).properties : schema.schema.properties).length}</span>
+                            <span>Keys: {(() => {
+                                try {
+                                    const parsed = typeof schema.schema === 'string' ? JSON.parse(schema.schema || '{}') : (schema.schema || {});
+                                    return Object.keys(parsed?.properties || {}).length;
+                                } catch (e) {
+                                    return 0;
+                                }
+                            })()}</span>
                             <ChevronRight size={16} />
                         </div>
                     </div>
@@ -246,7 +254,7 @@ const JsonSchemaMaker = () => {
                             </div>
 
                             <div className="space-y-4">
-                                {Object.entries(currentSchema.schema.properties).map(([name, config]) => (
+                                {Object.entries(currentSchema.schema?.properties || {}).map(([name, config]) => (
                                     <div key={name} className="p-4 bg-slate-50 rounded-2xl border border-transparent hover:border-slate-200 transition-all flex items-center space-x-4">
                                         <div className="flex-1 grid grid-cols-12 gap-4 items-center">
                                             <div className="col-span-4 relative group">
@@ -289,7 +297,7 @@ const JsonSchemaMaker = () => {
                                         </div>
                                     </div>
                                 ))}
-                                {Object.keys(currentSchema.schema.properties).length === 0 && (
+                                {Object.keys(currentSchema.schema?.properties || {}).length === 0 && (
                                     <div className="h-40 flex flex-col items-center justify-center opacity-20 border-2 border-dashed border-slate-200 rounded-3xl">
                                         <Database size={32} className="mb-2" />
                                         <p className="text-[10px] font-black uppercase tracking-widest">Initialization Pending</p>
