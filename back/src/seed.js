@@ -151,20 +151,47 @@ const seed = async () => {
                 tipo: 'reporte',
                 category_id: catReportes.id,
                 estructura: JSON.stringify([
-                    { "id": 1, "type": "heading", "data": { "text": "Análisis de Liquidaciones en Lote", "param": "" } },
+                    { "id": 1, "type": "heading", "data": { "text": "Análisis de Liquidaciones y Movimientos en Lote", "param": "" } },
                     {
                         "id": 2,
                         "type": "table",
                         "data": {
                             "param": "lista",
                             "columns": [
-                                { "header": "ID", "mapping": "id" },
-                                { "header": "Nombre", "mapping": "nombre" },
-                                { "header": "Tipo", "mapping": "tipo" },
-                                { "header": "Estado", "mapping": "estado" },
-                                { "header": "RUT", "mapping": "datos.rut" },
-                                { "header": "Cargo", "mapping": "datos.cargo" },
-                                { "header": "Empresa", "mapping": "datos.area" }
+                                { "header": "Periodo", "mapping": "id_periodo" },
+                                { "header": "RUT", "mapping": "datos_personales.rut" },
+                                { "header": "Nombre", "mapping": "datos_personales.nombre" },
+                                { "header": "F. Ingreso", "mapping": "datos_personales.fecha_ingreso" },
+                                { "header": "Contrato", "mapping": "datos_personales.tipo_contrato" },
+                                { "header": "Estado Trab.", "mapping": "datos_personales.estado_trabajador" },
+                                { "header": "Días Trab.", "mapping": "liquidacion.dias_trabajados" },
+                                { "header": "Sueldo Base", "mapping": "liquidacion.sueldo_base" },
+                                { "header": "Gratificación", "mapping": "liquidacion.gratificacion" },
+                                { "header": "Imponible", "mapping": "liquidacion.imponible" },
+                                { "header": "No Imp.", "mapping": "liquidacion.total_no_imponible" },
+                                { "header": "Total Haberes", "mapping": "liquidacion.total_haberes" },
+                                { "header": "Líquido", "mapping": "liquidacion.liquido_a_pagar" },
+                                { "header": "Pago", "mapping": "liquidacion.metodo_pago" },
+                                { "header": "AFP", "mapping": "cotizaciones.afp.nombre" },
+                                { "header": "% AFP", "mapping": "cotizaciones.afp.tasa_porcentaje" },
+                                { "header": "AFP Liq.", "mapping": "cotizaciones.afp.monto_liquidacion" },
+                                { "header": "AFP Prev.", "mapping": "cotizaciones.afp.monto_previred" },
+                                { "header": "Fonasa 1.6", "mapping": "cotizaciones.salud.fonasa_1_6" },
+                                { "header": "Caja 5.4", "mapping": "cotizaciones.salud.caja_5_4" },
+                                { "header": "Total Salud", "mapping": "cotizaciones.salud.total_salud_liq" },
+                                { "header": "Isapre 7%", "mapping": "cotizaciones.salud.isapre_7_pct" },
+                                { "header": "Seg. Soc.", "mapping": "cotizaciones.seguros.seguro_social" },
+                                { "header": "Mutual", "mapping": "cotizaciones.seguros.mutual" },
+                                { "header": "SIS", "mapping": "cotizaciones.seguros.sis" },
+                                { "header": "Sc. Cesantía", "mapping": "cotizaciones.seguros.cesantia_empleador" },
+                                { "header": "Licencia Días", "mapping": "novedades.licencia_medica.dias" },
+                                { "header": "Licencia Monto", "mapping": "novedades.licencia_medica.monto_contingencia" },
+                                { "header": "F. Desvincul.", "mapping": "finiquito.fecha_desvinculacion" },
+                                { "header": "Causal", "mapping": "finiquito.causal_termino" },
+                                { "header": "Monto Ratif.", "mapping": "finiquito.monto_ratificado" },
+                                { "header": "F. Prop.", "mapping": "finiquito.feriado_proporcional" },
+                                { "header": "IAS", "mapping": "finiquito.ias" },
+                                { "header": "Concepto Prev.", "mapping": "movimiento_personal.concepto_previred" }
                             ]
                         }
                     }
@@ -583,7 +610,6 @@ const seed = async () => {
             defaults: {
                 nombre: 'OpenRouter',
                 tipo: 'openai_compatible',
-                api_key: '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',
                 base_url: 'https://openrouter.ai/api/v1',
                 modelo: 'google/gemini-2.0-flash-lite',
                 is_default: false,
