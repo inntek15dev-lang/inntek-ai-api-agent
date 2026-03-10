@@ -399,6 +399,116 @@ const seed = async () => {
             })
         });
 
+        // 6e. Listado de Liquidaciones y Movimientos de Personal
+        const schemaLiquidacionesLote = await JsonSchema.create({
+            id: 'ab000001-0000-4000-a000-000000000002',
+            nombre: 'Esquema Listado de Liquidaciones y Movimientos de Personal',
+            descripcion: 'Estructura para el análisis masivo de liquidaciones coordinado con movimientos de personal y Previred.',
+            schema: JSON.stringify({
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "title": "Listado de Liquidaciones y Movimientos de Personal",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": ["id_periodo", "datos_personales", "liquidacion"],
+                    "properties": {
+                        "id_periodo": {
+                            "type": "string",
+                            "description": "Identificador único del periodo de liquidación (ej: 1090701-2026)"
+                        },
+                        "datos_personales": {
+                            "type": "object",
+                            "properties": {
+                                "rut": { "type": "string", "pattern": "^\\d{1,2}\\.\\d{3}\\.\\d{3}-[0-9kK]$" },
+                                "nombre": { "type": "string" },
+                                "fecha_ingreso": { "type": "string", "format": "date" },
+                                "tipo_contrato": { "type": "string", "enum": ["Indefinido", "Plazo Fijo", "NUEVO", "Jubilado"] },
+                                "estado_trabajador": { "type": "string" }
+                            }
+                        },
+                        "liquidacion": {
+                            "type": "object",
+                            "properties": {
+                                "dias_trabajados": { "type": "integer", "minimum": 0, "maximum": 30 },
+                                "sueldo_base": { "type": "number" },
+                                "gratificacion": { "type": "number" },
+                                "imponible": { "type": "number" },
+                                "total_no_imponible": { "type": "number" },
+                                "total_haberes": { "type": "number" },
+                                "liquido_a_pagar": { "type": "number" },
+                                "metodo_pago": { "type": "string" },
+                                "estado": { "type": "string" }
+                            }
+                        },
+                        "cotizaciones": {
+                            "type": "object",
+                            "properties": {
+                                "afp": {
+                                    "type": "object",
+                                    "properties": {
+                                        "nombre": { "type": "string" },
+                                        "tasa_porcentaje": { "type": "number" },
+                                        "monto_liquidacion": { "type": "number" },
+                                        "monto_previred": { "type": "number" }
+                                    }
+                                },
+                                "salud": {
+                                    "type": "object",
+                                    "properties": {
+                                        "fonasa_1_6": { "type": "number" },
+                                        "caja_5_4": { "type": "number" },
+                                        "total_salud_liq": { "type": "number" },
+                                        "isapre_7_pct": { "type": "number" }
+                                    }
+                                },
+                                "seguros": {
+                                    "type": "object",
+                                    "properties": {
+                                        "seguro_social": { "type": "number" },
+                                        "mutual": { "type": "number" },
+                                        "sis": { "type": "number" },
+                                        "cesantia_empleador": { "type": "number" }
+                                    }
+                                }
+                            }
+                        },
+                        "novedades": {
+                            "type": "object",
+                            "properties": {
+                                "licencia_medica": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dias": { "type": "integer" },
+                                        "comentario": { "type": "string" },
+                                        "monto_contingencia": { "type": "number" }
+                                    }
+                                }
+                            }
+                        },
+                        "finiquito": {
+                            "type": "object",
+                            "properties": {
+                                "fecha_desvinculacion": { "type": "string" },
+                                "causal_termino": { "type": "string" },
+                                "monto_ratificado": { "type": "number" },
+                                "feriado_proporcional": { "type": "number" },
+                                "ias": { "type": "number" },
+                                "aviso_previo": { "type": "number" },
+                                "estado": { "type": "string" }
+                            }
+                        },
+                        "movimiento_personal": {
+                            "type": "object",
+                            "properties": {
+                                "concepto_previred": { "type": "string" },
+                                "comentario": { "type": "string" }
+                            }
+                        }
+                    }
+                }
+            })
+        });
+
         // ═══════════════════════════════════════════════════════════════
         // 7. AI Providers
         // ═══════════════════════════════════════════════════════════════
