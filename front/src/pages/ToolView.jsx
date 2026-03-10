@@ -33,7 +33,8 @@ const ToolView = () => {
     };
 
     const resolvePath = (obj, path) => {
-        if (!path || path === '.' || path === 'root') return obj;
+        if (path === '.' || path === 'root') return obj;
+        if (!path) return null;
         return path.split('.').reduce((prev, curr) => prev?.[curr], obj);
     };
 
@@ -61,7 +62,10 @@ const ToolView = () => {
             // Regex-based template engine for HTML templates
             const renderedHtml = structure.replace(/\{\{(.*?)\}\}/g, (match, path) => {
                 const value = resolvePath(data, path.trim());
-                return value !== undefined && value !== null ? value : match;
+                if (value !== undefined && value !== null) {
+                    return (typeof value === 'object') ? JSON.stringify(value) : value;
+                }
+                return match;
             });
 
             return (
@@ -77,13 +81,19 @@ const ToolView = () => {
         return (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
                 {elements.map((el, i) => {
-                    const value = resolvePath(data, el.data.param) || el.data.text;
+                    const rawValue = resolvePath(data, el.data.param);
+                    const value = (rawValue !== undefined && rawValue !== null) ? rawValue : el.data.text;
+
+                    const asString = (val) => {
+                        if (val === undefined || val === null) return '';
+                        return (typeof val === 'object') ? JSON.stringify(val) : String(val);
+                    };
 
                     switch (el.type) {
                         case 'heading':
-                            return <h2 key={i} className="text-2xl font-black text-guardian-text">{value}</h2>;
+                            return <h2 key={i} className="text-2xl font-black text-guardian-text">{asString(value)}</h2>;
                         case 'subheading':
-                            return <h3 key={i} className="text-lg font-bold text-guardian-text/80 mt-4">{value}</h3>;
+                            return <h3 key={i} className="text-lg font-bold text-guardian-text/80 mt-4">{asString(value)}</h3>;
                         case 'label':
                             return (
                                 <div key={i} className="flex flex-col space-y-1">
@@ -91,16 +101,23 @@ const ToolView = () => {
                                         {el.data.text}
                                     </span>
                                     <span className="text-base font-bold text-guardian-text">
-                                        {value}
+                                        {asString(value)}
                                     </span>
                                 </div>
                             );
                         case 'text':
-                            return <p key={i} className="text-sm text-slate-500 leading-relaxed">{value}</p>;
+                            return <p key={i} className="text-sm text-slate-500 leading-relaxed">{asString(value)}</p>;
                         case 'image':
-                            return <img key={i} src={value} alt="AI Generated" className="w-full rounded-2xl shadow-lg" />;
+                            return <img key={i} src={asString(value)} alt="AI Generated" className="w-full rounded-2xl shadow-lg" />;
                         case 'table':
-                            const list = Array.isArray(value) ? value : [];
+                            let list = [];
+                            if (Array.isArray(value)) {
+                                list = value;
+                            } else if (typeof value === 'object' && value !== null) {
+                                // Hardening: if value is an object but we expect a list, check common property names
+                                list = value.lista || value.items || value.data || [];
+                            }
+
                             const hasColumns = el.data.columns && Array.isArray(el.data.columns);
 
                             return (
@@ -129,12 +146,12 @@ const ToolView = () => {
                                                     {hasColumns ? (
                                                         el.data.columns.map((col, ci) => (
                                                             <td key={ci} className="px-4 py-3 font-bold text-guardian-text">
-                                                                {resolvePath(row, col.mapping) ?? '---'}
+                                                                {asString(resolvePath(row, col.mapping))}
                                                             </td>
                                                         ))
                                                     ) : (
                                                         Object.values(row).map((v, ci) => (
-                                                            <td key={ci} className="px-4 py-3 font-bold text-guardian-text">{v}</td>
+                                                            <td key={ci} className="px-4 py-3 font-bold text-guardian-text">{asString(v)}</td>
                                                         ))
                                                     )}
                                                 </tr>
