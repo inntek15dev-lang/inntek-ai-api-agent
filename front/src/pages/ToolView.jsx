@@ -99,24 +99,52 @@ const ToolView = () => {
                         case 'image':
                             return <img key={i} src={value} alt="AI Generated" className="w-full rounded-2xl shadow-lg" />;
                         case 'table':
+                            const list = Array.isArray(value) ? value : [];
+                            const hasColumns = el.data.columns && Array.isArray(el.data.columns);
+
                             return (
                                 <div key={i} className="overflow-x-auto rounded-xl border border-slate-100">
                                     <table className="w-full text-xs text-left">
                                         <thead className="bg-slate-50 text-slate-400 uppercase font-black">
                                             <tr>
-                                                {Array.isArray(value) && Object.keys(value[0] || {}).map(k => (
-                                                    <th key={k} className="px-4 py-3">{k}</th>
-                                                ))}
+                                                {hasColumns ? (
+                                                    el.data.columns.map((col, ci) => (
+                                                        <th key={ci} className="px-4 py-3">{col.header}</th>
+                                                    ))
+                                                ) : (
+                                                    list.length > 0 ? (
+                                                        Object.keys(list[0]).map(k => (
+                                                            <th key={k} className="px-4 py-3">{k}</th>
+                                                        ))
+                                                    ) : (
+                                                        <th className="px-4 py-3">Data</th>
+                                                    )
+                                                )}
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {Array.isArray(value) && value.map((row, ri) => (
+                                            {list.map((row, ri) => (
                                                 <tr key={ri} className="border-t border-slate-50">
-                                                    {Object.values(row).map((v, ci) => (
-                                                        <td key={ci} className="px-4 py-3 font-bold text-guardian-text">{v}</td>
-                                                    ))}
+                                                    {hasColumns ? (
+                                                        el.data.columns.map((col, ci) => (
+                                                            <td key={ci} className="px-4 py-3 font-bold text-guardian-text">
+                                                                {resolvePath(row, col.mapping) ?? '---'}
+                                                            </td>
+                                                        ))
+                                                    ) : (
+                                                        Object.values(row).map((v, ci) => (
+                                                            <td key={ci} className="px-4 py-3 font-bold text-guardian-text">{v}</td>
+                                                        ))
+                                                    )}
                                                 </tr>
                                             ))}
+                                            {list.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={hasColumns ? el.data.columns.length : 1} className="px-4 py-8 text-center text-slate-400 italic">
+                                                        No data available in {el.data.param || 'list'}
+                                                    </td>
+                                                </tr>
+                                            )}
                                         </tbody>
                                     </table>
                                 </div>
