@@ -200,14 +200,20 @@ const OutputMaker = () => {
                         <ChevronRight className="rotate-180" />
                     </button>
                     <div className="flex-1 max-w-md">
+                        <label htmlFor="format_name" className="sr-only">Link Identification Name</label>
                         <input
+                            id="format_name"
+                            name="nombre"
                             value={currentFormat.nombre}
                             onChange={(e) => setCurrentFormat({ ...currentFormat, nombre: e.target.value })}
                             className="w-full bg-transparent font-bold text-lg focus:outline-none placeholder:opacity-30"
                             placeholder="Link Identification Name..."
                         />
                     </div>
+                    <label htmlFor="format_category" className="sr-only">Category</label>
                     <select
+                        id="format_category"
+                        name="category_id"
                         value={currentFormat.category_id}
                         onChange={(e) => setCurrentFormat({ ...currentFormat, category_id: e.target.value })}
                         className="bg-slate-50 border-none rounded-lg px-4 py-2 text-xs font-bold text-guardian-text focus:ring-1 ring-guardian-blue"
@@ -215,7 +221,10 @@ const OutputMaker = () => {
                         <option value="">Select Category</option>
                         {categories.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
                     </select>
+                    <label htmlFor="format_type" className="sr-only">Type</label>
                     <select
+                        id="format_type"
+                        name="tipo"
                         value={currentFormat.tipo}
                         onChange={(e) => setCurrentFormat({ ...currentFormat, tipo: e.target.value })}
                         className="bg-slate-50 border-none rounded-lg px-4 py-2 text-xs font-bold text-guardian-text focus:ring-1 ring-guardian-blue"
@@ -377,9 +386,11 @@ const OutputMaker = () => {
 
                                     {/* Parameter Mapping */}
                                     <div className="guardian-input-group">
-                                        <label className="guardian-label">Data Parameter Binding</label>
+                                        <label htmlFor="el_param" className="guardian-label">Data Parameter Binding</label>
                                         <div className="relative">
                                             <input
+                                                id="el_param"
+                                                name="param"
                                                 value={currentFormat.estructura[selectedElementIndex].data.param}
                                                 onChange={(e) => updateElementData('param', e.target.value)}
                                                 className="guardian-input !pl-4"
@@ -395,8 +406,10 @@ const OutputMaker = () => {
                                         currentFormat.estructura[selectedElementIndex].type === 'subheading' ||
                                         currentFormat.estructura[selectedElementIndex].type === 'label') && (
                                             <div className="guardian-input-group">
-                                                <label className="guardian-label">Static Label / Placeholder</label>
+                                                <label htmlFor="el_text" className="guardian-label">Static Label / Placeholder</label>
                                                 <input
+                                                    id="el_text"
+                                                    name="text"
                                                     value={currentFormat.estructura[selectedElementIndex].data.text}
                                                     onChange={(e) => updateElementData('text', e.target.value)}
                                                     className="guardian-input !pl-4"
