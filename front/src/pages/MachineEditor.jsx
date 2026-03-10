@@ -169,7 +169,7 @@ const VisorNode = ({ data }) => {
     const renderVisorContent = () => {
         if (!data.execOutput) return <p className="text-[9px] text-emerald-500/50 italic animate-pulse">Waiting for data stream...</p>;
 
-        const visorSlug = data.slug;
+        const visorSlug = data.slug || 'unknown-visor';
         let rawData = data.execOutput;
 
         // Resilience: attempt to parse JSON string if visor expects object/array
@@ -177,10 +177,13 @@ const VisorNode = ({ data }) => {
             try { rawData = JSON.parse(rawData); } catch (e) { /* use as string */ }
         }
 
+        const isArray = Array.isArray(rawData);
+        const isObject = typeof rawData === 'object' && rawData !== null;
+
         try {
-            if (visorSlug === 'table-visor') {
-                console.log(`[PARKO] Rendering TableVisor with data type: ${typeof rawData}`, rawData);
-                const items = Array.isArray(rawData) ? rawData : (typeof rawData === 'object' && rawData !== null ? [rawData] : []);
+            // Priority: Table rendering if it's an array OR explicitly requested as table-visor
+            if (visorSlug === 'table-visor' || (isArray && rawData.length > 0 && typeof rawData[0] === 'object')) {
+                const items = isArray ? rawData : (isObject ? [rawData] : []);
 
                 if (items.length === 0) {
                     return (
@@ -192,23 +195,27 @@ const VisorNode = ({ data }) => {
                 }
 
                 const keys = Object.keys(items[0] || {});
-                if (keys.length === 0) return <p className="text-[9px] text-zinc-500 italic">Data exists but has no identifiable properties...</p>;
+                if (keys.length === 0) return <p className="text-[9px] text-zinc-500 italic">Data exists but has no key-value structure...</p>;
 
                 return (
                     <div className="overflow-x-auto custom-scrollbar">
-                        <table className="w-full text-[9px] text-emerald-100 border-collapse">
+                        <table className="w-full text-[9px] text-emerald-100 border-collapse table-auto">
                             <thead>
                                 <tr className="border-b border-emerald-500/30">
-                                    {keys.map(k => <th key={k} className="text-left p-1.5 uppercase font-black opacity-60 bg-emerald-500/5 whitespace-nowrap">{k}</th>)}
+                                    {keys.map((k, i) => (
+                                        <th key={`${k}-${i}`} className="text-left p-1.5 uppercase font-black opacity-60 bg-emerald-500/5 whitespace-nowrap min-w-[80px]">
+                                            {k}
+                                        </th>
+                                    ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {items.slice(0, 50).map((it, i) => (
-                                    <tr key={i} className="border-b border-emerald-500/10 hover:bg-emerald-500/5 transition-colors">
-                                        {keys.map(k => {
+                                    <tr key={it.id || it.uuid || i} className="border-b border-emerald-500/10 hover:bg-emerald-500/5 transition-colors">
+                                        {keys.map((k, j) => {
                                             const val = it[k];
-                                            const displayVal = typeof val === 'object' ? JSON.stringify(val) : String(val);
-                                            return <td key={k} className="p-1.5 truncate max-w-[150px] border-r border-emerald-500/5 last:border-0">{displayVal}</td>;
+                                            const displayVal = (val !== null && typeof val === 'object') ? JSON.stringify(val) : String(val ?? '');
+                                            return <td key={`${k}-${j}`} className="p-1.5 truncate max-w-[150px] border-r border-emerald-500/5 last:border-0">{displayVal}</td>;
                                         })}
                                     </tr>
                                 ))}
@@ -306,9 +313,15 @@ const VisorNode = ({ data }) => {
 
             {/* Status Footer */}
             <div className="px-3 py-1 bg-emerald-500/5 border-t border-emerald-500/10 flex justify-between items-center">
-                <span className="text-[6px] text-emerald-500/40 font-mono">STATUS: CONNECTED</span>
+                <div className="flex items-center space-x-2">
+                    <span className="text-[6px] text-emerald-500/40 font-mono uppercase">Status: Connected</span>
+                    <span className="text-[6px] text-emerald-500/20 font-mono">|</span>
+                    <span className="text-[6px] text-emerald-500/40 font-mono uppercase">Slug: {data.slug || 'N/A'}</span>
+                    <span className="text-[6px] text-emerald-500/20 font-mono">|</span>
+                    <span className="text-[6px] text-emerald-500/40 font-mono uppercase">Type: {Array.isArray(data.execOutput) ? `Array(${data.execOutput.length})` : typeof data.execOutput}</span>
+                </div>
                 <div className="flex space-x-[2px]">
-                    {[1, 2, 3, 4, 5].map(i => <div key={i} className="w-[3px] h-[3px] bg-emerald-500/20" />)}
+                    {[1, 2, 3, 4, 5].map(i => <div key={i} className={`w-[3px] h-[3px] ${data.execOutput ? 'bg-emerald-500/40' : 'bg-emerald-500/10'}`} />)}
                 </div>
             </div>
         </div>
@@ -645,7 +658,8 @@ const MachineEditor = () => {
                                             execStatus: event.step.status,
                                             execOutput: event.step.output,
                                             execError: event.step.error,
-                                            execDuration: event.step.duration
+                                            execDuration: event.step.duration,
+                                            slug: event.step.visorSlug || n.data.slug // Ensure slug is updated/preserved
                                         }
                                     }
                                     : n
