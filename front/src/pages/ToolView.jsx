@@ -33,11 +33,12 @@ const ToolView = () => {
     };
 
     const resolvePath = (obj, path) => {
-        if (!path) return null;
+        if (!path || path === '.' || path === 'root') return obj;
         return path.split('.').reduce((prev, curr) => prev?.[curr], obj);
     };
 
     const DynamicRenderer = ({ data, structure }) => {
+        console.log('[DynamicRenderer] Data Rcv:', data);
         if (!structure) return null;
 
         let elements = null;
@@ -260,8 +261,10 @@ const ToolView = () => {
                         <form onSubmit={handleExecute} className="space-y-8 flex-1 flex flex-col">
                             <div className="space-y-6 flex-1">
                                 <div className="guardian-input-group !mb-0">
-                                    <label className="guardian-label">Requirement Instructions</label>
+                                    <label htmlFor="tool_prompt" className="guardian-label">Requirement Instructions</label>
                                     <textarea
+                                        id="tool_prompt"
+                                        name="prompt"
                                         value={prompt}
                                         onChange={(e) => setPrompt(e.target.value)}
                                         className="guardian-input !pl-4 min-h-[220px] resize-none leading-relaxed"
@@ -271,9 +274,11 @@ const ToolView = () => {
                                 </div>
 
                                 <div className="guardian-input-group !mb-0">
-                                    <label className="guardian-label">Reference Assets</label>
+                                    <label htmlFor="tool_file" className="guardian-label">Reference Assets</label>
                                     <div className="relative group cursor-pointer h-32 border-2 border-dashed border-slate-200 rounded-xl hover:border-guardian-blue hover:bg-guardian-blue/5 transition-all flex flex-col items-center justify-center text-center">
                                         <input
+                                            id="tool_file"
+                                            name="imagen"
                                             type="file"
                                             onChange={(e) => setFile(e.target.files[0])}
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"

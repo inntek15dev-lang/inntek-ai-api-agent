@@ -183,18 +183,31 @@ const VisorNode = ({ data }) => {
         try {
             // Priority: Table rendering if it's an array OR explicitly requested as table-visor
             if (visorSlug === 'table-visor' || (isArray && rawData.length > 0 && typeof rawData[0] === 'object')) {
-                const items = isArray ? rawData : (isObject ? [rawData] : []);
+                let items = isArray ? rawData : (isObject ? [rawData] : []);
+
+                // Hardening: If items is an object with a 'data' or 'lista' array, use that
+                if (isObject && !isArray) {
+                    if (Array.isArray(rawData.lista)) items = rawData.lista;
+                    else if (Array.isArray(rawData.items)) items = rawData.items;
+                    else if (Array.isArray(rawData.data)) items = rawData.data;
+                }
 
                 if (items.length === 0) {
                     return (
                         <div className="flex flex-col items-center justify-center p-4 py-8 border border-dashed border-emerald-500/20 rounded-lg bg-emerald-500/5">
                             <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest mb-1">No Tabular Data</p>
-                            <p className="text-[8px] text-emerald-500/40 text-center">The received data is not an array or is empty.</p>
+                            <p className="text-[8px] text-emerald-500/40 text-center mb-2">The received data is not an array or is empty.</p>
+                            <div className="w-full bg-black/40 p-2 rounded text-[8px] font-mono text-emerald-500/60 overflow-hidden truncate">
+                                Raw: {JSON.stringify(rawData).substring(0, 100)}...
+                            </div>
                         </div>
                     );
                 }
 
-                const keys = Object.keys(items[0] || {});
+                // Normalization: Ensure all items are objects
+                const normalizedItems = items.map(it => typeof it === 'object' && it !== null ? it : { value: it });
+                const keys = Object.keys(normalizedItems[0] || {});
+
                 if (keys.length === 0) return <p className="text-[9px] text-zinc-500 italic">Data exists but has no key-value structure...</p>;
 
                 return (
@@ -210,7 +223,7 @@ const VisorNode = ({ data }) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {items.slice(0, 50).map((it, i) => (
+                                {normalizedItems.slice(0, 50).map((it, i) => (
                                     <tr key={it.id || it.uuid || i} className="border-b border-emerald-500/10 hover:bg-emerald-500/5 transition-colors">
                                         {keys.map((k, j) => {
                                             const val = it[k];
@@ -221,7 +234,7 @@ const VisorNode = ({ data }) => {
                                 ))}
                             </tbody>
                         </table>
-                        {items.length > 50 && <p className="text-[7px] text-emerald-500/40 mt-2 text-center italic font-bold tracking-tighter animate-pulse">+ {items.length - 50} MORE RECORDS IN BUFFER</p>}
+                        {normalizedItems.length > 50 && <p className="text-[7px] text-emerald-500/40 mt-2 text-center italic font-bold tracking-tighter animate-pulse">+ {normalizedItems.length - 50} MORE RECORDS IN BUFFER</p>}
                     </div>
                 );
             }
