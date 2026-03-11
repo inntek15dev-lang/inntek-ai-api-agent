@@ -288,14 +288,18 @@ exports.executeMachine = async (req, res) => {
 
                 if (node.node_type === 'tool' && node.Tool) {
                     // ── Tool Node: execute AI ──
-                    // Resolve specific file for this node
-                    let file = null;
+                    // Resolve specific files for this node
+                    let files = [];
                     if (parentOutputs.length === 0) {
-                        // Check for node-specific file (file_<nodeId>) or fallback to generic 'imagen'
-                        file = (req.files || []).find(f => f.fieldname === `file_${nodeId}`) || (req.files || []).find(f => f.fieldname === 'imagen') || null;
+                        // Check for node-specific files (file_${nodeId}) or fallback to 'imagenes' or 'imagen'
+                        files = (req.files || []).filter(f =>
+                            f.fieldname === `file_${nodeId}` ||
+                            f.fieldname === 'imagenes' ||
+                            f.fieldname === 'imagen'
+                        );
                     }
 
-                    const result = await executeSingleTool(node.Tool, inputText, file);
+                    const result = await executeSingleTool(node.Tool, inputText, files);
                     nodeOutputs[nodeId] = result.response;
                     step.output = result.response;
                     step.provider = result.provider;
@@ -353,9 +357,11 @@ exports.executeMachine = async (req, res) => {
             }
         }
 
-        // Cleanup temp file
-        if (req.file) {
-            try { fs.unlinkSync(req.file.path); } catch (e) { /* ignore */ }
+        // Cleanup temp files
+        if (req.files && req.files.length > 0) {
+            req.files.forEach(file => {
+                try { fs.unlinkSync(file.path); } catch (e) { /* ignore */ }
+            });
         }
 
         // 6. Determine final output (last node in execution order)
@@ -376,8 +382,10 @@ exports.executeMachine = async (req, res) => {
         }
 
     } catch (error) {
-        if (req.file) {
-            try { fs.unlinkSync(req.file.path); } catch (e) { /* ignore */ }
+        if (req.files && req.files.length > 0) {
+            req.files.forEach(file => {
+                try { fs.unlinkSync(file.path); } catch (e) { /* ignore */ }
+            });
         }
         console.error('Machine Execution Error:', error.message);
         sendError(500, `Machine Execution Failed: ${error.message}`, { steps, totalDuration: Date.now() - globalStart });

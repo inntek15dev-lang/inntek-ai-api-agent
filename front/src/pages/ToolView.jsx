@@ -12,7 +12,8 @@ const ToolView = () => {
     const [prompt, setPrompt] = useState('');
     const [response, setResponse] = useState('');
     const [isExecuting, setIsExecuting] = useState(false);
-    const [file, setFile] = useState(null);
+    const [files, setFiles] = useState([]);
+    const [allowEmptyPrompt, setAllowEmptyPrompt] = useState(false);
     const [execError, setExecError] = useState(null);
 
     useEffect(() => {
@@ -199,13 +200,20 @@ const ToolView = () => {
 
     const handleExecute = async (e) => {
         e.preventDefault();
+
+        if (!prompt && !allowEmptyPrompt && files.length === 0) {
+            setExecError('Debe ingresar un prompt o cargar archivos para continuar.');
+            return;
+        }
+
         setIsExecuting(true);
         setResponse('');
         try {
             const formData = new FormData();
             formData.append('prompt', prompt);
-            if (file) {
-                formData.append('imagen', file);
+
+            if (files.length > 0) {
+                files.forEach(f => formData.append('imagenes', f));
             }
 
             const res = await axios.post(`${API_URL}/tools/${id}/execute`, formData, {
@@ -278,37 +286,60 @@ const ToolView = () => {
                         <form onSubmit={handleExecute} className="space-y-8 flex-1 flex flex-col">
                             <div className="space-y-6 flex-1">
                                 <div className="guardian-input-group !mb-0">
-                                    <label htmlFor="tool_prompt" className="guardian-label">Requirement Instructions</label>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label htmlFor="tool_prompt" className="guardian-label !mb-0">Requirement Instructions</label>
+                                        <label className="flex items-center cursor-pointer space-x-2 group">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter group-hover:text-guardian-blue transition-colors">
+                                                Allow Empty
+                                            </span>
+                                            <div className="relative">
+                                                <input
+                                                    type="checkbox"
+                                                    className="sr-only"
+                                                    checked={allowEmptyPrompt}
+                                                    onChange={(e) => setAllowEmptyPrompt(e.target.checked)}
+                                                />
+                                                <div className={`w-8 h-4 rounded-full transition-colors ${allowEmptyPrompt ? 'bg-guardian-blue' : 'bg-slate-200'}`}></div>
+                                                <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${allowEmptyPrompt ? 'translate-x-4' : ''}`}></div>
+                                            </div>
+                                        </label>
+                                    </div>
                                     <textarea
                                         id="tool_prompt"
                                         name="prompt"
                                         value={prompt}
                                         onChange={(e) => setPrompt(e.target.value)}
                                         className="guardian-input !pl-4 min-h-[220px] resize-none leading-relaxed"
-                                        placeholder="Enter processing protocols..."
-                                        required
+                                        placeholder={allowEmptyPrompt ? "Enter instructions (optional)..." : "Enter processing protocols..."}
+                                        required={!allowEmptyPrompt}
                                     />
                                 </div>
 
                                 <div className="guardian-input-group !mb-0">
-                                    <label htmlFor="tool_file" className="guardian-label">Reference Assets</label>
+                                    <label htmlFor="tool_file" className="guardian-label">Reference Assets (Batch Support)</label>
                                     <div className="relative group cursor-pointer h-32 border-2 border-dashed border-slate-200 rounded-xl hover:border-guardian-blue hover:bg-guardian-blue/5 transition-all flex flex-col items-center justify-center text-center">
                                         <input
                                             id="tool_file"
-                                            name="imagen"
+                                            name="imagenes"
                                             type="file"
-                                            onChange={(e) => setFile(e.target.files[0])}
+                                            multiple
+                                            onChange={(e) => setFiles(Array.from(e.target.files))}
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                         />
-                                        {file ? (
+                                        {files.length > 0 ? (
                                             <>
                                                 <CheckCircle size={28} className="text-green-500 mb-1" />
-                                                <span className="text-[11px] font-bold text-guardian-text uppercase truncate max-w-[150px]">{file.name}</span>
+                                                <span className="text-[11px] font-bold text-guardian-text uppercase truncate max-w-[200px]">
+                                                    {files.length} {files.length === 1 ? 'File' : 'Files'} selected
+                                                </span>
+                                                <div className="text-[9px] text-slate-400 truncate max-w-[180px]">
+                                                    {files.map(f => f.name).join(', ')}
+                                                </div>
                                             </>
                                         ) : (
                                             <>
                                                 <Upload size={28} className="text-slate-300 mb-1" />
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Neural Upload Link</span>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Neural Multi-Upload Link</span>
                                             </>
                                         )}
                                     </div>

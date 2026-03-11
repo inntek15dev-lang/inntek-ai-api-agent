@@ -136,14 +136,17 @@ const resolveProvider = async (tool) => {
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * Execute a single AI Tool with a text prompt and optional file.
+ * Execute a single AI Tool with a text prompt and optional file(s).
  * @param {object} tool - Tool model instance (with JsonSchema and AiProvider eager-loaded)
  * @param {string} promptText - The user/pipeline input text
- * @param {object|null} file - Optional Multer file object { path, mimetype }
+ * @param {object|array|null} files - Optional Multer file(s)
  * @returns {{ response: any, provider: { nombre, modelo } }}
  */
-const executeSingleTool = async (tool, promptText, file = null) => {
+const executeSingleTool = async (tool, promptText, files = null) => {
     const provider = await resolveProvider(tool);
+
+    // Normalize files to array
+    const filesArray = Array.isArray(files) ? files : (files ? [files] : []);
 
     // Generation config for Google
     const generationConfig = {};
@@ -166,7 +169,7 @@ BEHAVIOR PROTOCOL:
 ${tool.behavior_prompt}
 
 User Instruction:
-${promptText || (file ? 'Analyze the attached content.' : 'Execute and generate output based on your training and behavior protocols.')}
+${promptText || (filesArray.length > 0 ? 'Analyze the attached content.' : 'Execute and generate output based on your training and behavior protocols.')}
 `.trim();
 
     if (tool.JsonSchema) {
@@ -175,18 +178,24 @@ ${promptText || (file ? 'Analyze the attached content.' : 'Execute and generate 
         fullTextPrompt += `\n\nRESPONSE FORMAT:\n${tool.response_format || 'Text'}`;
     }
 
-    // Validate file MIME
-    if (file && !SUPPORTED_MIME_TYPES.includes(file.mimetype)) {
-        throw new Error(`Unsupported file type: ${file.mimetype}`);
-    }
+    // Validate files MIME
+    filesArray.forEach(f => {
+        if (!SUPPORTED_MIME_TYPES.includes(f.mimetype)) {
+            throw new Error(`Unsupported file type: ${f.mimetype} (${f.originalname || 'unknown'})`);
+        }
+    });
 
     let text;
     if (provider.tipo === 'google_native') {
         const promptParts = [fullTextPrompt];
-        if (file) promptParts.push(fileToGenerativePart(file.path, file.mimetype));
+        filesArray.forEach(f => {
+            promptParts.push(fileToGenerativePart(f.path, f.mimetype));
+        });
         text = await executeGoogleNative(provider, fullTextPrompt, promptParts, generationConfig);
     } else {
-        text = await executeOpenAICompatible(provider, fullTextPrompt, file || null);
+        // OpenAI strategy currently only supports one image/file in this base impl, 
+        // but we'll expand it to support all in the array.
+        text = await executeOpenAICompatibleWithMulti(provider, fullTextPrompt, filesArray);
     }
 
     text = sanitizeResponse(text);
@@ -202,6 +211,55 @@ ${promptText || (file ? 'Analyze the attached content.' : 'Execute and generate 
         response: responseData,
         provider: { nombre: provider.nombre, modelo: provider.modelo }
     };
+};
+
+/**
+ * Extension of executeOpenAICompatible to handle multiple files
+ */
+const executeOpenAICompatibleWithMulti = async (provider, fullTextPrompt, filesArray) => {
+    const apiKey = provider.api_key ? provider.api_key.trim() : '';
+    if (apiKey.includes('•') || apiKey.includes('*')) {
+        throw new Error(`Critical Security Fault: Provider "${provider.nombre}" is using a masked API key.`);
+    }
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+    };
+
+    if (provider.extra_headers) {
+        try {
+            const extra = JSON.parse(provider.extra_headers);
+            Object.assign(headers, extra);
+        } catch (e) { /* ignore */ }
+    }
+
+    const userContent = [{ type: 'text', text: fullTextPrompt }];
+
+    filesArray.forEach(file => {
+        const base64 = Buffer.from(fs.readFileSync(file.path)).toString('base64');
+        const dataUrl = `data:${file.mimetype};base64,${base64}`;
+        // Note: Some OpenAI compatible providers might only support image_url for images.
+        // For non-images (PDFs etc), this might depend on the provider's specific API capabilities.
+        // Standard OpenAI API Vision supports image_url.
+        userContent.push({ type: 'image_url', image_url: { url: dataUrl } });
+    });
+
+    const body = {
+        model: provider.modelo,
+        messages: [{ role: 'user', content: userContent }],
+    };
+
+    const url = `${provider.base_url}/chat/completions`;
+    const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
+
+    if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Provider API error (${response.status}): ${errorData}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
 };
 
 module.exports = {

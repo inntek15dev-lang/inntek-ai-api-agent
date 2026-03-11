@@ -384,7 +384,8 @@ const MachineEditor = () => {
 
     // Per-node execution inputs
     const [nodeInputs, setNodeInputs] = useState({}); // { nodeId: string }
-    const [nodeFiles, setNodeFiles] = useState({});   // { nodeId: File }
+    const [nodeFiles, setNodeFiles] = useState({});   // { nodeId: File[] }
+    const [nodeAllowEmpty, setNodeAllowEmpty] = useState({}); // { nodeId: boolean }
     const [activeInputNodeId, setActiveInputNodeId] = useState(null);
 
     const [pointerMode, setPointerMode] = useState('select'); // 'select' | 'erase'
@@ -621,10 +622,13 @@ const MachineEditor = () => {
 
             // Send mapping of node inputs and files
             formData.append('nodeInputs', JSON.stringify(nodeInputs));
+            formData.append('nodeAllowEmpty', JSON.stringify(nodeAllowEmpty));
 
             // Append files with specific keys matching their node IDs
-            Object.entries(nodeFiles).forEach(([nodeId, file]) => {
-                if (file) formData.append(`file_${nodeId}`, file);
+            Object.entries(nodeFiles).forEach(([nodeId, files]) => {
+                if (Array.isArray(files)) {
+                    files.forEach(file => formData.append(`file_${nodeId}`, file));
+                }
             });
 
             const response = await fetch(`${API_URL}/machines/${id}/execute?stream=true`, {
@@ -1011,45 +1015,99 @@ const MachineEditor = () => {
                                 <div className="p-6 space-y-6 flex-1 flex flex-col">
                                     <div className="space-y-5">
                                         <div>
-                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Instructions / Input Data</label>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Instructions / Input Data</label>
+                                                <label className="flex items-center cursor-pointer space-x-2 group">
+                                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter group-hover:text-violet-400 transition-colors">
+                                                        Allow Empty
+                                                    </span>
+                                                    <div className="relative">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="sr-only"
+                                                            checked={nodeAllowEmpty[activeInputNodeId] || false}
+                                                            onChange={(e) => setNodeAllowEmpty(prev => ({ ...prev, [activeInputNodeId]: e.target.checked }))}
+                                                        />
+                                                        <div className={`w-7 h-3.5 rounded-full transition-colors ${nodeAllowEmpty[activeInputNodeId] ? 'bg-violet-500' : 'bg-slate-700'}`}></div>
+                                                        <div className={`absolute top-0.5 left-0.5 w-2.5 h-2.5 bg-white rounded-full transition-transform ${nodeAllowEmpty[activeInputNodeId] ? 'translate-x-3.5' : ''}`}></div>
+                                                    </div>
+                                                </label>
+                                            </div>
                                             <textarea
                                                 id="nodePrompt"
                                                 name="nodePrompt"
                                                 value={nodeInputs[activeInputNodeId] || ''}
                                                 onChange={e => setNodeInputs(prev => ({ ...prev, [activeInputNodeId]: e.target.value }))}
                                                 className="w-full bg-slate-900 border border-slate-700 rounded-lg p-4 text-sm text-slate-200 focus:outline-none focus:border-violet-500/50 min-h-[140px] resize-none"
-                                                placeholder="Enter data or instructions for this node..."
+                                                placeholder={nodeAllowEmpty[activeInputNodeId] ? "Enter instructions (optional)..." : "Enter data or instructions for this node..."}
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Reference File (Optional)</label>
+                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Reference Assets (Batch Support)</label>
                                             <div className="border border-dashed border-slate-700 bg-slate-800/30 rounded-lg h-24 flex items-center justify-center relative hover:bg-violet-500/5 hover:border-violet-500/40 transition-colors">
                                                 <input
                                                     id="nodeFile"
                                                     name="nodeFile"
                                                     type="file"
-                                                    onChange={e => setNodeFiles(prev => ({ ...prev, [activeInputNodeId]: e.target.files[0] }))}
+                                                    multiple
+                                                    onChange={e => setNodeFiles(prev => ({ ...prev, [activeInputNodeId]: Array.from(e.target.files) }))}
                                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                                 />
-                                                <div className="text-center pointer-events-none">
-                                                    {nodeFiles[activeInputNodeId] ? (
-                                                        <span className="text-xs font-bold text-violet-400">{nodeFiles[activeInputNodeId].name}</span>
+                                                <div className="text-center pointer-events-none p-2">
+                                                    {nodeFiles[activeInputNodeId] && nodeFiles[activeInputNodeId].length > 0 ? (
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xs font-bold text-violet-400">
+                                                                {nodeFiles[activeInputNodeId].length} {nodeFiles[activeInputNodeId].length === 1 ? 'File' : 'Files'} selected
+                                                            </span>
+                                                            <span className="text-[8px] text-slate-500 truncate max-w-[200px]">
+                                                                {nodeFiles[activeInputNodeId].map(f => f.name).join(', ')}
+                                                            </span>
+                                                        </div>
                                                     ) : (
                                                         <>
                                                             <Upload size={18} className="mx-auto text-slate-500 mb-1" />
-                                                            <span className="text-[10px] text-slate-500 uppercase tracking-widest">Upload file</span>
+                                                            <span className="text-[10px] text-slate-500 uppercase tracking-widest">Neural Multi-Upload</span>
                                                         </>
                                                     )}
                                                 </div>
                                             </div>
+
+                                            {nodeFiles[activeInputNodeId]?.length > 0 && (
+                                                <div className="flex flex-wrap gap-2 mt-3">
+                                                    {nodeFiles[activeInputNodeId].map((f, i) => (
+                                                        <div key={i} className="flex items-center space-x-1 px-2 py-1 bg-violet-500/10 border border-violet-500/20 rounded-md text-[9px] text-violet-200">
+                                                            <span className="truncate max-w-[100px]">{f.name}</span>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setNodeFiles(prev => ({
+                                                                        ...prev,
+                                                                        [activeInputNodeId]: prev[activeInputNodeId].filter((_, idx) => idx !== i)
+                                                                    }));
+                                                                }}
+                                                                className="hover:text-red-400"
+                                                            >
+                                                                <X size={8} />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => { setStreamModalOpen(false); setActiveInputNodeId(null); }}
+                                        onClick={() => {
+                                            if (!nodeInputs[activeInputNodeId] && !nodeAllowEmpty[activeInputNodeId] && (!nodeFiles[activeInputNodeId] || nodeFiles[activeInputNodeId].length === 0)) {
+                                                alert('Debe ingresar un prompt o cargar archivos si no se permite input vacío.');
+                                                return;
+                                            }
+                                            setStreamModalOpen(false);
+                                            setActiveInputNodeId(null);
+                                        }}
                                         className="w-full flex items-center justify-center space-x-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg py-3 mt-auto shadow-[0_0_20px_rgba(139,92,246,0.2)] transition-colors"
                                     >
                                         <Check size={16} />
-                                        <span className="text-xs font-black uppercase tracking-widest">Save Node Input</span>
+                                        <span className="text-xs font-black uppercase tracking-widest">Confirm Node Inputs</span>
                                     </button>
                                 </div>
                             </div>

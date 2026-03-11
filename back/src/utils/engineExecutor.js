@@ -321,6 +321,61 @@ const engines = {
             },
             stepInfo: { score: `${score}%`, matches, total: totalComparisons }
         };
+    },
+
+    'tablerize': async (node, inputText) => {
+        let data = inputText;
+        if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (e) { /* ignore */ }
+        }
+
+        const entities = findEntities(data);
+        if (!entities || entities.length === 0) {
+            const fallback = typeof data === 'object' && data !== null ? [data] : [];
+            if (fallback.length === 0) return { output: [], stepInfo: 'No data to tablerize' };
+            return { output: tablerizeList(fallback), stepInfo: 'Tablerized single object' };
+        }
+
+        function flatten(obj, prefix = '') {
+            const result = {};
+            for (const key in obj) {
+                const value = obj[key];
+                const newKey = prefix ? `${prefix}.${key}` : key;
+
+                if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+                    Object.assign(result, flatten(value, newKey));
+                } else if (Array.isArray(value)) {
+                    // Convert arrays to comma-separated strings or [Items] indicator
+                    result[newKey] = value.every(it => typeof it !== 'object')
+                        ? value.join(', ')
+                        : `[${value.length} items]`;
+                } else {
+                    result[newKey] = value;
+                }
+            }
+            return result;
+        }
+
+        function tablerizeList(list) {
+            return list.map(item => {
+                if (typeof item !== 'object' || item === null) return { value: item };
+                const flat = flatten(item);
+                // Final cleanup: ensure no nested JSON remains (should be covered by flatten)
+                for (const k in flat) {
+                    if (typeof flat[k] === 'object' && flat[k] !== null) {
+                        flat[k] = '[Complex]';
+                    }
+                }
+                return flat;
+            });
+        }
+
+        const flattenedEntities = tablerizeList(entities);
+
+        return {
+            output: flattenedEntities,
+            stepInfo: { count: flattenedEntities.length }
+        };
     }
 };
 
