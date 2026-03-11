@@ -577,7 +577,7 @@ const MachineEditor = () => {
     };
 
     const handleRunStream = async (e) => {
-        e.preventDefault();
+        if (e && e.preventDefault) e.preventDefault();
 
         let proceed = true;
         if (!saved) {
@@ -878,7 +878,7 @@ const MachineEditor = () => {
                             </button>
                         </div>
 
-                        <button onClick={() => setStreamModalOpen(true)}
+                        <button onClick={handleRunStream}
                             disabled={executingStream}
                             className={`flex items-center space-x-1.5 px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-wider transition-all ${executingStream ? 'bg-violet-500/30 text-violet-300 border border-violet-400' : 'bg-violet-500/10 text-violet-400 border border-violet-500/20 hover:bg-violet-500/20 shadow-[0_0_10px_rgba(139,92,246,0.15)]'}`}>
                             {executingStream ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
