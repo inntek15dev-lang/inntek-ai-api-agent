@@ -9,6 +9,7 @@ const aiProviderController = require('../controllers/aiProviderController');
 const machineController = require('../controllers/machineController');
 const engineController = require('../controllers/engineController');
 const visorController = require('../controllers/visorController');
+const apiTesterController = require('../controllers/apiTesterController');
 const { authMiddleware, requirePrivilege } = require('../middleware/auth');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
@@ -298,7 +299,7 @@ router.delete('/tools/:id', authMiddleware, requirePrivilege('AI_Tool_Maker', 'w
  *       200:
  *         description: Execution result
  */
-router.post('/tools/:id/execute', authMiddleware, requirePrivilege('AI_Tool_Execution', 'exec'), upload.single('imagen'), toolController.executeTool);
+router.post('/tools/:id/execute', authMiddleware, requirePrivilege('AI_Tool_Execution', 'exec'), upload.array('imagenes', 20), toolController.executeTool);
 
 // Config
 /**
@@ -727,5 +728,8 @@ router.delete('/machines/:id', authMiddleware, requirePrivilege('Machines', 'wri
  *         description: Machine execution result with step-by-step log
  */
 router.post('/machines/:id/execute', authMiddleware, requirePrivilege('Machines', 'exec'), upload.any(), machineController.executeMachine);
+
+// API Tester
+router.post('/api-tester/execute', authMiddleware, requirePrivilege('AI_Tool_Execution', 'exec'), upload.array('imagenes', 20), apiTesterController.executeCustomTool);
 
 module.exports = router;

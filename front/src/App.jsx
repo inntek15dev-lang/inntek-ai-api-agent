@@ -15,6 +15,7 @@ import JsonSchemaMaker from './pages/JsonSchemaMaker';
 import MachineCatalog from './pages/MachineCatalog';
 import MachineEditor from './pages/MachineEditor';
 import MachineExecutor from './pages/MachineExecutor';
+import ApiTester from './pages/ApiTester';
 
 const ProtectedRoute = ({ children, module, action = 'read' }) => {
   const { isAuthenticated, loading, canRead, isAdmin } = useAuth();
@@ -111,6 +112,11 @@ function App() {
             <Route path="machines/:id/execute" element={
               <ProtectedRoute module="Machines">
                 <MachineExecutor />
+              </ProtectedRoute>
+            } />
+            <Route path="api-tester" element={
+              <ProtectedRoute module="AI_Tool_Execution">
+                <ApiTester />
               </ProtectedRoute>
             } />
           </Route>

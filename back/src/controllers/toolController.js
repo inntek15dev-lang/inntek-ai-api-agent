@@ -86,11 +86,13 @@ exports.executeTool = async (req, res) => {
 
         if (!tool) return res.status(404).json({ success: false, message: 'Tool not found' });
 
-        const result = await executeSingleTool(tool, req.body.prompt, req.file || null);
+        const result = await executeSingleTool(tool, req.body.prompt, req.files || []);
 
-        // Cleanup temp file
-        if (req.file) {
-            try { fs.unlinkSync(req.file.path); } catch (e) { /* ignore */ }
+        // Cleanup temp files
+        if (req.files && req.files.length > 0) {
+            req.files.forEach(file => {
+                try { fs.unlinkSync(file.path); } catch (e) { /* ignore */ }
+            });
         }
 
         res.json({
@@ -101,9 +103,11 @@ exports.executeTool = async (req, res) => {
             }
         });
     } catch (error) {
-        // Cleanup temp file on error
-        if (req.file) {
-            try { fs.unlinkSync(req.file.path); } catch (e) { /* ignore */ }
+        // Cleanup temp files on error
+        if (req.files && req.files.length > 0) {
+            req.files.forEach(file => {
+                try { fs.unlinkSync(file.path); } catch (e) { /* ignore */ }
+            });
         }
 
         console.error('AI Execution Error:', error.message);
