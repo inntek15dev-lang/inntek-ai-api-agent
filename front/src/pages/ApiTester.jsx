@@ -20,14 +20,150 @@ import {
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
+const resolvePath = (obj, path) => {
+    if (path === '.' || path === 'root') return obj;
+    if (!path) return null;
+    return path.split('.').reduce((prev, curr) => prev?.[curr], obj);
+};
+
+const DynamicRenderer = ({ data, structure }) => {
+    if (!structure) return null;
+
+    let elements = null;
+    let isHtmlTemplate = false;
+
+    try {
+        const parsed = typeof structure === 'string' ? JSON.parse(structure) : structure;
+        if (Array.isArray(parsed)) {
+            elements = parsed;
+        } else {
+            isHtmlTemplate = true;
+        }
+    } catch (e) {
+        isHtmlTemplate = true;
+    }
+
+    if (isHtmlTemplate) {
+        const renderedHtml = structure.replace(/\{\{(.*?)\}\}/g, (match, path) => {
+            const value = resolvePath(data, path.trim());
+            if (value !== undefined && value !== null) {
+                return (typeof value === 'object') ? JSON.stringify(value) : value;
+            }
+            return match;
+        });
+
+        return (
+            <div
+                className="animate-in fade-in slide-in-from-bottom-2"
+                dangerouslySetInnerHTML={{ __html: renderedHtml }}
+            />
+        );
+    }
+
+    if (!elements) return null;
+
+    return (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+            {elements.map((el, i) => {
+                const rawValue = resolvePath(data, el.data.param);
+                const value = (rawValue !== undefined && rawValue !== null) ? rawValue : el.data.text;
+
+                const asString = (val) => {
+                    if (val === undefined || val === null) return '';
+                    return (typeof val === 'object') ? JSON.stringify(val) : String(val);
+                };
+
+                switch (el.type) {
+                    case 'heading':
+                        return <h2 key={i} className="text-xl font-black text-white">{asString(value)}</h2>;
+                    case 'subheading':
+                        return <h3 key={i} className="text-md font-bold text-slate-300 mt-4">{asString(value)}</h3>;
+                    case 'label':
+                        return (
+                            <div key={i} className="flex flex-col space-y-1">
+                                <span className="text-[9px] font-black uppercase tracking-tighter text-slate-500">
+                                    {el.data.text}
+                                </span>
+                                <span className="text-sm font-bold text-white">
+                                    {asString(value)}
+                                </span>
+                            </div>
+                        );
+                    case 'text':
+                        return <p key={i} className="text-xs text-slate-400 leading-relaxed">{asString(value)}</p>;
+                    case 'image':
+                        return <img key={i} src={asString(value)} alt="AI Generated" className="w-full rounded-xl shadow-lg" />;
+                    case 'table':
+                        let list = [];
+                        if (Array.isArray(value)) {
+                            list = value;
+                        } else if (typeof value === 'object' && value !== null) {
+                            list = value.lista || value.items || value.data || [];
+                        }
+
+                        const hasColumns = el.data.columns && Array.isArray(el.data.columns);
+
+                        return (
+                            <div key={i} className="overflow-x-auto rounded-lg border border-slate-800 bg-black/20">
+                                <table className="w-full text-[10px] text-left">
+                                    <thead className="bg-slate-900/50 text-slate-500 uppercase font-black">
+                                        <tr>
+                                            {hasColumns ? (
+                                                el.data.columns.map((col, ci) => (
+                                                    <th key={ci} className="px-3 py-2">{col.header}</th>
+                                                ))
+                                            ) : (
+                                                list.length > 0 ? (
+                                                    Object.keys(list[0]).map(k => (
+                                                        <th key={k} className="px-3 py-2">{k}</th>
+                                                    ))
+                                                ) : (
+                                                    <th className="px-3 py-2">Data</th>
+                                                )
+                                            )}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {list.map((row, ri) => (
+                                            <tr key={ri} className="border-t border-slate-800/50">
+                                                {hasColumns ? (
+                                                    el.data.columns.map((col, ci) => (
+                                                        <td key={ci} className="px-3 py-2 font-bold text-slate-300">
+                                                            {asString(resolvePath(row, col.mapping))}
+                                                        </td>
+                                                    ))
+                                                ) : (
+                                                    Object.values(row).map((v, vi) => (
+                                                        <td key={vi} className="px-3 py-2 font-bold text-slate-300">
+                                                            {asString(v)}
+                                                        </td>
+                                                    ))
+                                                )}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        );
+                    default:
+                        return null;
+                }
+            })}
+        </div>
+    );
+};
+
 const ApiTester = () => {
     const [tools, setTools] = useState([]);
     const [providers, setProviders] = useState([]);
     const [schemas, setSchemas] = useState([]);
+    const [outputFormats, setOutputFormats] = useState([]);
 
     const [selectedToolId, setSelectedToolId] = useState('');
     const [selectedProviderId, setSelectedProviderId] = useState('');
     const [selectedSchemaId, setSelectedSchemaId] = useState('');
+    const [selectedOutputFormatId, setSelectedOutputFormatId] = useState('');
+    const [responseFormat, setResponseFormat] = useState('JSON');
 
     const [trainingPrompt, setTrainingPrompt] = useState('');
     const [behaviorPrompt, setBehaviorPrompt] = useState('');
@@ -46,14 +182,16 @@ const ApiTester = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [tRes, pRes, sRes] = await Promise.all([
+                const [tRes, pRes, sRes, ofRes] = await Promise.all([
                     axios.get(`${API_URL}/tools`),
                     axios.get(`${API_URL}/ai-providers`),
-                    axios.get(`${API_URL}/json-schemas`)
+                    axios.get(`${API_URL}/json-schemas`),
+                    axios.get(`${API_URL}/output-formats`)
                 ]);
                 setTools(tRes.data.data || []);
                 setProviders(pRes.data.data || []);
                 setSchemas(sRes.data.data || []);
+                setOutputFormats(ofRes.data.data || []);
             } catch (err) {
                 console.error('Fetch error:', err);
                 setError('Failed to load system data');
@@ -81,6 +219,8 @@ const ApiTester = () => {
             setBehaviorPrompt(tool.behavior_prompt || '');
             setSelectedProviderId(tool.ai_provider_id || '');
             setSelectedSchemaId(tool.json_schema_id || '');
+            setResponseFormat(tool.response_format || 'JSON');
+            setSelectedOutputFormatId(tool.output_format_id || '');
         }
     };
 
@@ -101,6 +241,8 @@ const ApiTester = () => {
             formData.append('behavior_prompt', behaviorPrompt);
             formData.append('ai_provider_id', selectedProviderId);
             formData.append('json_schema_id', selectedSchemaId);
+            formData.append('response_format', responseFormat);
+            formData.append('output_format_id', selectedOutputFormatId);
             formData.append('prompt', inputText);
 
             if (inputFiles.length > 0) {
@@ -194,7 +336,40 @@ const ApiTester = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">JSON Response Schema</label>
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Response Format</label>
+                            <div className="flex items-center space-x-2 bg-black/40 border border-slate-700 p-2 rounded-lg">
+                                <Zap size={14} className="text-yellow-500/60" />
+                                <select
+                                    value={responseFormat}
+                                    onChange={(e) => setResponseFormat(e.target.value)}
+                                    className="bg-transparent text-[11px] text-white w-full focus:outline-none"
+                                >
+                                    <option value="JSON">JSON</option>
+                                    <option value="TEXT">Plain Text</option>
+                                    <option value="MARKDOWN">Markdown</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Visual Output Template</label>
+                            <div className="flex items-center space-x-2 bg-black/40 border border-slate-700 p-2 rounded-lg">
+                                <Eye size={14} className="text-emerald-500/60" />
+                                <select
+                                    value={selectedOutputFormatId}
+                                    onChange={(e) => setSelectedOutputFormatId(e.target.value)}
+                                    className="bg-transparent text-[11px] text-white w-full focus:outline-none"
+                                >
+                                    <option value="">No Template (Raw)</option>
+                                    {outputFormats.map(f => (
+                                        <option key={f.id} value={f.id}>{f.nombre} ({f.tipo})</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Validation Schema (Injection)</label>
                             <div className="flex items-center space-x-2 bg-black/40 border border-slate-700 p-2 rounded-lg">
                                 <FileCode size={14} className="text-violet-500/60" />
                                 <select
@@ -202,7 +377,7 @@ const ApiTester = () => {
                                     onChange={(e) => setSelectedSchemaId(e.target.value)}
                                     className="bg-transparent text-[11px] text-white w-full focus:outline-none"
                                 >
-                                    <option value="">No Schema (Text Mode)</option>
+                                    <option value="">Off (Free Form)</option>
                                     {schemas.map(s => (
                                         <option key={s.id} value={s.id}>{s.nombre}</option>
                                     ))}
@@ -388,26 +563,33 @@ const ApiTester = () => {
                                             </pre>
                                         ) : (
                                             <div className="p-6">
-                                                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-4 mb-4">
-                                                    <div className="flex items-center space-x-2 mb-3 text-emerald-400">
-                                                        <Zap size={14} />
-                                                        <span className="text-[10px] font-black uppercase tracking-widest italic">Computed Success via {result.provider.nombre}</span>
-                                                    </div>
-                                                    <div className="text-[13px] text-white leading-relaxed">
-                                                        {typeof result.response === 'string' ? result.response : (
-                                                            <div className="space-y-4">
-                                                                {Object.entries(result.response).map(([key, value]) => (
-                                                                    <div key={key} className="border-b border-emerald-500/10 pb-2 last:border-0">
-                                                                        <label className="text-[9px] font-black text-emerald-500/60 uppercase tracking-widest block mb-0.5">{key.replace(/_/g, ' ')}</label>
-                                                                        <div className="text-emerald-50/90 font-medium">
-                                                                            {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                                                {outputFormats.find(f => f.id === selectedOutputFormatId) ? (
+                                                    <DynamicRenderer
+                                                        data={typeof result.response === 'string' ? JSON.parse(result.response) : result.response}
+                                                        structure={outputFormats.find(f => f.id === selectedOutputFormatId)?.estructura}
+                                                    />
+                                                ) : (
+                                                    <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-4 mb-4">
+                                                        <div className="flex items-center space-x-2 mb-3 text-emerald-400">
+                                                            <Zap size={14} />
+                                                            <span className="text-[10px] font-black uppercase tracking-widest italic">Neural Result (No Template)</span>
+                                                        </div>
+                                                        <div className="text-[13px] text-white leading-relaxed">
+                                                            {typeof result.response === 'string' ? result.response : (
+                                                                <div className="space-y-4">
+                                                                    {Object.entries(result.response).map(([key, value]) => (
+                                                                        <div key={key} className="border-b border-emerald-500/10 pb-2 last:border-0">
+                                                                            <label className="text-[9px] font-black text-emerald-500/60 uppercase tracking-widest block mb-0.5">{key.replace(/_/g, ' ')}</label>
+                                                                            <div className="text-emerald-50/90 font-medium whitespace-pre-wrap">
+                                                                                {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>

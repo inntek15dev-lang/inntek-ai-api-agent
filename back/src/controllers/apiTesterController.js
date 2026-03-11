@@ -14,6 +14,8 @@ exports.executeCustomTool = async (req, res) => {
             behavior_prompt,
             ai_provider_id,
             json_schema_id,
+            response_format,
+            output_format_id,
             prompt
         } = req.body;
 
@@ -21,15 +23,17 @@ exports.executeCustomTool = async (req, res) => {
         let virtualTool = {
             training_prompt: training_prompt || '',
             behavior_prompt: behavior_prompt || '',
-            response_format: 'JSON'
+            response_format: response_format || 'JSON'
         };
 
         if (tool_id && tool_id !== 'null' && tool_id !== '') {
             const dbTool = await Tool.findByPk(tool_id);
             if (dbTool) {
                 // Use overrides if provided, else database values
-                virtualTool.training_prompt = training_prompt !== undefined ? training_prompt : dbTool.training_prompt;
-                virtualTool.behavior_prompt = behavior_prompt !== undefined ? behavior_prompt : dbTool.behavior_prompt;
+                virtualTool.training_prompt = training_prompt !== undefined && training_prompt !== '' ? training_prompt : dbTool.training_prompt;
+                virtualTool.behavior_prompt = behavior_prompt !== undefined && behavior_prompt !== '' ? behavior_prompt : dbTool.behavior_prompt;
+                virtualTool.response_format = response_format !== undefined && response_format !== '' ? response_format : dbTool.response_format;
+                virtualTool.output_format_id = output_format_id !== undefined && output_format_id !== '' ? output_format_id : dbTool.output_format_id;
             }
         }
 
@@ -41,6 +45,15 @@ exports.executeCustomTool = async (req, res) => {
         // 3. Resolve Schema (Override)
         if (json_schema_id && json_schema_id !== 'null' && json_schema_id !== '') {
             virtualTool.JsonSchema = await JsonSchema.findByPk(json_schema_id);
+        }
+
+        // 3.1 Resolve OutputFormat (Override or from Tool)
+        const finalOutputFormatId = output_format_id || virtualTool.output_format_id;
+        let usedOutputFormat = null;
+        if (finalOutputFormatId && finalOutputFormatId !== 'null' && finalOutputFormatId !== '') {
+            const { OutputFormat } = require('../models');
+            usedOutputFormat = await OutputFormat.findByPk(finalOutputFormatId);
+            virtualTool.OutputFormat = usedOutputFormat;
         }
 
         // 4. Execute using core AI logic
@@ -61,7 +74,9 @@ exports.executeCustomTool = async (req, res) => {
                 configUsed: {
                     tool_id,
                     provider_id: ai_provider_id,
-                    schema_id: json_schema_id
+                    schema_id: json_schema_id,
+                    response_format: virtualTool.response_format,
+                    output_format: usedOutputFormat
                 }
             }
         });
