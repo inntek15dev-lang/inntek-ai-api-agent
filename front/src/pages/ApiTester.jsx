@@ -14,7 +14,8 @@ import {
     EyeOff,
     Check,
     AlertCircle,
-    Loader2
+    Loader2,
+    Settings
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
