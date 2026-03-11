@@ -245,6 +245,7 @@ exports.executeMachine = async (req, res) => {
 
         // 5. Execute in topological order
         const nodeOutputs = {}; // nodeId → output data
+        const nodeInputs = req.body.nodeInputs ? (typeof req.body.nodeInputs === 'string' ? JSON.parse(req.body.nodeInputs) : req.body.nodeInputs) : {};
         const userPrompt = req.body.prompt || null;
 
         for (const nodeId of executionOrder) {
@@ -276,12 +277,24 @@ exports.executeMachine = async (req, res) => {
             try {
                 // Gather inputs from all parent nodes
                 const parentOutputs = incomingFrom[nodeId].map(pid => nodeOutputs[pid]).filter(val => val !== undefined && val !== null);
-                const rawInput = parentOutputs.length === 0 ? userPrompt : (parentOutputs.length === 1 ? parentOutputs[0] : parentOutputs);
+
+                // Resolve specific input for this node if it's an entry point
+                const nodeSpecificInput = nodeInputs[nodeId];
+                const rawInput = parentOutputs.length === 0
+                    ? (nodeSpecificInput !== undefined ? nodeSpecificInput : userPrompt)
+                    : (parentOutputs.length === 1 ? parentOutputs[0] : parentOutputs);
+
                 const inputText = typeof rawInput === 'string' ? rawInput : JSON.stringify(rawInput);
 
                 if (node.node_type === 'tool' && node.Tool) {
                     // ── Tool Node: execute AI ──
-                    const file = (parentOutputs.length === 0 && req.file) ? req.file : null;
+                    // Resolve specific file for this node
+                    let file = null;
+                    if (parentOutputs.length === 0) {
+                        // Check for node-specific file (file_<nodeId>) or fallback to generic 'imagen'
+                        file = (req.files || []).find(f => f.fieldname === `file_${nodeId}`) || (req.files || []).find(f => f.fieldname === 'imagen') || null;
+                    }
+
                     const result = await executeSingleTool(node.Tool, inputText, file);
                     nodeOutputs[nodeId] = result.response;
                     step.output = result.response;

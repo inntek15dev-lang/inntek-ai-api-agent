@@ -381,8 +381,11 @@ const MachineEditor = () => {
 
     const [executingStream, setExecutingStream] = useState(false);
     const [streamModalOpen, setStreamModalOpen] = useState(false);
-    const [executionPrompt, setExecutionPrompt] = useState('');
-    const [executionFile, setExecutionFile] = useState(null);
+
+    // Per-node execution inputs
+    const [nodeInputs, setNodeInputs] = useState({}); // { nodeId: string }
+    const [nodeFiles, setNodeFiles] = useState({});   // { nodeId: File }
+    const [activeInputNodeId, setActiveInputNodeId] = useState(null);
 
     const [pointerMode, setPointerMode] = useState('select'); // 'select' | 'erase'
 
@@ -510,8 +513,18 @@ const MachineEditor = () => {
         if (pointerMode === 'erase') {
             setNodes((nds) => nds.filter((n) => n.id !== node.id));
             setEdges((eds) => eds.filter((e) => e.source !== node.id && e.target !== node.id));
+            return;
         }
-    }, [pointerMode, setNodes, setEdges]);
+
+        // Logic for opening independent input modal
+        const isEntryNode = (node.data.nodeType === 'tool' || node.data.nodeType === 'engine');
+        const hasIncoming = edges.some(e => e.target === node.id);
+
+        if (isEntryNode && !hasIncoming) {
+            setActiveInputNodeId(node.id);
+            setStreamModalOpen(true);
+        }
+    }, [pointerMode, setNodes, setEdges, edges]);
 
     const onEdgeClick = useCallback((event, edge) => {
         if (pointerMode === 'erase') {
@@ -605,8 +618,14 @@ const MachineEditor = () => {
 
         try {
             const formData = new FormData();
-            formData.append('prompt', executionPrompt);
-            if (executionFile) formData.append('imagen', executionFile);
+
+            // Send mapping of node inputs and files
+            formData.append('nodeInputs', JSON.stringify(nodeInputs));
+
+            // Append files with specific keys matching their node IDs
+            Object.entries(nodeFiles).forEach(([nodeId, file]) => {
+                if (file) formData.append(`file_${nodeId}`, file);
+            });
 
             const response = await fetch(`${API_URL}/machines/${id}/execute?stream=true`, {
                 method: 'POST',
@@ -974,46 +993,47 @@ const MachineEditor = () => {
                     )}
 
                     {/* Stream Execution Modal */}
-                    {streamModalOpen && (
+                    {streamModalOpen && activeInputNodeId && (
                         <div className="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex py-20 px-4" style={{ zIndex: 9999 }}>
                             <div className="m-auto bg-slate-950 border border-violet-500/30 w-full max-w-xl rounded-2xl shadow-2xl flex flex-col overflow-hidden"
                                 style={{ background: 'linear-gradient(180deg, rgba(15,23,42,0.98) 0%, rgba(10,14,26,0.98) 100%)' }}>
                                 <div className="px-6 py-4 flex items-center justify-between border-b border-slate-800">
                                     <div className="flex items-center space-x-3">
                                         <Play size={18} className="text-violet-500" />
-                                        <span className="text-sm font-black text-slate-200 uppercase tracking-widest">Execute Machine Live</span>
+                                        <span className="text-sm font-black text-slate-200 uppercase tracking-widest">
+                                            Input for: {nodes.find(n => n.id === activeInputNodeId)?.data?.label}
+                                        </span>
                                     </div>
-                                    <button onClick={() => setStreamModalOpen(false)} className="text-slate-500 hover:text-red-400 transition-colors">
+                                    <button onClick={() => { setStreamModalOpen(false); setActiveInputNodeId(null); }} className="text-slate-500 hover:text-red-400 transition-colors">
                                         <X size={20} />
                                     </button>
                                 </div>
-                                <form onSubmit={handleRunStream} className="p-6 space-y-6 flex-1 flex flex-col">
+                                <div className="p-6 space-y-6 flex-1 flex flex-col">
                                     <div className="space-y-5">
                                         <div>
-                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Pipeline Instructions</label>
+                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Instructions / Input Data</label>
                                             <textarea
-                                                id="executionPrompt"
-                                                name="executionPrompt"
-                                                value={executionPrompt}
-                                                onChange={e => setExecutionPrompt(e.target.value)}
+                                                id="nodePrompt"
+                                                name="nodePrompt"
+                                                value={nodeInputs[activeInputNodeId] || ''}
+                                                onChange={e => setNodeInputs(prev => ({ ...prev, [activeInputNodeId]: e.target.value }))}
                                                 className="w-full bg-slate-900 border border-slate-700 rounded-lg p-4 text-sm text-slate-200 focus:outline-none focus:border-violet-500/50 min-h-[140px] resize-none"
-                                                placeholder="Enter initial data or instructions for this execution..."
-                                                required
+                                                placeholder="Enter data or instructions for this node..."
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Reference File (Optional)</label>
                                             <div className="border border-dashed border-slate-700 bg-slate-800/30 rounded-lg h-24 flex items-center justify-center relative hover:bg-violet-500/5 hover:border-violet-500/40 transition-colors">
                                                 <input
-                                                    id="executionFile"
-                                                    name="executionFile"
+                                                    id="nodeFile"
+                                                    name="nodeFile"
                                                     type="file"
-                                                    onChange={e => setExecutionFile(e.target.files[0])}
+                                                    onChange={e => setNodeFiles(prev => ({ ...prev, [activeInputNodeId]: e.target.files[0] }))}
                                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                                 />
                                                 <div className="text-center pointer-events-none">
-                                                    {executionFile ? (
-                                                        <span className="text-xs font-bold text-violet-400">{executionFile.name}</span>
+                                                    {nodeFiles[activeInputNodeId] ? (
+                                                        <span className="text-xs font-bold text-violet-400">{nodeFiles[activeInputNodeId].name}</span>
                                                     ) : (
                                                         <>
                                                             <Upload size={18} className="mx-auto text-slate-500 mb-1" />
@@ -1025,13 +1045,13 @@ const MachineEditor = () => {
                                         </div>
                                     </div>
                                     <button
-                                        type="submit"
+                                        onClick={() => { setStreamModalOpen(false); setActiveInputNodeId(null); }}
                                         className="w-full flex items-center justify-center space-x-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg py-3 mt-auto shadow-[0_0_20px_rgba(139,92,246,0.2)] transition-colors"
                                     >
-                                        <Play size={16} />
-                                        <span className="text-xs font-black uppercase tracking-widest">Start Visual Execution</span>
+                                        <Check size={16} />
+                                        <span className="text-xs font-black uppercase tracking-widest">Save Node Input</span>
                                     </button>
-                                </form>
+                                </div>
                             </div>
                         </div>
                     )}
