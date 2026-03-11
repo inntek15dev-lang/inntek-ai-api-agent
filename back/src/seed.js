@@ -713,6 +713,30 @@ const seed = async () => {
             }
         });
 
+        const [engineCsvConverter] = await Engine.findOrCreate({
+            where: { slug: 'csv-converter' },
+            defaults: {
+                nombre: 'CSV Tabulator',
+                descripcion: 'Convierte un listado de objetos en un archivo CSV tabulado (separado por ;) listo para Excel.',
+                tipo: 'output',
+                icono: '📊',
+                config_schema: JSON.stringify({}),
+                activo: true
+            }
+        });
+
+        const [engineComparator] = await Engine.findOrCreate({
+            where: { slug: 'data-comparator' },
+            defaults: {
+                nombre: 'Data Comparator',
+                descripcion: 'Compara dos objetos JSON y genera un reporte detallado columna por columna (data vs doc) con porcentaje de match.',
+                tipo: 'mapper',
+                icono: '⚖️',
+                config_schema: JSON.stringify({}),
+                activo: true
+            }
+        });
+
         // ═══════════════════════════════════════════════════════════════
         // 9. Visores
         // ═══════════════════════════════════════════════════════════════
@@ -1297,10 +1321,35 @@ REGLAS DE EXPERTO:
         await MachineConnection.findOrCreate({ where: { machine_id: machineBatchLiqui.id, source_node_id: m4n1.id, target_node_id: m4n2.id }, defaults: { source_handle: null, target_handle: null } });
         await MachineConnection.findOrCreate({ where: { machine_id: machineBatchLiqui.id, source_node_id: m4n2.id, target_node_id: m4n3.id }, defaults: { source_handle: null, target_handle: null } });
 
+        // ── Machine 5: Auditoría de Deuda TGR ──
+        const [machineTGR] = await Machine.findOrCreate({
+            where: { id: 'machine-0000-0000-0000-000000000005' },
+            defaults: {
+                nombre: 'Auditoría de Deuda TGR',
+                descripcion: 'Carga masiva de datos + Validación individual contra Certificado de Deuda TGR.',
+                icono: '🏦',
+                activo: true
+            }
+        });
+
+        const [m5n1] = await MachineNode.findOrCreate({ where: { id: '00000000-0000-0000-0000-000000000501' }, defaults: { machine_id: machineTGR.id, node_type: 'tool', tool_id: 'edb84cda-0000-4a2c-8187-000000000040', position_x: 50, position_y: 50, config: null } }); // TGR Tool
+        const [m5n2] = await MachineNode.findOrCreate({ where: { id: '00000000-0000-0000-0000-000000000502' }, defaults: { machine_id: machineTGR.id, node_type: 'tool', tool_id: 'edb84cda-0000-4a2c-8187-000000000010', position_x: 50, position_y: 350, config: null } }); // Massive Loader
+        const [m5n3] = await MachineNode.findOrCreate({ where: { id: '00000000-0000-0000-0000-000000000503' }, defaults: { machine_id: machineTGR.id, node_type: 'engine', engine_id: engineIterator.id, position_x: 350, position_y: 350, config: JSON.stringify({ input_field: 'lista' }) } });
+        const [m5n4] = await MachineNode.findOrCreate({ where: { id: '00000000-0000-0000-0000-000000000504' }, defaults: { machine_id: machineTGR.id, node_type: 'engine', engine_id: engineComparator.id, position_x: 650, position_y: 200, config: null } });
+        const [m5n5] = await MachineNode.findOrCreate({ where: { id: '00000000-0000-0000-0000-000000000505' }, defaults: { machine_id: machineTGR.id, node_type: 'engine', engine_id: engineCollector.id, position_x: 950, position_y: 200, config: JSON.stringify({ output_field: 'comparaciones' }) } });
+        const [m5n6] = await MachineNode.findOrCreate({ where: { id: '00000000-0000-0000-0000-000000000506' }, defaults: { machine_id: machineTGR.id, node_type: 'visor', visor_id: visorTable.id, position_x: 1250, position_y: 200, config: null } });
+
+        await MachineConnection.findOrCreate({ where: { id: '00000000-0000-0000-0000-000000000551' }, defaults: { machine_id: machineTGR.id, source_node_id: m5n1.id, target_node_id: m5n4.id, source_handle: null, target_handle: null } }); // TGR -> Comparator (Master)
+        await MachineConnection.findOrCreate({ where: { id: '00000000-0000-0000-0000-000000000552' }, defaults: { machine_id: machineTGR.id, source_node_id: m5n2.id, target_node_id: m5n3.id, source_handle: null, target_handle: null } }); // Loader -> Iterator
+        await MachineConnection.findOrCreate({ where: { id: '00000000-0000-0000-0000-000000000553' }, defaults: { machine_id: machineTGR.id, source_node_id: m5n3.id, target_node_id: m5n4.id, source_handle: null, target_handle: null } }); // Iterator -> Comparator (Slave)
+        await MachineConnection.findOrCreate({ where: { id: '00000000-0000-0000-0000-000000000554' }, defaults: { machine_id: machineTGR.id, source_node_id: m5n4.id, target_node_id: m5n5.id, source_handle: null, target_handle: null } });
+        await MachineConnection.findOrCreate({ where: { id: '00000000-0000-0000-0000-000000000555' }, defaults: { machine_id: machineTGR.id, source_node_id: m5n5.id, target_node_id: m5n6.id, source_handle: null, target_handle: null } });
+
         console.log('Database seeded successfully!');
         process.exit(0);
     } catch (error) {
-        console.error('Seeding error:', error);
+        console.error('Seeding error!');
+        console.error(JSON.stringify(error, null, 2));
         process.exit(1);
     }
 };
