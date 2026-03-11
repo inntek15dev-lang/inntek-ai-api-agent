@@ -726,6 +726,6 @@ router.delete('/machines/:id', authMiddleware, requirePrivilege('Machines', 'wri
  *       200:
  *         description: Machine execution result with step-by-step log
  */
-router.post('/machines/:id/execute', authMiddleware, requirePrivilege('Machines', 'exec'), upload.single('imagen'), machineController.executeMachine);
+router.post('/machines/:id/execute', authMiddleware, requirePrivilege('Machines', 'exec'), upload.any(), machineController.executeMachine);
 
 module.exports = router;
