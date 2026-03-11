@@ -292,6 +292,8 @@ exports.executeMachine = async (req, res) => {
                     const engineResult = await executeEngine(node, inputText, parentOutputs, {
                         nodeMap,
                         adjacency,
+                        incomingFrom,
+                        nodeOutputs,
                         onProgress: (progress) => {
                             if (isStream) {
                                 res.write(`data: ${JSON.stringify({ type: 'node-progress', nodeId, progress })}\n\n`);

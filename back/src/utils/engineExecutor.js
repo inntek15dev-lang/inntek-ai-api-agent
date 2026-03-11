@@ -94,8 +94,17 @@ const engines = {
                     const r = await executeSingleTool(nextNode.Tool, itemInput);
                     result = r.response;
                 } else {
-                    // Recursive engine execution
-                    const r = await executeEngine(nextNode, itemInput, [itemData], context);
+                    // ── Enhanced recursive logic for Multi-Input support ──
+                    // If the nextNode has other parents (besides this iterator), fetch their outputs
+                    const otherParents = (context.incomingFrom?.[nextNode.id] || []).filter(id => id !== node.id);
+                    const mergedParentOutputs = [itemData];
+
+                    for (const pId of otherParents) {
+                        const pOutput = context.nodeOutputs?.[pId];
+                        if (pOutput !== undefined) mergedParentOutputs.push(pOutput);
+                    }
+
+                    const r = await executeEngine(nextNode, itemInput, mergedParentOutputs, context);
                     result = r.output;
                 }
                 iterResults.push(result);
@@ -217,6 +226,100 @@ const engines = {
         return {
             output: finalOutput,
             stepInfo: finalOutput
+        };
+    },
+
+    'csv-converter': async (node, inputText) => {
+        let data = inputText;
+        if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (e) { /* ignore */ }
+        }
+
+        const entities = findEntities(data);
+        if (!entities || entities.length === 0) {
+            return { output: '', stepInfo: 'No entities found to convert to CSV.' };
+        }
+
+        // Get headers from the first object
+        const headers = Object.keys(entities[0]);
+        const headerRow = headers.join(';');
+
+        // Create data rows
+        const rows = entities.map(item => {
+            return headers.map(header => {
+                let value = item[header];
+                if (value === null || value === undefined) return '';
+                if (typeof value === 'object') return JSON.stringify(value).replace(/;/g, ',');
+                return String(value).replace(/;/g, ','); // Prevent semicolon injection
+            }).join(';');
+        });
+
+        const csvContent = [headerRow, ...rows].join('\n');
+
+        return {
+            output: csvContent,
+            stepInfo: { rowsProcessed: entities.length, format: 'CSV' }
+        };
+    },
+
+    'data-comparator': async (node, inputText, parentOutputs) => {
+        // We expect at least 2 parent outputs to compare
+        if (parentOutputs.length < 2) {
+            return { output: null, stepInfo: 'Data Comparator requires at least 2 inputs to compare.' };
+        }
+
+        const obj1 = parentOutputs[0];
+        const obj2 = parentOutputs[1];
+
+        if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || !obj1 || !obj2) {
+            return { output: null, stepInfo: 'Inputs must be valid objects for comparison.' };
+        }
+
+        const normalizeKey = (k) => k.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const keys1 = Object.keys(obj1);
+        const keys2 = Object.keys(obj2);
+
+        const comparisons = [];
+        let matches = 0;
+        let totalComparisons = 0;
+
+        keys1.forEach(k1 => {
+            const nk1 = normalizeKey(k1);
+            // Fuzzy match keys
+            const k2 = keys2.find(key => normalizeKey(key) === nk1) || null;
+
+            totalComparisons++;
+            const val1 = obj1[k1];
+            const val2 = k2 ? obj2[k2] : undefined;
+
+            const sVal1 = String(val1 ?? '').trim();
+            const sVal2 = String(val2 ?? '').trim();
+
+            const isMatch = sVal1.toLowerCase() === sVal2.toLowerCase() && k2 !== null;
+            if (isMatch) matches++;
+
+            comparisons.push({
+                parametro: k1,
+                data: sVal1,
+                doc: sVal2,
+                match: isMatch ? '✅' : '❌',
+                status: isMatch ? 'Coincide' : (k2 ? 'Diferente' : 'No encontrado en doc')
+            });
+        });
+
+        const score = totalComparisons > 0 ? Math.round((matches / totalComparisons) * 100) : 0;
+
+        return {
+            output: {
+                lista: comparisons,
+                total: comparisons.length,
+                resumen: {
+                    match_percentage: `${score}%`,
+                    matches,
+                    total: totalComparisons
+                }
+            },
+            stepInfo: { score: `${score}%`, matches, total: totalComparisons }
         };
     }
 };

@@ -121,7 +121,7 @@ const upload = multer({ dest: 'uploads/' });
  *           type: string
  *         tipo:
  *           type: string
- *           enum: [iterator, collector, mapper]
+ *           enum: [iterator, collector, mapper, api-consumer, output, converter, extractor]
  *         icono:
  *           type: string
  *         config_schema:

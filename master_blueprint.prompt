@@ -1,5 +1,5 @@
 # AgentiX — Universal Software Blueprint
-# Version: 3.4.0 | Last Sync: 2026-03-04
+# Version: 3.5.0 | Last Sync: 2026-03-11
 
 ## 1. Overview
 
@@ -70,7 +70,7 @@ front/ (React SPA)                    back/ (Express API)
 │       ├── Dashboard.jsx             │   ├── middleware/
 │       ├── ToolMaker.jsx             │   │   └── auth.js (JWT + Privilege Engine)
 │       ├── Catalog.jsx               │   ├── routes/
-│       ├── ToolView.jsx              │   │   └── index.js (All routes + Swagger JSDoc)
+│   │   ├── ToolView.jsx              │   │   └── index.js (All routes + Swagger JSDoc)
 │       ├── Config.jsx                │   ├── seed.js (Complete base data)
 │       ├── OutputMaker.jsx           │   └── utils/
 │       ├── JsonSchemaMaker.jsx       │       └── aiExecutor.js (Shared AI exec)
@@ -190,6 +190,10 @@ front/ (React SPA)                    back/ (Express API)
      - **Engine: `list-collector`** → aggregate all incoming parent outputs into single array
      - **Engine: `data-mapper`** → merge/pass-through incoming data
      - **Engine: `api-consumer`** → execute external HTTP request (fetch) using node configuration (method, url, headers) and previous step output as body payload
+     - **Engine: `csv-converter`** → converts a list of objects into a semicolon-separated CSV string, sanitizing data to prevent format breakage.
+     - **Engine: `json-converter`** → bidirectional conversion between JSON strings and JavaScript objects.
+     - **Engine: `json-entity-extractor`** → automatically identifies and extracts the main entity collection from a complex JSON structure.
+     - **Visor nodes** → renders data using specialized visual components (Table, Message, Document).
   5. Return `{ steps[], finalOutput, totalDuration }` (or stream as Server-Sent Events if `?stream=true` is provided. Frontend must initiate fetch with `Authorization` header).
 - **Step Log Format:** `{ nodeId, nodeName, nodeIcon, nodeType, engineType, status, output, error, duration, provider? }`
 - **Multimodal:** First root tool node receives uploaded file (if any), subsequent nodes receive text only
@@ -207,6 +211,10 @@ front/ (React SPA)                    back/ (Express API)
 | 📦 List Collector | `list-collector` | `collector` | Aggregates individual Tool outputs into a single array |
 | 🔀 Data Mapper | `data-mapper` | `mapper` | Transforms/maps fields between node inputs and outputs |
 | 🌐 API Consumer | `api-consumer` | `api-consumer` | Conecta una etapa de la Machine a un servicio externo vía API (HTTP FETCH) devolviendo JSON |
+| 🖨️ PRINTER | `printer` | `output` | Engine de salida que genera un tag luminoso en el frontend |
+| 🔄 JSON Converter | `json-converter` | `converter` | Conversión automática String <-> Object |
+| 📂 Entity Extractor | `json-entity-extractor` | `extractor` | Extrae el array principal de una estructura JSON compleja |
+| 📊 CSV Tabulator | `csv-converter` | `output` | Genera un string CSV (separado por ;) a partir de un listado |
 
 ---
 
@@ -330,7 +338,18 @@ front/ (React SPA)                    back/ (Express API)
 | config_schema | TEXT | JSON string |
 | activo | BOOLEAN | default: true |
 
-### 6.11 Machines
+### 6.11 Visores
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | UUID | PK |
+| nombre | STRING | not null |
+| slug | STRING | unique, not null |
+| descripcion | TEXT | — |
+| icono | STRING | emoji |
+| config_schema | TEXT | JSON string |
+| activo | BOOLEAN | default: true |
+
+### 6.12 Machines
 | Column | Type | Constraints |
 |--------|------|-------------|
 | id | UUID | PK |
@@ -344,9 +363,10 @@ front/ (React SPA)                    back/ (Express API)
 |--------|------|-------------|
 | id | UUID | PK |
 | machine_id | UUID | FK → Machines.id (CASCADE) |
-| node_type | ENUM | tool, engine |
+| node_type | ENUM | tool, engine, visor |
 | tool_id | UUID | FK → Tools.id (nullable) |
 | engine_id | UUID | FK → Engines.id (nullable) |
+| visor_id | UUID | FK → Visores.id (nullable) |
 | position_x | FLOAT | default: 0 |
 | position_y | FLOAT | default: 0 |
 | config | TEXT | JSON string |
@@ -373,6 +393,7 @@ Machine 1──N MachineNode (machine_id, CASCADE)
 Machine 1──N MachineConnection (machine_id, CASCADE)
 MachineNode N──1 Tool (tool_id)
 MachineNode N──1 Engine (engine_id)
+MachineNode N──1 Visor (visor_id)
 MachineConnection N──1 MachineNode as SourceNode (source_node_id)
 MachineConnection N──1 MachineNode as TargetNode (target_node_id)
 ```
@@ -486,6 +507,10 @@ All routes prefixed with `/api`. Protected by `authMiddleware` + `requirePrivile
 - **Node gradients:** `#1e293b → #0f172a` (tool), `#1e1b3a → #0f0d24` (engine)
 - **Accent colors:** Cyan (`#06b6d4`) for tools, Violet (`#8b5cf6`) for engines
 - **Edge style:** smoothstep, animated, `ArrowClosed` marker
+- **Pointer Mode Toggle**: Switch between 'Select' (default cursor, move canvas) and 'Erase' (crosshair cursor, click nodes/edges to delete)
+- Delete nodes/edges with Backspace/Delete, or using the 'Erase' mode
+- MiniMap + Controls styled in dark theme
+- **Run** button in top bar → navigates to MachineExecutor
 
 ### Navigation (navigation.js)
 | Path | Label | Icon | Module |
@@ -579,6 +604,9 @@ All routes prefixed with `/api`. Protected by `authMiddleware` + `requirePrivile
 | 📄 | Verificador de Contrato | Schema Lista Genérica | Employment contract check (Art. 9 CT, plazo fijo, vigencia) |
 | 🏅 | Verificador de Certificaciones | Schema Lista Genérica | Cert/license audit per worker (AFP, salud, licencia, competencias) |
 | 📈 | Generador de Reporte de Lote | Schema Lista Genérica | Batch executive report (stats, hallazgos, recomendaciones) |
+| 🧾 | Demo Liquidaciones | Schema Listado de Liquidaciones... | Especializado para auditoría de sueldos |
+| 🏦 | Certificado Deuda TGR | TGR Certificado de Deuda | Validación de certificados tesorería |
+| 📝 | Resolución Convenio TGR | TGR Resolución de Convenio | Validación de convenios tesorería |
 
 ### Pre-built Machines (2)
 
