@@ -185,25 +185,127 @@ const seed = async () => {
                 nombre: 'Certificado Deuda Vista RYCE',
                 tipo: 'reporte',
                 category_id: catRYCE.id,
-                estructura: JSON.stringify([
-                    { "id": 1, "type": "heading", "data": { "text": "Certificado Deuda RYCE", "param": "" } },
-                    { "id": 2, "type": "subheading", "data": { "text": "Información Empresa", "param": "" } },
-                    { "id": 3, "type": "label", "data": { "text": "RUT Empresa", "param": "empresa.rut_empresa" } },
-                    { "id": 4, "type": "label", "data": { "text": "Razón Social", "param": "empresa.razon_social" } },
-                    { "id": 5, "type": "subheading", "data": { "text": "Documento", "param": "" } },
-                    { "id": 6, "type": "label", "data": { "text": "Tipo", "param": "documento.tipo" } },
-                    { "id": 7, "type": "label", "data": { "text": "Fecha Emisión", "param": "documento.fecha_emision" } },
-                    { "id": 8, "type": "subheading", "data": { "text": "Validación Calidad", "param": "" } },
-                    { "id": 9, "type": "label", "data": { "text": "Legible", "param": "validacion_calidad.es_legible" } },
-                    { "id": 10, "type": "label", "data": { "text": "Íntegro", "param": "validacion_calidad.es_integro" } },
-                    { "id": 11, "type": "label", "data": { "text": "Corresponde Contratista", "param": "validacion_calidad.corresponde_al_contratista" } },
-                    { "id": 12, "type": "label", "data": { "text": "Corresponde Documento", "param": "validacion_calidad.corresponde_al_documento" } },
-                    { "id": 13, "type": "label", "data": { "text": "Corresponde Fecha", "param": "validacion_calidad.corresponde_fecha_emision" } },
-                    { "id": 14, "type": "subheading", "data": { "text": "Análisis Deuda", "param": "" } },
-                    { "id": 15, "type": "label", "data": { "text": "Monto Moroso", "param": "analisis_deuda.monto_deuda_morosa" } },
-                    { "id": 16, "type": "label", "data": { "text": "Monto No Vencido", "param": "analisis_deuda.monto_deuda_no_vencida" } },
-                    { "id": 17, "type": "label", "data": { "text": "Moneda", "param": "analisis_deuda.moneda" } }
-                ])
+                estructura: `<div class="bg-[#f0f2f5] p-6 font-sans text-slate-800">
+    <!-- Header: Datos Empresa (System Input) -->
+    <div class="mb-6 overflow-hidden rounded-lg border border-[#00A3C4] bg-white shadow-sm">
+        <div class="bg-[#00A3C4] px-4 py-1">
+            <h2 class="text-center text-xs font-bold uppercase tracking-wider text-white">Datos Empresa</h2>
+        </div>
+        <div class="grid grid-cols-1 divide-y divide-[#00A3C4]/20">
+            <div class="flex items-center px-4 py-2 border-b border-[#00A3C4]/20">
+                <span class="w-40 text-[11px] font-bold text-[#00A3C4]">Rut Empresa</span>
+                <span class="text-sm font-semibold text-slate-700">{{datos_sistema.rut}}</span>
+            </div>
+            <div class="flex items-center px-4 py-2 border-b border-[#00A3C4]/20">
+                <span class="w-40 text-[11px] font-bold text-[#00A3C4]">Nombre o Razón Social</span>
+                <span class="text-sm font-semibold text-slate-700 uppercase">{{datos_sistema.nombre}}</span>
+            </div>
+            <div class="flex items-center px-4 py-2">
+                <span class="w-40 text-[11px] font-bold text-[#00A3C4]">Documento</span>
+                <span class="text-sm font-semibold text-slate-700">Certificado Deuda Tributaria</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evaluation Criteria -->
+    <div class="mb-8 border-t border-slate-200 pt-4">
+        <h2 class="mb-4 text-3xl font-light text-slate-600">Criterios de evaluación</h2>
+        
+        <div class="mb-2 text-[10px] font-bold italic text-slate-400">Seleccione si corresponde</div>
+        
+        <div class="space-y-3">
+            <!-- Fecha Emisión row -->
+            <div class="flex items-center space-x-3">
+                <span class="text-[13px] font-medium text-slate-700">Fecha Emisión:</span>
+                <div class="flex items-center bg-yellow-100 border border-yellow-300 rounded px-2 py-1 space-x-2">
+                    <span class="text-[13px] font-bold text-slate-800">{{documento.fecha_emision}}</span>
+                    <span class="text-slate-500">📅</span>
+                </div>
+                <div class="w-4 h-4 rounded border-2 border-guardian-blue bg-guardian-blue flex items-center justify-center text-[10px] text-white font-bold">✓</div>
+            </div>
+
+            <!-- Checkboxes -->
+            <div class="space-y-2 ml-1">
+                <div class="flex items-center space-x-2 text-[13px] font-medium text-slate-700">
+                    <span class="text-green-600 font-bold text-lg leading-none">✅</span>
+                    <span>Es legible</span>
+                </div>
+                <div class="flex items-center space-x-2 text-[13px] font-medium text-slate-700">
+                    <span class="text-green-600 font-bold text-lg leading-none">✅</span>
+                    <span>Es íntegro</span>
+                </div>
+                <div class="flex items-center space-x-2 text-[13px] font-medium text-slate-700">
+                    <span class="text-green-600 font-bold text-lg leading-none">✅</span>
+                    <span>Corresponde al contratista</span>
+                </div>
+                <div class="flex items-center space-x-2 text-[13px] font-medium text-slate-700">
+                    <span class="text-green-600 font-bold text-lg leading-none">✅</span>
+                    <span>Corresponde al documento</span>
+                </div>
+                <div class="flex items-center space-x-2 text-[13px] font-medium text-slate-700">
+                    <span class="text-green-600 font-bold text-lg leading-none">✅</span>
+                    <span>Corresponde fecha emisión</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Convenios Vigentes Table -->
+    <div class="mb-8 overflow-hidden rounded border border-[#00A3C4] bg-white">
+        <div class="bg-[#00A3C4] px-4 py-1">
+            <h2 class="text-center text-[11px] font-bold uppercase tracking-wider text-white">Convenios Vigentes</h2>
+        </div>
+        <table class="w-full text-[10px] uppercase font-bold text-white text-center">
+            <thead class="bg-[#00A3C4] border-t border-white/30">
+                <tr>
+                    <th class="border-r border-white/30 py-1 px-2">Nº</th>
+                    <th class="border-r border-white/30 py-1 px-2">Nº DE CUOTAS</th>
+                    <th class="border-r border-white/30 py-1 px-2">FECHA VENCIMIENTO</th>
+                    <th class="py-1 px-2">DOC</th>
+                </tr>
+            </thead>
+            <tbody class="text-slate-500 bg-[#E8F4F8] italic lowercase">
+                <tr>
+                    <td colspan="4" class="py-2">Sin convenios registrados</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Debt Summary -->
+    <div class="grid grid-cols-2 gap-4 mb-8">
+        <div>
+            <div class="text-[12px] font-bold text-slate-700 mb-1">Deuda morosa</div>
+            <div class="bg-yellow-400 rounded-lg border border-slate-300 px-4 py-2 text-right">
+                <span class="text-lg font-bold text-slate-800">{{analisis_deuda.monto_deuda_morosa}}</span>
+            </div>
+        </div>
+        <div>
+            <div class="text-[12px] font-bold text-slate-700 mb-1">Deuda no vencida:</div>
+            <div class="bg-yellow-400 rounded-lg border border-slate-300 px-4 py-2 text-right">
+                <span class="text-lg font-bold text-slate-800">{{analisis_deuda.monto_deuda_no_vencida}}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions placeholder -->
+    <div class="mt-10 pt-6 border-t border-slate-200">
+        <div class="flex items-center space-x-2 text-[12px] font-medium text-slate-600 mb-4">
+            <div class="w-4 h-4 border border-slate-400 rounded bg-white"></div>
+            <span>Enviar correo de notificación para documento rechazado.</span>
+        </div>
+        
+        <div class="mb-4">
+            <div class="text-[12px] font-medium text-slate-600 mb-2">Ingrese un comentario del documento (Opcional)</div>
+            <textarea class="w-full border border-slate-300 rounded p-4 h-32 bg-white"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <button class="bg-[#f0f2f5] border border-slate-400 py-2 font-medium text-slate-700 hover:bg-slate-100 transition-colors">Habilitar</button>
+            <button class="bg-[#f0f2f5] border border-slate-400 py-2 font-medium text-slate-700 hover:bg-slate-100 transition-colors">Rechazar</button>
+        </div>
+    </div>
+</div>`
             }
         });
         const [formatLiquidacionesDemo] = await OutputFormat.findOrCreate({
@@ -1358,7 +1460,7 @@ REGLAS DE NEGOCIO:
             - Los montos deben ser tratados como números sin decimales(CLP).
 - Si el documento indica "SIN DEUDA", el total moroso debe ser 0.
         - El Código de Verificación es esencial para la validez legal.`,
-                behavior_prompt: 'Procesa el documento adjunto. Genera un JSON que siga estrictamente el esquema de TGR Deuda. Asegúrate de capturar cada ítem de la tabla de deudas en el array detalle_obligaciones. Si algún campo no es visible, usa null o 0 según corresponda.',
+                behavior_prompt: 'Procesa el documento adjunto. Genera un JSON que siga estrictamente el esquema de TGR Deuda. Asegúrate de capturar cada ítem de la tabla de deudas en el array detalle_obligaciones. Si se proporcionan datos de la empresa en las instrucciones del prompt (instrucciones del sistema), inclúyelos en el JSON de respuesta bajo la clave "datos_sistema" (ej: { "rut": "...", "nombre": "..." }). Si algún campo no es visible, usa null o 0 según corresponda.',
                 response_format: 'JSON',
                 output_format_id: formatTGRDeuda.id,
                 json_schema_id: schemaTGRDeuda.id
