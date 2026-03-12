@@ -25,6 +25,7 @@ const Tool = sequelize.define('Tool', {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     nombre: { type: DataTypes.STRING, allowNull: false },
     descripcion: { type: DataTypes.TEXT },
+    categoria: { type: DataTypes.STRING, defaultValue: 'General' },
     logo_herramienta: { type: DataTypes.STRING }, // logo_herramienta as requested
     training_prompt: { type: DataTypes.TEXT },
     behavior_prompt: { type: DataTypes.TEXT },

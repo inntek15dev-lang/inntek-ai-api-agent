@@ -12,6 +12,7 @@ const ToolMaker = () => {
         training_prompt: '',
         behavior_prompt: '',
         response_format: 'JSON',
+        categoria: 'General',
         output_format_id: '',
         json_schema_id: '',
         ai_provider_id: ''
@@ -68,7 +69,8 @@ const ToolMaker = () => {
                 ...tool,
                 output_format_id: tool.output_format_id || '',
                 json_schema_id: tool.json_schema_id || '',
-                ai_provider_id: tool.ai_provider_id || ''
+                ai_provider_id: tool.ai_provider_id || '',
+                categoria: tool.categoria || 'General'
             });
         } catch (err) {
             console.error('Error fetching tool:', err);
@@ -184,6 +186,22 @@ const ToolMaker = () => {
                                         {schemas.map(sch => (
                                             <option key={sch.id} value={sch.id}>{sch.nombre}</option>
                                         ))}
+                                    </select>
+                                </div>
+                                <div className="guardian-input-group !mb-0 col-span-2">
+                                    <label className="guardian-label">Categorización</label>
+                                    <select
+                                        name="categoria"
+                                        value={formData.categoria}
+                                        onChange={handleChange}
+                                        className="guardian-input !pl-4 appearance-none"
+                                    >
+                                        <option value="General">General</option>
+                                        <option value="Analytica">Analytica</option>
+                                        <option value="Generativa">Generativa</option>
+                                        <option value="Extractora">Extractora</option>
+                                        <option value="Transformación">Transformación</option>
+                                        <option value="Automatización">Automatización</option>
                                     </select>
                                 </div>
                                 <div className="guardian-input-group !mb-0 col-span-2">
