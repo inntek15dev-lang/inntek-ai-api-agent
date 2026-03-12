@@ -3,7 +3,8 @@ require('dotenv').config();
 
 const seed = async () => {
     try {
-        await sequelize.sync();
+        await sequelize.sync({ alter: true });
+        console.log('Database synced with alter: true');
 
         // 1. Create Roles
         const [superAdminRole] = await Role.findOrCreate({ where: { nombre: 'SuperAdmin' } });
@@ -786,6 +787,7 @@ const seed = async () => {
                 training_prompt: 'Actúa como experto validador de cédulas chilenas. Analiza la imagen y extrae datos. Mapea la respuesta estrictamente a los campos: analisis_documento.tipo_documento, validacion_punto_por_punto.nombre.match, validacion_punto_por_punto.rut.match, verificacion_consistencia.validacion_dv_rut, verificacion_consistencia.validacion_mrz, verificacion_consistencia.integridad_datos y nota_final.',
                 behavior_prompt: 'Responde siempre con un JSON estructurado siguiendo el esquema proporcionado. Sé preciso con los matches de texto y verifica la integridad MRZ e ICAO.',
                 response_format: 'JSON',
+                categoria: 'Extractora',
                 output_format_id: formatIDCard.id,
                 json_schema_id: schemaID.id
             }
@@ -798,6 +800,7 @@ const seed = async () => {
                 nombre: 'CSS EXTRACTOR',
                 descripcion: 'Extrae los estilos css de una captura en imagen de una interfaz de usuario',
                 logo_herramienta: '🎨',
+                categoria: 'Extractora',
                 training_prompt: 'ACTUA COMO INGENIERO DE SOFTWARE EXPERTO EN CSS y TAMBIEN COMO EXPERTO ANALISTA DE IMAGENES Y EXPERTO EN EXPERIENCIA DE USUARIO E INTERFACES WEB',
                 behavior_prompt: 'analiza la imagen adjunta y extrae todo estilo css para generar un bloque de codigo css que contenga las reglas anidadas que se requiere para generar una interfaz con el estilo descubierto en el analisis de la imagen, con el mismo aspecto de fuentes, tamaños, colores, bordes. sombras etc.',
                 response_format: 'JSON',
