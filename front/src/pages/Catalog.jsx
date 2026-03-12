@@ -8,6 +8,9 @@ const Catalog = () => {
     const [tools, setTools] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
+    const [selectedCategory, setSelectedCategory] = useState('All');
+
+    const categories = ['All', 'Analytica', 'Generativa', 'Extractora', 'Transformación', 'Automatización', 'General'];
 
     useEffect(() => {
         fetchTools();
@@ -24,10 +27,12 @@ const Catalog = () => {
         }
     };
 
-    const filteredTools = tools.filter(tool =>
-        tool.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        tool.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredTools = tools.filter(tool => {
+        const matchesSearch = tool.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            tool.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = selectedCategory === 'All' || tool.categoria === selectedCategory;
+        return matchesSearch && matchesCategory;
+    });
 
     return (
         <div className="space-y-10">
@@ -43,20 +48,38 @@ const Catalog = () => {
                 </Link>
             </div>
 
-            {/* Search Header */}
-            <div className="guardian-card !p-4 flex items-center space-x-4">
-                <Search className="text-guardian-muted ml-2" size={20} />
-                <input
-                    type="text"
-                    placeholder="Filter modules by name or function..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="bg-transparent border-none outline-none w-full text-sm font-medium placeholder:text-slate-400"
-                />
-                <div className="h-6 w-[1px] bg-slate-200 mx-2"></div>
-                <span className="text-[10px] font-black text-guardian-muted uppercase tracking-widest px-4 whitespace-nowrap">
-                    {filteredTools.length} Units Found
-                </span>
+            {/* Filters Bar */}
+            <div className="flex flex-col space-y-4">
+                <div className="guardian-card !p-4 flex items-center space-x-4">
+                    <Search className="text-guardian-muted ml-2" size={20} />
+                    <input
+                        type="text"
+                        placeholder="Filter modules by name or function..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="bg-transparent border-none outline-none w-full text-sm font-medium placeholder:text-slate-400"
+                    />
+                    <div className="h-6 w-[1px] bg-slate-200 mx-2"></div>
+                    <span className="text-[10px] font-black text-guardian-muted uppercase tracking-widest px-4 whitespace-nowrap">
+                        {filteredTools.length} Units Found
+                    </span>
+                </div>
+
+                <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-hide">
+                    {categories.map(cat => (
+                        <button
+                            key={cat}
+                            onClick={() => setSelectedCategory(cat)}
+                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                                selectedCategory === cat
+                                    ? 'bg-guardian-blue text-white shadow-lg shadow-blue-200'
+                                    : 'bg-white text-slate-500 border border-slate-100 hover:bg-slate-50'
+                            }`}
+                        >
+                            {cat}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {loading ? (
@@ -73,6 +96,7 @@ const Catalog = () => {
                                     {tool.logo_herramienta}
                                 </div>
                                 <div className="flex flex-col items-end">
+                                    <span className="guardian-badge guardian-badge--slate mb-1">{tool.categoria || 'General'}</span>
                                     <span className="guardian-badge guardian-badge--blue mb-1">{tool.response_format}</span>
                                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">v1.2.0</span>
                                 </div>

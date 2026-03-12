@@ -24,7 +24,7 @@ const cleanSchema = (schema) => {
     if (Array.isArray(cleaned.type)) cleaned.type = cleaned.type[0];
     if (cleaned.enum && (!cleaned.type || cleaned.type !== 'string')) cleaned.type = 'string';
 
-    const unsupported = ['$schema', '$ref', 'definitions', '$id', 'additionalProperties', 'default', 'examples', 'title', 'description', 'format'];
+    const unsupported = ['$schema', '$ref', 'definitions', '$id', 'additionalProperties', 'default', 'examples', 'title', 'description', 'format', 'const', 'pattern'];
     unsupported.forEach(key => delete cleaned[key]);
 
     if (cleaned.properties) {
