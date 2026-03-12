@@ -54,6 +54,9 @@ const seed = async () => {
         const [catReportes] = await OutputCategory.findOrCreate({
             where: { nombre: 'Reportes Ejecutivos' }
         });
+        const [catRYCE] = await OutputCategory.findOrCreate({
+            where: { nombre: 'RYCE' }
+        });
 
         // ═══════════════════════════════════════════════════════════════
         // 5. Output Formats
@@ -144,7 +147,65 @@ const seed = async () => {
             }
         });
 
-        // 5e. Reporte Matriz de Liquidaciones (Demo)
+        // 5f. Comprobante Resolución Vista RYCE
+        const [formatRYCEResolucion] = await OutputFormat.findOrCreate({
+            where: { id: '556a56ca-93b4-4e4d-9ac5-54a77aa15e70' },
+            defaults: {
+                nombre: 'Comprobante Resolución Vista RYCE',
+                tipo: 'reporte',
+                category_id: catRYCE.id,
+                estructura: JSON.stringify([
+                    { "id": 1, "type": "heading", "data": { "text": "Comprobante Resolución RYCE", "param": "" } },
+                    { "id": 2, "type": "subheading", "data": { "text": "Identificación Empresa", "param": "" } },
+                    { "id": 3, "type": "label", "data": { "text": "RUT Empresa", "param": "identificacion_empresa.rut_empresa" } },
+                    { "id": 4, "type": "label", "data": { "text": "Razón Social", "param": "identificacion_empresa.razon_social" } },
+                    { "id": 5, "type": "subheading", "data": { "text": "Detalles Resolución", "param": "" } },
+                    { "id": 6, "type": "label", "data": { "text": "Tipo Documento", "param": "detalles_resolucion.documento_tipo" } },
+                    { "id": 7, "type": "label", "data": { "text": "Nro Resolución", "param": "detalles_resolucion.numero_resolucion" } },
+                    { "id": 8, "type": "label", "data": { "text": "Fecha Emisión", "param": "detalles_resolucion.fecha_emision" } },
+                    { "id": 9, "type": "subheading", "data": { "text": "Checklist Validación", "param": "" } },
+                    { "id": 10, "type": "label", "data": { "text": "Legible", "param": "checklist_validacion.es_legible" } },
+                    { "id": 11, "type": "label", "data": { "text": "Íntegro", "param": "checklist_validacion.es_integro" } },
+                    { "id": 12, "type": "label", "data": { "text": "Corresponde Contratista", "param": "checklist_validacion.corresponde_al_contratista" } },
+                    { "id": 13, "type": "label", "data": { "text": "Corresponde Documento", "param": "checklist_validacion.corresponde_al_documento" } },
+                    { "id": 14, "type": "subheading", "data": { "text": "Condiciones de Pago", "param": "" } },
+                    { "id": 15, "type": "label", "data": { "text": "Número Cuotas", "param": "condiciones_pago.numero_cuotas" } },
+                    { "id": 16, "type": "label", "data": { "text": "Fecha Inicio", "param": "condiciones_pago.fecha_inicio" } },
+                    { "id": 17, "type": "label", "data": { "text": "Fecha Vencimiento", "param": "condiciones_pago.fecha_vencimiento" } },
+                    { "id": 18, "type": "label", "data": { "text": "Monto Total", "param": "condiciones_pago.monto_total" } },
+                    { "id": 19, "type": "label", "data": { "text": "Moneda", "param": "condiciones_pago.moneda" } }
+                ])
+            }
+        });
+
+        // 5g. Certificado Deuda Vista RYCE
+        const [formatRYCEDeuda] = await OutputFormat.findOrCreate({
+            where: { id: '556a56ca-93b4-4e4d-9ac5-54a77aa15e71' },
+            defaults: {
+                nombre: 'Certificado Deuda Vista RYCE',
+                tipo: 'reporte',
+                category_id: catRYCE.id,
+                estructura: JSON.stringify([
+                    { "id": 1, "type": "heading", "data": { "text": "Certificado Deuda RYCE", "param": "" } },
+                    { "id": 2, "type": "subheading", "data": { "text": "Información Empresa", "param": "" } },
+                    { "id": 3, "type": "label", "data": { "text": "RUT Empresa", "param": "empresa.rut_empresa" } },
+                    { "id": 4, "type": "label", "data": { "text": "Razón Social", "param": "empresa.razon_social" } },
+                    { "id": 5, "type": "subheading", "data": { "text": "Documento", "param": "" } },
+                    { "id": 6, "type": "label", "data": { "text": "Tipo", "param": "documento.tipo" } },
+                    { "id": 7, "type": "label", "data": { "text": "Fecha Emisión", "param": "documento.fecha_emision" } },
+                    { "id": 8, "type": "subheading", "data": { "text": "Validación Calidad", "param": "" } },
+                    { "id": 9, "type": "label", "data": { "text": "Legible", "param": "validacion_calidad.es_legible" } },
+                    { "id": 10, "type": "label", "data": { "text": "Íntegro", "param": "validacion_calidad.es_integro" } },
+                    { "id": 11, "type": "label", "data": { "text": "Corresponde Contratista", "param": "validacion_calidad.corresponde_al_contratista" } },
+                    { "id": 12, "type": "label", "data": { "text": "Corresponde Documento", "param": "validacion_calidad.corresponde_al_documento" } },
+                    { "id": 13, "type": "label", "data": { "text": "Corresponde Fecha", "param": "validacion_calidad.corresponde_fecha_emision" } },
+                    { "id": 14, "type": "subheading", "data": { "text": "Análisis Deuda", "param": "" } },
+                    { "id": 15, "type": "label", "data": { "text": "Monto Moroso", "param": "analisis_deuda.monto_deuda_morosa" } },
+                    { "id": 16, "type": "label", "data": { "text": "Monto No Vencido", "param": "analisis_deuda.monto_deuda_no_vencida" } },
+                    { "id": 17, "type": "label", "data": { "text": "Moneda", "param": "analisis_deuda.moneda" } }
+                ])
+            }
+        });
         const [formatLiquidacionesDemo] = await OutputFormat.findOrCreate({
             where: { id: 'ab000001-0000-4000-a000-000000000005' },
             defaults: {
@@ -476,7 +537,114 @@ const seed = async () => {
             }
         });
 
-        // 6e. Listado de Liquidaciones y Movimientos de Personal
+        // 6f. Esquema Comprobante Resolución Vista RYCE
+        const [schemaRYCEResolucion] = await JsonSchema.findOrCreate({
+            where: { id: 'f8a5c3e2-1b9a-4d7e-8c6f-5e4d3c2b1a01' },
+            defaults: {
+                nombre: 'Esquema Comprobante Resolución Vista RYCE',
+                descripcion: 'Esquema para la validación de resoluciones RYCE',
+                schema: JSON.stringify({
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "title": "Esquema Comprobante Resolución Vista RYCE",
+                    "type": "object",
+                    "required": ["identificacion_empresa", "detalles_resolucion", "checklist_validacion", "condiciones_pago"],
+                    "properties": {
+                        "identificacion_empresa": {
+                            "type": "object",
+                            "required": ["rut_empresa", "razon_social"],
+                            "properties": {
+                                "rut_empresa": { "type": "string", "pattern": "^\\d{1,2}(\\.\\d{3}){2}-[\\dkK]$" },
+                                "razon_social": { "type": "string" }
+                            }
+                        },
+                        "detalles_resolucion": {
+                            "type": "object",
+                            "required": ["documento_tipo", "numero_resolucion", "fecha_emision"],
+                            "properties": {
+                                "documento_tipo": { "type": "string", "const": "CONVENIO DEUDA TRIBUTARIA" },
+                                "numero_resolucion": { "type": "string" },
+                                "fecha_emision": { "type": "string", "format": "date" }
+                            }
+                        },
+                        "checklist_validacion": {
+                            "type": "object",
+                            "required": ["es_legible", "es_integro", "corresponde_al_contratista", "corresponde_al_documento"],
+                            "properties": {
+                                "es_legible": { "type": "boolean" },
+                                "es_integro": { "type": "boolean" },
+                                "corresponde_al_contratista": { "type": "boolean" },
+                                "corresponde_al_documento": { "type": "boolean" }
+                            }
+                        },
+                        "condiciones_pago": {
+                            "type": "object",
+                            "required": ["numero_cuotas", "fecha_inicio", "fecha_vencimiento", "monto_total"],
+                            "properties": {
+                                "numero_cuotas": { "type": "integer", "minimum": 1 },
+                                "fecha_inicio": { "type": "string", "format": "date" },
+                                "fecha_vencimiento": { "type": "string", "format": "date" },
+                                "monto_total": { "type": "number", "minimum": 0 },
+                                "moneda": { "type": "string", "default": "CLP" }
+                            }
+                        }
+                    }
+                })
+            }
+        });
+
+        // 6g. Certificado Deuda Vista RYCE
+        const [schemaRYCEDeuda] = await JsonSchema.findOrCreate({
+            where: { id: 'f8a5c3e2-1b9a-4d7e-8c6f-5e4d3c2b1a02' },
+            defaults: {
+                nombre: 'Esquema Certificado Deuda Vista RYCE',
+                descripcion: 'Esquema para la validación de certificados de deuda RYCE',
+                schema: JSON.stringify({
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "title": "Certificado Deuda Vista RYCE",
+                    "type": "object",
+                    "required": ["empresa", "documento", "validacion_calidad", "analisis_deuda"],
+                    "properties": {
+                        "empresa": {
+                            "type": "object",
+                            "required": ["rut_empresa", "razon_social"],
+                            "properties": {
+                                "rut_empresa": { "type": "string", "pattern": "^\\d{1,2}(\\.\\d{3}){2}-[\\dkK]$" },
+                                "razon_social": { "type": "string" }
+                            }
+                        },
+                        "documento": {
+                            "type": "object",
+                            "required": ["tipo", "fecha_emision"],
+                            "properties": {
+                                "tipo": { "type": "string", "const": "CONVENIO DEUDA TRIBUTARIA" },
+                                "fecha_emision": { "type": "string", "format": "date" }
+                            }
+                        },
+                        "validacion_calidad": {
+                            "type": "object",
+                            "required": ["es_legible", "es_integro", "corresponde_al_contratista", "corresponde_al_documento", "corresponde_fecha_emision"],
+                            "properties": {
+                                "es_legible": { "type": "boolean" },
+                                "es_integro": { "type": "boolean" },
+                                "corresponde_al_contratista": { "type": "boolean" },
+                                "corresponde_al_documento": { "type": "boolean" },
+                                "corresponde_fecha_emision": { "type": "boolean" }
+                            }
+                        },
+                        "analisis_deuda": {
+                            "type": "object",
+                            "required": ["monto_deuda_morosa", "monto_deuda_no_vencida"],
+                            "properties": {
+                                "monto_deuda_morosa": { "type": "number", "minimum": 0 },
+                                "monto_deuda_no_vencida": { "type": "number", "minimum": 0 },
+                                "moneda": { "type": "string", "default": "CLP" }
+                            }
+                        }
+                    }
+                })
+            }
+        });
+
         const [schemaLiquidacionesLote] = await JsonSchema.findOrCreate({
             where: { id: 'ab000001-0000-4000-a000-000000000002' },
             defaults: {
