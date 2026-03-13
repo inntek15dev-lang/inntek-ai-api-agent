@@ -376,6 +376,39 @@ const engines = {
             output: flattenedEntities,
             stepInfo: { count: flattenedEntities.length }
         };
+    },
+
+    'cherry-pick': async (node, inputText) => {
+        let config = node.config;
+        if (typeof config === 'string') {
+            try { config = JSON.parse(config); } catch (e) { config = {}; }
+        }
+
+        const field = config?.field;
+        if (!field) {
+            return { output: inputText, stepInfo: 'No field specified for cherry-pick. Returning full input.' };
+        }
+
+        let data = inputText;
+        if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (e) { }
+        }
+
+        // Support for nested paths like "company.address.city"
+        const getValueByPath = (obj, path) => {
+            if (!obj || !path) return undefined;
+            return path.split('.').reduce((acc, part) => {
+                if (acc === undefined || acc === null) return undefined;
+                return acc[part];
+            }, obj);
+        };
+
+        const result = getValueByPath(data, field);
+
+        return {
+            output: result !== undefined ? result : null,
+            stepInfo: { field, found: result !== undefined }
+        };
     }
 };
 

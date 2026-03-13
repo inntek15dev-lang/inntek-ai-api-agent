@@ -1008,6 +1008,20 @@ const seed = async () => {
             }
         });
 
+        const [engineCherryPick] = await Engine.findOrCreate({
+            where: { slug: 'cherry-pick' },
+            defaults: {
+                nombre: 'Cherry pick',
+                descripcion: 'Selecciona un elemento o ruta específica de un JSON (ej: analisis_deuda.moneda) para entregarlo como salida.',
+                tipo: 'extractor',
+                icono: '🍒',
+                config_schema: JSON.stringify({
+                    field: { type: 'string', description: 'Campo o ruta JSON a extraer (ej: empresa.rut)' }
+                }),
+                activo: true
+            }
+        });
+
         // ═══════════════════════════════════════════════════════════════
         // 9. Visores
         // ═══════════════════════════════════════════════════════════════
