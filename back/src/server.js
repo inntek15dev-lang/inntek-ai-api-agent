@@ -59,6 +59,16 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 // Routes
 app.use('/api', routes);
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error('System Error:', err);
+    const status = err.status || err.statusCode || 500;
+    res.status(status).json({
+        success: false,
+        message: err.message || 'Internal Server Error'
+    });
+});
+
 // Database Sync
 sequelize.sync({ force: false }).then(() => {
     console.log('Database connected and synced');

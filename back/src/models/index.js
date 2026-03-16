@@ -113,6 +113,21 @@ const MachineConnection = sequelize.define('MachineConnection', {
     target_handle: { type: DataTypes.STRING }
 });
 
+const Exhibition = sequelize.define('Exhibition', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    nombre: { type: DataTypes.STRING, allowNull: false },
+    descripcion: { type: DataTypes.TEXT },
+    logo: { type: DataTypes.STRING },
+    activo: { type: DataTypes.BOOLEAN, defaultValue: true }
+});
+
+const ExhibitionSlide = sequelize.define('ExhibitionSlide', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    nombre: { type: DataTypes.STRING },
+    config: { type: DataTypes.TEXT }, // JSON string for default prompt or view settings
+    order: { type: DataTypes.INTEGER, defaultValue: 0 }
+});
+
 // Associations
 Role.hasMany(Privilegio, { foreignKey: 'role_id' });
 Privilegio.belongsTo(Role, { foreignKey: 'role_id' });
@@ -146,4 +161,11 @@ MachineNode.belongsTo(Visor, { foreignKey: 'visor_id' });
 MachineConnection.belongsTo(MachineNode, { as: 'SourceNode', foreignKey: 'source_node_id' });
 MachineConnection.belongsTo(MachineNode, { as: 'TargetNode', foreignKey: 'target_node_id' });
 
-module.exports = { sequelize, Role, Privilegio, User, Tool, Config, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Visor, Machine, MachineNode, MachineConnection };
+// Exhibition associations
+Exhibition.hasMany(ExhibitionSlide, { foreignKey: 'exhibition_id', onDelete: 'CASCADE' });
+ExhibitionSlide.belongsTo(Exhibition, { foreignKey: 'exhibition_id' });
+
+ExhibitionSlide.belongsTo(Tool, { foreignKey: 'tool_id' });
+Tool.hasMany(ExhibitionSlide, { foreignKey: 'tool_id' });
+
+module.exports = { sequelize, Role, Privilegio, User, Tool, Config, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Visor, Machine, MachineNode, MachineConnection, Exhibition, ExhibitionSlide };

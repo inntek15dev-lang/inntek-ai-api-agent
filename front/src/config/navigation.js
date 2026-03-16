@@ -8,6 +8,7 @@ export const NAV_ITEMS = [
     { path: '/api-tester', label: 'API Tester', icon: Terminal, module: 'AI_Tool_Execution' },
     { path: '/outputs-maker', label: 'Outputs Maker', icon: Palette, module: 'Outputs_Maker' },
     { path: '/json-schemas', label: 'JSON Schemas', icon: Code, module: 'Json_Schemas' },
+    { path: '/exhibitions', label: 'Exhibiciones', icon: Palette, module: 'Outputs_Maker' },
     { path: '/config', label: 'Configuración', icon: Settings, module: 'Config' },
 ];
 
