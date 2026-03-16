@@ -12,6 +12,8 @@ import ToolView from './pages/ToolView';
 import Config from './pages/Config';
 import OutputMaker from './pages/OutputMaker';
 import JsonSchemaMaker from './pages/JsonSchemaMaker';
+import ExhibitionMaker from './pages/ExhibitionMaker';
+import ExhibitionView from './pages/ExhibitionView';
 import MachineCatalog from './pages/MachineCatalog';
 import MachineEditor from './pages/MachineEditor';
 import MachineExecutor from './pages/MachineExecutor';
@@ -97,6 +99,16 @@ function App() {
             <Route path="json-schemas" element={
               <ProtectedRoute module="Json_Schemas">
                 <JsonSchemaMaker />
+              </ProtectedRoute>
+            } />
+            <Route path="exhibitions" element={
+              <ProtectedRoute module="Outputs_Maker">
+                <ExhibitionMaker />
+              </ProtectedRoute>
+            } />
+            <Route path="exhibition/:id" element={
+              <ProtectedRoute module="Outputs_Maker">
+                <ExhibitionView />
               </ProtectedRoute>
             } />
             <Route path="machines" element={

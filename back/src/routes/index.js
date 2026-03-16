@@ -7,6 +7,7 @@ const outputController = require('../controllers/outputController');
 const jsonSchemaController = require('../controllers/jsonSchemaController');
 const aiProviderController = require('../controllers/aiProviderController');
 const machineController = require('../controllers/machineController');
+const exhibitionController = require('../controllers/exhibitionController');
 const engineController = require('../controllers/engineController');
 const visorController = require('../controllers/visorController');
 const apiTesterController = require('../controllers/apiTesterController');
@@ -299,7 +300,7 @@ router.delete('/tools/:id', authMiddleware, requirePrivilege('AI_Tool_Maker', 'w
  *       200:
  *         description: Execution result
  */
-router.post('/tools/:id/execute', authMiddleware, requirePrivilege('AI_Tool_Execution', 'exec'), upload.array('imagenes', 20), toolController.executeTool);
+router.post('/tools/:id/execute', authMiddleware, requirePrivilege('AI_Tool_Execution', 'exec'), upload.any(), toolController.executeTool);
 
 // Config
 /**
@@ -731,5 +732,17 @@ router.post('/machines/:id/execute', authMiddleware, requirePrivilege('Machines'
 
 // API Tester
 router.post('/api-tester/execute', authMiddleware, requirePrivilege('AI_Tool_Execution', 'exec'), upload.array('imagenes', 20), apiTesterController.executeCustomTool);
+
+// Exhibitions
+router.get('/exhibitions', exhibitionController.getExhibitions);
+router.post('/exhibitions', exhibitionController.createExhibition);
+router.get('/exhibitions/:id', exhibitionController.getExhibition);
+router.put('/exhibitions/:id', exhibitionController.updateExhibition);
+router.delete('/exhibitions/:id', exhibitionController.deleteExhibition);
+
+// Exhibition Slides
+router.post('/exhibitions/:id/slides', exhibitionController.addSlide);
+router.put('/exhibitions/:id/slides/:slideId', exhibitionController.updateSlide);
+router.delete('/exhibitions/:id/slides/:slideId', exhibitionController.deleteSlide);
 
 module.exports = router;
