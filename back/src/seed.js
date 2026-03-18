@@ -1508,6 +1508,402 @@ REGLAS DE EXPERTO:
         });
 
         // ═══════════════════════════════════════════════════════════════
+        // 14. RYCE Certificado de TASAS — Tools
+        // ═══════════════════════════════════════════════════════════════
+
+        // 14a. JSON Schema — RYCE TASAS Lipigas
+        const [schemaRYCETasasLipigas] = await JsonSchema.findOrCreate({
+            where: { id: 'f8a5c3e2-1b9a-4d7e-8c6f-5e4d3c2b1a10' },
+            defaults: {
+                nombre: 'Esquema RYCE Certificado TASAS Lipigas',
+                descripcion: 'Estructura para extracción de datos de Certificado de Tasas de Seguridad para el formulario Lipigas (ACHS, Mutual, IST, ISL)',
+                schema: JSON.stringify({
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "title": "RYCE Certificado TASAS Lipigas",
+                    "type": "object",
+                    "required": ["identificacion_empresa", "identificacion_certificado", "tasas", "datos_operacionales", "datos_incidentes"],
+                    "properties": {
+                        "identificacion_empresa": {
+                            "type": "object",
+                            "required": ["razon_social", "rut"],
+                            "properties": {
+                                "razon_social": { "type": "string" },
+                                "rut": { "type": "string" },
+                                "numero_adherente": { "type": "string", "description": "N° de asociada/adherente si aplica" },
+                                "direccion": { "type": "string" },
+                                "actividad_economica": { "type": "string" }
+                            }
+                        },
+                        "identificacion_certificado": {
+                            "type": "object",
+                            "required": ["mutualidad", "periodo", "fecha_emision"],
+                            "properties": {
+                                "mutualidad": { "type": "string", "enum": ["ACHS", "MUTUAL_DE_SEGURIDAD", "IST", "ISL"] },
+                                "periodo": { "type": "string", "description": "Periodo del certificado (ej: 01/2026, Enero 2026)" },
+                                "fecha_emision": { "type": "string", "description": "Fecha de emisión del documento" },
+                                "folio": { "type": "string" },
+                                "codigo_verificacion": { "type": "string" },
+                                "vigencia": { "type": "string" },
+                                "cotizacion_basica": { "type": "number", "description": "Cotización básica %" },
+                                "cotizacion_adicional": { "type": "number", "description": "Cotización adicional (DS110) %" },
+                                "cotizacion_total": { "type": "number", "description": "Cotización total %" },
+                                "cad_ciusii": { "type": "number", "description": "CAD CIUSII % si aplica" },
+                                "cad_actual": { "type": "number", "description": "CAD Actual % si aplica" }
+                            }
+                        },
+                        "tasas": {
+                            "type": "object",
+                            "description": "Las 5 tasas principales del certificado (campos 1-5 del formulario)",
+                            "required": ["tasa_siniestralidad_inc_temporal", "tasa_siniestralidad_inv_muertes", "indice_accidentabilidad", "tasa_frecuencia", "tasa_gravedad"],
+                            "properties": {
+                                "tasa_siniestralidad_inc_temporal": { "type": "number", "description": "Campo 1: Tasa de Siniestralidad por Incapacidades Temporales" },
+                                "tasa_siniestralidad_inv_muertes": { "type": "number", "description": "Campo 2: Tasa de Siniestralidad por Invalideces y Muertes" },
+                                "indice_accidentabilidad": { "type": "number", "description": "Campo 3: Índice de Accidentabilidad" },
+                                "tasa_frecuencia": { "type": "number", "description": "Campo 4: Tasa de Frecuencia" },
+                                "tasa_gravedad": { "type": "number", "description": "Campo 5: Tasa de Gravedad" },
+                                "tasa_siniestralidad_total": { "type": "number", "description": "Tasa de siniestralidad total (si el certificado la incluye)" }
+                            }
+                        },
+                        "datos_operacionales": {
+                            "type": "object",
+                            "description": "Datos operacionales de la empresa (campos A-B del formulario)",
+                            "required": ["dotacion", "horas_hombre"],
+                            "properties": {
+                                "dotacion": { "type": "number", "description": "Campo A: Número de trabajadores promedio / Promedio de Trabajadores Declarados" },
+                                "horas_hombre": { "type": "number", "description": "Campo B: Horas Hombre (HH) estimadas o declaradas" }
+                            }
+                        },
+                        "datos_incidentes": {
+                            "type": "object",
+                            "description": "Datos de incidentes y enfermedades (campos 6-9 del formulario)",
+                            "required": ["dias_perdidos_accidente", "numero_incidentes_reposo_medico", "numero_enfermedades_profesionales", "dias_perdidos_enfermedad_profesional"],
+                            "properties": {
+                                "dias_perdidos_accidente": { "type": "number", "description": "Campo 6: Días perdidos por accidentes de trabajo" },
+                                "numero_incidentes_reposo_medico": { "type": "number", "description": "Campo 7: Número de incidentes con reposo médico" },
+                                "numero_enfermedades_profesionales": { "type": "number", "description": "Campo 8: Número de enfermedades profesionales" },
+                                "dias_perdidos_enfermedad_profesional": { "type": "number", "description": "Campo 9: Días perdidos por enfermedad profesional" },
+                                "numero_accidentes": { "type": "number" },
+                                "numero_accidentes_fatales": { "type": "number" },
+                                "numero_pensionados": { "type": "number" },
+                                "numero_indemnizados": { "type": "number" },
+                                "enfermos_profesionales_en_estudio": { "type": "number" }
+                            }
+                        }
+                    }
+                })
+            }
+        });
+
+        // 14b. JSON Schema — RYCE TASAS Blumar
+        const [schemaRYCETasasBlumar] = await JsonSchema.findOrCreate({
+            where: { id: 'f8a5c3e2-1b9a-4d7e-8c6f-5e4d3c2b1a11' },
+            defaults: {
+                nombre: 'Esquema RYCE Certificado TASAS Blumar',
+                descripcion: 'Estructura para extracción de datos de Certificado de Tasas para Blumar (Magallanes/Cultivo) — incluye columna Datos Blumar',
+                schema: JSON.stringify({
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "title": "RYCE Certificado TASAS Blumar",
+                    "type": "object",
+                    "required": ["identificacion_empresa", "identificacion_certificado", "tasas", "datos_operacionales", "datos_incidentes", "datos_blumar"],
+                    "properties": {
+                        "identificacion_empresa": {
+                            "type": "object",
+                            "required": ["razon_social", "rut"],
+                            "properties": {
+                                "razon_social": { "type": "string" },
+                                "rut": { "type": "string" },
+                                "numero_adherente": { "type": "string" },
+                                "direccion": { "type": "string" },
+                                "actividad_economica": { "type": "string" }
+                            }
+                        },
+                        "identificacion_certificado": {
+                            "type": "object",
+                            "required": ["mutualidad", "periodo", "fecha_emision"],
+                            "properties": {
+                                "mutualidad": { "type": "string", "enum": ["ACHS", "MUTUAL_DE_SEGURIDAD", "IST", "ISL"] },
+                                "periodo": { "type": "string" },
+                                "fecha_emision": { "type": "string" },
+                                "folio": { "type": "string" },
+                                "codigo_verificacion": { "type": "string" },
+                                "vigencia": { "type": "string" },
+                                "cotizacion_basica": { "type": "number" },
+                                "cotizacion_adicional": { "type": "number" },
+                                "cotizacion_total": { "type": "number" },
+                                "cad_ciusii": { "type": "number" },
+                                "cad_actual": { "type": "number" }
+                            }
+                        },
+                        "tasas": {
+                            "type": "object",
+                            "required": ["tasa_siniestralidad_inc_temporal", "tasa_siniestralidad_inv_muertes", "indice_accidentabilidad", "tasa_frecuencia", "tasa_gravedad"],
+                            "properties": {
+                                "tasa_siniestralidad_inc_temporal": { "type": "number" },
+                                "tasa_siniestralidad_inv_muertes": { "type": "number" },
+                                "indice_accidentabilidad": { "type": "number" },
+                                "tasa_frecuencia": { "type": "number" },
+                                "tasa_gravedad": { "type": "number" },
+                                "tasa_siniestralidad_total": { "type": "number" }
+                            }
+                        },
+                        "datos_operacionales": {
+                            "type": "object",
+                            "required": ["dotacion", "horas_hombre"],
+                            "properties": {
+                                "dotacion": { "type": "number", "description": "Del certificado (no de Blumar)" },
+                                "horas_hombre": { "type": "number", "description": "Del certificado (no de Blumar)" }
+                            }
+                        },
+                        "datos_incidentes": {
+                            "type": "object",
+                            "required": ["dias_perdidos_accidente", "numero_incidentes_reposo_medico"],
+                            "properties": {
+                                "dias_perdidos_accidente": { "type": "number" },
+                                "numero_incidentes_reposo_medico": { "type": "number" },
+                                "numero_enfermedades_profesionales": { "type": "number" },
+                                "dias_perdidos_enfermedad_profesional": { "type": "number" },
+                                "numero_accidentes": { "type": "number" },
+                                "numero_accidentes_fatales": { "type": "number" }
+                            }
+                        },
+                        "datos_blumar": {
+                            "type": "object",
+                            "description": "Datos específicos de los trabajadores de Blumar (Magallanes/Cultivo). Estos NO salen en el certificado sino que los completa la empresa.",
+                            "required": ["dotacion_blumar", "horas_hombre_blumar"],
+                            "properties": {
+                                "dotacion_blumar": { "type": "number", "description": "Campo A: Dotación de trabajadores Blumar" },
+                                "horas_hombre_blumar": { "type": "number", "description": "Campo B: HH Blumar" },
+                                "sitio": { "type": "string", "description": "Magallanes o Cultivo" }
+                            }
+                        }
+                    }
+                })
+            }
+        });
+
+        // 14c. Output Format — RYCE TASAS Lipigas
+        const [formatRYCETasasLipigas] = await OutputFormat.findOrCreate({
+            where: { id: '556a56ca-93b4-4e4d-9ac5-54a77aa15e80' },
+            defaults: {
+                nombre: 'Vista RYCE Certificado TASAS Lipigas',
+                tipo: 'reporte',
+                category_id: catRYCE.id,
+                estructura: JSON.stringify([
+                    { "id": 1, "type": "heading", "data": { "text": "Certificado de Tasas de Seguridad", "param": "" } },
+                    { "id": 2, "type": "subheading", "data": { "text": "Identificación", "param": "" } },
+                    { "id": 3, "type": "label", "data": { "text": "Empresa", "param": "identificacion_empresa.razon_social" } },
+                    { "id": 4, "type": "label", "data": { "text": "RUT", "param": "identificacion_empresa.rut" } },
+                    { "id": 5, "type": "label", "data": { "text": "Mutualidad", "param": "identificacion_certificado.mutualidad" } },
+                    { "id": 6, "type": "label", "data": { "text": "Período", "param": "identificacion_certificado.periodo" } },
+                    { "id": 7, "type": "label", "data": { "text": "Cotización Adicional %", "param": "identificacion_certificado.cotizacion_adicional" } },
+                    { "id": 8, "type": "subheading", "data": { "text": "Tasas (Campos 1-5)", "param": "" } },
+                    { "id": 9, "type": "label", "data": { "text": "1. Siniestralidad Inc. Temporal", "param": "tasas.tasa_siniestralidad_inc_temporal" } },
+                    { "id": 10, "type": "label", "data": { "text": "2. Siniestralidad Inv. y Muertes", "param": "tasas.tasa_siniestralidad_inv_muertes" } },
+                    { "id": 11, "type": "label", "data": { "text": "3. Índice Accidentabilidad", "param": "tasas.indice_accidentabilidad" } },
+                    { "id": 12, "type": "label", "data": { "text": "4. Tasa Frecuencia", "param": "tasas.tasa_frecuencia" } },
+                    { "id": 13, "type": "label", "data": { "text": "5. Tasa Gravedad", "param": "tasas.tasa_gravedad" } },
+                    { "id": 14, "type": "subheading", "data": { "text": "Datos Operacionales (Campos A-B)", "param": "" } },
+                    { "id": 15, "type": "label", "data": { "text": "A. Dotación (Trabajadores)", "param": "datos_operacionales.dotacion" } },
+                    { "id": 16, "type": "label", "data": { "text": "B. Horas Hombre (HH)", "param": "datos_operacionales.horas_hombre" } },
+                    { "id": 17, "type": "subheading", "data": { "text": "Incidentes (Campos 6-9)", "param": "" } },
+                    { "id": 18, "type": "label", "data": { "text": "6. Días Perdidos por Accidente", "param": "datos_incidentes.dias_perdidos_accidente" } },
+                    { "id": 19, "type": "label", "data": { "text": "7. Incidentes con Reposo Médico", "param": "datos_incidentes.numero_incidentes_reposo_medico" } },
+                    { "id": 20, "type": "label", "data": { "text": "8. Enfermedades Profesionales", "param": "datos_incidentes.numero_enfermedades_profesionales" } },
+                    { "id": 21, "type": "label", "data": { "text": "9. Días Perdidos Enf. Profesional", "param": "datos_incidentes.dias_perdidos_enfermedad_profesional" } }
+                ])
+            }
+        });
+
+        // 14d. Output Format — RYCE TASAS Blumar
+        const [formatRYCETasasBlumar] = await OutputFormat.findOrCreate({
+            where: { id: '556a56ca-93b4-4e4d-9ac5-54a77aa15e81' },
+            defaults: {
+                nombre: 'Vista RYCE Certificado TASAS Blumar',
+                tipo: 'reporte',
+                category_id: catRYCE.id,
+                estructura: JSON.stringify([
+                    { "id": 1, "type": "heading", "data": { "text": "Certificado de Tasas — Blumar", "param": "" } },
+                    { "id": 2, "type": "subheading", "data": { "text": "Identificación", "param": "" } },
+                    { "id": 3, "type": "label", "data": { "text": "Empresa", "param": "identificacion_empresa.razon_social" } },
+                    { "id": 4, "type": "label", "data": { "text": "RUT", "param": "identificacion_empresa.rut" } },
+                    { "id": 5, "type": "label", "data": { "text": "Mutualidad", "param": "identificacion_certificado.mutualidad" } },
+                    { "id": 6, "type": "label", "data": { "text": "Período", "param": "identificacion_certificado.periodo" } },
+                    { "id": 7, "type": "subheading", "data": { "text": "Tasas (Campos 1-5)", "param": "" } },
+                    { "id": 8, "type": "label", "data": { "text": "1. Siniestralidad Inc. Temporal", "param": "tasas.tasa_siniestralidad_inc_temporal" } },
+                    { "id": 9, "type": "label", "data": { "text": "2. Siniestralidad Inv. y Muertes", "param": "tasas.tasa_siniestralidad_inv_muertes" } },
+                    { "id": 10, "type": "label", "data": { "text": "3. Índice Accidentabilidad", "param": "tasas.indice_accidentabilidad" } },
+                    { "id": 11, "type": "label", "data": { "text": "4. Tasa Frecuencia", "param": "tasas.tasa_frecuencia" } },
+                    { "id": 12, "type": "label", "data": { "text": "5. Tasa Gravedad", "param": "tasas.tasa_gravedad" } },
+                    { "id": 13, "type": "subheading", "data": { "text": "Datos del Certificado", "param": "" } },
+                    { "id": 14, "type": "label", "data": { "text": "Dotación (Certificado)", "param": "datos_operacionales.dotacion" } },
+                    { "id": 15, "type": "label", "data": { "text": "HH (Certificado)", "param": "datos_operacionales.horas_hombre" } },
+                    { "id": 16, "type": "label", "data": { "text": "6. Días Perdidos Accidente", "param": "datos_incidentes.dias_perdidos_accidente" } },
+                    { "id": 17, "type": "label", "data": { "text": "7. Incidentes Reposo Médico", "param": "datos_incidentes.numero_incidentes_reposo_medico" } },
+                    { "id": 18, "type": "subheading", "data": { "text": "Datos Blumar (Empresa)", "param": "" } },
+                    { "id": 19, "type": "label", "data": { "text": "A. Dotación Blumar", "param": "datos_blumar.dotacion_blumar" } },
+                    { "id": 20, "type": "label", "data": { "text": "B. HH Blumar", "param": "datos_blumar.horas_hombre_blumar" } },
+                    { "id": 21, "type": "label", "data": { "text": "Sitio", "param": "datos_blumar.sitio" } }
+                ])
+            }
+        });
+
+        // 14e. Tool — RYCE Certificado TASAS Lipigas
+        await Tool.findOrCreate({
+            where: { id: 'edb84cda-0000-4a2c-8187-000000000050' },
+            defaults: {
+                nombre: 'RYCE Certificado TASAS Lipigas',
+                descripcion: 'Extracción inteligente de datos de Certificados de Tasas de Seguridad para el formulario RYCE Lipigas. Soporta ACHS, Mutual de Seguridad, IST e ISL. Genera JSON estructurado con todos los campos que el auditor debe ingresar manualmente.',
+                logo_herramienta: '🛡️',
+                training_prompt: `ACTÚA COMO UN AUDITOR EXPERTO EN SEGURIDAD LABORAL Y CERTIFICADOS DE TASAS DE MUTUALIDADES CHILENAS.
+
+Tu objetivo es analizar un Certificado de Tasas emitido por una mutualidad chilena (ACHS, Mutual de Seguridad, IST o ISL) y extraer TODOS los datos numéricos necesarios para completar el formulario de validación RYCE.
+
+═══ CAMPOS A EXTRAER OBLIGATORIAMENTE ═══
+
+TASAS (5 campos principales):
+1. Tasa de Siniestralidad por Incapacidades Temporales
+2. Tasa de Siniestralidad por Invalideces y Muertes (en Mutual se calcula con tabla DS67)
+3. Índice de Accidentabilidad (Tasa de Accidentabilidad)
+4. Tasa de Frecuencia
+5. Tasa de Gravedad
+
+DATOS OPERACIONALES (2 campos):
+A. Dotación / Número de Trabajadores Promedio / Promedio de Trabajadores Declarados
+B. Horas Hombre (HH) / Horas Hombre Estimadas
+
+DATOS DE INCIDENTES (4 campos):
+6. Días Perdidos por Accidentes de Trabajo (Total de Días Perdidos por Accidente)
+7. Número de Incidentes con Reposo Médico (N° Accidentados del Trabajo CTP en IST)
+8. Número de Enfermedades Profesionales (N° Enfermos Profesionales CTP)
+9. Días Perdidos por Enfermedad Profesional (Total de Días Perdidos por Enfermedad)
+
+═══ REGLAS POR TIPO DE MUTUALIDAD ═══
+
+▶ ACHS (Asociación Chilena de Seguridad):
+- El certificado se titula "Certificado de Tasas"
+- Busca la tabla "Estadística de la empresa" con columnas Periodo
+- Incluye: Cotización Básica, Cotización Adicional, Cotización Total
+- Campo A = "Número de trabajadores promedio"
+- Campo B = "Horas Hombre" (al final del documento, resaltado)
+- IMPORTANTE: Los campos de tasas pueden no aparecer explícitamente como "Tasa de..." sino como filas de la tabla estadística
+
+▶ MUTUAL DE SEGURIDAD (C.Ch.C.):
+- Se titula "Certificado de Indicadores de Riesgo" o "Certificado de Siniestralidad"
+- Campo A = "Promedio de Trabajadores"
+- Campo B = "Horas Hombre" (al final)
+- IMPORTANTE para campo 2: La Tasa de Siniestralidad por Inv. y Muertes se calcula con FORMULA. Si el documento muestra "Factor de Siniestralidad por Inv. y Muertes" debes buscar en la tabla DS67 (Decreto Supremo 67, Título I, Artículo 04):
+  PFIM 0.00-0.10 → TSIM 0 | 0.11-0.30 → 35 | 0.31-0.50 → 70 | 0.51-0.70 → 105 | 0.71-0.90 → 140 | 0.91-1.20 → 175 | 1.21-1.50 → 210 | 1.51-1.80 → 245 | 1.81-2.10 → 280 | 2.11-2.40 → 315 | 2.41-2.70 → 350 | 2.71+ → 385
+- Si el doc muestra directamente "Tasa de Siniestralidad por Inv. y Muertes", usa ese valor.
+
+▶ IST (Instituto de Seguridad del Trabajo):
+- Se titula "Información Estadística de Accidentes y Enfermedades Profesionales"
+- Hay 2 versiones del IST, ambas contienen los mismos campos pero con layout diferente
+- Campo A = "Promedio de Trabajadores Declarados" / "Promedio Trabajadores Declarados"
+- Campo B = "Horas Hombre Estimadas"
+- Incluye campo extra: "CAD CIUSII (%)" y "CAD Actual (%)" = Cotización Adicional
+- Campo 2 = "Tasa de Siniestralidad por invalidez y muerte" o "Tasa de Siniestralidad por Inv. y Muertes"
+- Campo 8 = "N° Enfermos Profesionales en Estudio"
+- Se valida con QR
+
+▶ ISL (Instituto de Seguridad Laboral):
+- Se titula "Certificado de Accidentabilidad"
+- Este certificado es el que MENOS información entrega
+- Solo muestra tabla de Accidentes y Trabajadores por mes (12 meses)
+- Campo A = extraer del ÚLTIMO mes de la tabla la columna "Trabajadores" (es la dotación del periodo solicitado)
+- Campos de tasas: NO aparecen en el certificado ISL normalmente, reportar como 0 o null
+- El RUT aparece SIN formato (sin puntos ni guión), debes formatearlo
+- Se valida en: https://validacertificado.isl.gob.cl/
+
+═══ REGLAS GENERALES ═══
+- Si un campo no aparece en el certificado, reportar como 0 (cero)
+- Los valores numéricos deben ser numéricos (no strings), usar punto decimal
+- Identificar correctamente la mutualidad analizando el logo, encabezado o texto del documento
+- Los RUT deben presentarse con puntos y guión (ej: 76.159.126-6)
+- Extraer folio y código de verificación si están presentes`,
+                behavior_prompt: `Analiza el certificado de tasas adjunto. Auto-detecta la mutualidad (ACHS/Mutual/IST/ISL) y extrae los datos según las reglas específicas de cada tipo.
+
+IMPORTANTE:
+- Si se proporcionan datos de la empresa en el prompt (RUT, Razón Social), incorpóralos en identificacion_empresa
+- Usa las reglas específicas de cada mutualidad para mapear correctamente los campos
+- Para Mutual de Seguridad: si aparece "Factor de Siniestralidad por Inv. y Muertes", aplica la tabla PFIM→TSIM del DS67
+- Para ISL: extrae la dotación del último mes de la tabla
+- Todos los valores de tasas deben ser numéricos con decimales (usar punto decimal)
+- Responde SOLO con JSON estructurado siguiendo el esquema proporcionado`,
+                response_format: 'JSON',
+                output_format_id: formatRYCETasasLipigas.id,
+                json_schema_id: schemaRYCETasasLipigas.id
+            }
+        });
+
+        // 14f. Tool — RYCE Certificado TASAS Blumar
+        await Tool.findOrCreate({
+            where: { id: 'edb84cda-0000-4a2c-8187-000000000051' },
+            defaults: {
+                nombre: 'RYCE Certificado TASAS Blumar',
+                descripcion: 'Extracción de datos de Certificados de Tasas para el formulario RYCE Blumar (Magallanes/Cultivo). Los campos A (Dotación) y B (HH) de Blumar NO salen en el certificado; son datos de la empresa que se proporcionan en el prompt.',
+                logo_herramienta: '🐟',
+                training_prompt: `ACTÚA COMO UN AUDITOR EXPERTO EN SEGURIDAD LABORAL Y CERTIFICADOS DE TASAS DE MUTUALIDADES CHILENAS.
+
+Tu objetivo es analizar un Certificado de Tasas emitido por una mutualidad (ACHS, Mutual de Seguridad, IST o ISL) y extraer los datos para el formulario RYCE de BLUMAR.
+
+═══ PARTICULARIDAD BLUMAR ═══
+En Blumar (Magallanes y Cultivo), al cargar el Certificado de Tasas se solicita la MISMA información que Lipigas PERO con una diferencia clave:
+- Los campos A (Dotación) y B (HH) se refieren a la información de los TRABAJADORES DE BLUMAR, NO del certificado
+- Esta información NO sale en el certificado. Las empresas la completan manualmente
+- Si estos datos se proporcionan en el prompt, inclúyelos en "datos_blumar"
+- Si no se proporcionan, déjalos en 0
+
+═══ CAMPOS A EXTRAER DEL CERTIFICADO ═══
+
+TASAS (5 campos):
+1. Tasa de Siniestralidad por Inc. Temporales
+2. Tasa de Siniestralidad por Inv. y Muertes
+3. Índice Accidentabilidad
+4. Tasa Frecuencia
+5. Tasa Gravedad
+
+DATOS OPERACIONALES DEL CERTIFICADO:
+- Dotación y HH que aparecen en el documento (datos_operacionales)
+
+DATOS DE INCIDENTES:
+6. Días Perdidos por Accidente
+7. N° de Incidentes con Reposo Médico
+
+DATOS BLUMAR (del prompt, no del certificado):
+A. Dotación Blumar
+B. HH Blumar
+
+═══ REGLAS POR MUTUALIDAD ═══
+
+▶ ACHS: Certificado de Tasas con tabla estadística completa
+▶ MUTUAL: Certificado de Indicadores de Riesgo. TSIM por tabla DS67:
+  PFIM 0.00-0.10→0 | 0.11-0.30→35 | 0.31-0.50→70 | 0.51-0.70→105 | 0.71-0.90→140 | 0.91-1.20→175 | 1.21-1.50→210 | 1.51-1.80→245 | 1.81-2.10→280 | 2.11-2.40→315 | 2.41-2.70→350 | 2.71+→385
+▶ IST: Información Estadística de Accidentes. CAD Actual = Cotización Adicional
+▶ ISL: Certificado de Accidentabilidad. Dotación = último mes tabla Trabajadores
+
+═══ REGLAS GENERALES ═══
+- Si un campo no aparece, reportar como 0
+- Valores numéricos con punto decimal
+- RUT con puntos y guión
+- Auto-detectar la mutualidad del documento`,
+                behavior_prompt: `Analiza el certificado de tasas adjunto. Auto-detecta la mutualidad.
+
+PROCESO:
+1. Identifica la mutualidad por el logo/encabezado
+2. Extrae las 5 tasas del certificado
+3. Extrae dotación y HH del CERTIFICADO en datos_operacionales
+4. Extrae días perdidos e incidentes
+5. Si en el prompt se proporcionan datos de trabajadores Blumar (dotación, HH), inclúyelos en datos_blumar
+6. Si no se proporcionan datos Blumar, dejar datos_blumar.dotacion_blumar y datos_blumar.horas_hombre_blumar en 0
+
+Responde SOLO con JSON estructurado siguiendo el esquema.`,
+                response_format: 'JSON',
+                output_format_id: formatRYCETasasBlumar.id,
+                json_schema_id: schemaRYCETasasBlumar.id
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════════
         // 13. Pre-built Machines (seeded with full graph)
         // ═══════════════════════════════════════════════════════════════
 
