@@ -1031,9 +1031,9 @@ const seed = async () => {
                 tipo: 'mapper',
                 icono: '🧠',
                 config_schema: JSON.stringify({
-                    manual_input: { type: 'text', description: 'Entrada manual en formato JSON (opcional)' },
-                    input_mapping: { type: 'text', description: 'Mapeo JSON para la entrada (opcional)' },
-                    output_mapping: { type: 'text', description: 'Mapeo JSON para la salida (opcional)' }
+                    manual_input: { type: 'textarea', description: 'Entrada manual en formato JSON (opcional base)' },
+                    input_mapping: { type: 'smart-mapper', description: 'Abrir Mapeador de Entrada' },
+                    output_mapping: { type: 'smart-mapper', description: 'Abrir Mapeador de Salida' }
                 }),
                 activo: true
             }
