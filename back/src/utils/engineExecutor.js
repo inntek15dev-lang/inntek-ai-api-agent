@@ -39,6 +39,43 @@ const findEntities = (obj) => {
 };
 
 /**
+ * Utility to apply recursive data mapping
+ */
+const applyMapping = (source, mappingObj) => {
+    if (mappingObj === null || mappingObj === undefined) return source;
+
+    const getValueByPath = (obj, path) => {
+        if (!obj || typeof path !== 'string') return undefined;
+        let cleanPath = path.startsWith('$') ? path.substring(1) : path;
+        if (cleanPath.startsWith('.')) cleanPath = cleanPath.substring(1);
+        if (!cleanPath) return obj;
+        return cleanPath.split('.').reduce((acc, part) => {
+            if (acc === undefined || acc === null) return undefined;
+            return acc[part];
+        }, obj);
+    };
+
+    if (typeof mappingObj === 'string') {
+        const val = getValueByPath(source, mappingObj);
+        return val !== undefined ? val : mappingObj;
+    }
+
+    if (typeof mappingObj === 'object' && !Array.isArray(mappingObj)) {
+        const result = {};
+        for (const key in mappingObj) {
+            result[key] = applyMapping(source, mappingObj[key]);
+        }
+        return result;
+    }
+
+    if (Array.isArray(mappingObj)) {
+        return mappingObj.map(item => applyMapping(source, item));
+    }
+
+    return mappingObj;
+};
+
+/**
  * Registry of engine functions.
  * Each function receives (node, inputText, parentOutputs, context) and returns a result.
  */
@@ -409,6 +446,67 @@ const engines = {
             output: result !== undefined ? result : null,
             stepInfo: { field, found: result !== undefined }
         };
+    },
+
+    'core': async (node, inputText, parentOutputs, context) => {
+        let config = {};
+        try { config = node.config ? JSON.parse(node.config) : {}; } catch (e) { }
+
+        // 1. Resolve Manual Input
+        let manualInput = {};
+        if (config.manual_input) {
+            try {
+                manualInput = typeof config.manual_input === 'string' ? JSON.parse(config.manual_input) : config.manual_input;
+            } catch (e) {
+                manualInput = { raw_manual: config.manual_input };
+            }
+        }
+
+        // 2. Resolve Incoming Data
+        let incomingData = {};
+        if (parentOutputs && parentOutputs.length > 0) {
+            // merge parent outputs
+            for (const po of parentOutputs) {
+                if (typeof po === 'object' && po !== null && !Array.isArray(po)) {
+                    Object.assign(incomingData, po);
+                } else if (Array.isArray(po)) {
+                    incomingData.items = [...(incomingData.items || []), ...po];
+                } else {
+                    incomingData.raw = (incomingData.raw || '') + '\n' + String(po);
+                }
+            }
+        } else if (inputText) {
+            let parsedText = inputText;
+            if (typeof inputText === 'string') {
+                try { parsedText = JSON.parse(inputText); } catch (e) { }
+            }
+            if (typeof parsedText === 'object' && parsedText !== null && !Array.isArray(parsedText)) {
+                Object.assign(incomingData, parsedText);
+            } else {
+                incomingData.input = parsedText;
+            }
+        }
+
+        // 3. Merge Manual Input over Incoming Data as Base
+        const baseData = { ...incomingData, ...manualInput };
+
+        // 4. Apply Input Mapping (if defined)
+        let mappedInput = baseData;
+        if (config.input_mapping && String(config.input_mapping).trim() !== '') {
+            let inMap = config.input_mapping;
+            try { if (typeof inMap === 'string') inMap = JSON.parse(inMap); } catch(e){}
+            mappedInput = applyMapping(baseData, inMap);
+        }
+
+        // 5. Apply Output Mapping (if defined)
+        let finalOutput = mappedInput;
+        if (config.output_mapping && String(config.output_mapping).trim() !== '') {
+            let outMap = config.output_mapping;
+            try { if (typeof outMap === 'string') outMap = JSON.parse(outMap); } catch(e){}
+            finalOutput = applyMapping(mappedInput, outMap);
+        }
+
+        return { output: finalOutput, stepInfo: { core_processed: true, final_keys: Object.keys(finalOutput || {}) } };
     }
 };
 

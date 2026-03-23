@@ -1023,6 +1023,22 @@ const seed = async () => {
             }
         });
 
+        const [engineCore] = await Engine.findOrCreate({
+            where: { slug: 'core' },
+            defaults: {
+                nombre: 'CORE Engine',
+                descripcion: 'Engine central para mapeo de datos en input y output, soportando entrada manual JSON o datos de herramientas/engines previos.',
+                tipo: 'core',
+                icono: '🧠',
+                config_schema: JSON.stringify({
+                    manual_input: { type: 'text', description: 'Entrada manual en formato JSON (opcional)' },
+                    input_mapping: { type: 'text', description: 'Mapeo JSON para la entrada (opcional)' },
+                    output_mapping: { type: 'text', description: 'Mapeo JSON para la salida (opcional)' }
+                }),
+                activo: true
+            }
+        });
+
         // ═══════════════════════════════════════════════════════════════
         // 9. Visores
         // ═══════════════════════════════════════════════════════════════
