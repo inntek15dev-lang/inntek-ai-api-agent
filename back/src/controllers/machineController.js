@@ -335,10 +335,12 @@ exports.executeMachine = async (req, res) => {
                     if (engineResult.consumedNodeId) {
                         nodeOutputs[engineResult.consumedNodeId] = engineResult.consumedOutput;
                     }
+                } else if (node.node_type === 'visor' && node.Visor) {
 
                     nodeOutputs[nodeId] = rawInput;
                     step.output = rawInput;
                     step.visorSlug = node.Visor.slug;
+
                 } else if (node.node_type === 'input' && node.Input) {
                     // ── Input Node: return the manually entered config value ──
                     const config = node.config ? (typeof node.config === 'string' ? JSON.parse(node.config) : node.config) : {};
