@@ -1028,7 +1028,7 @@ const seed = async () => {
             defaults: {
                 nombre: 'CORE Engine',
                 descripcion: 'Engine central para mapeo de datos en input y output, soportando entrada manual JSON o datos de herramientas/engines previos.',
-                tipo: 'core',
+                tipo: 'mapper',
                 icono: '🧠',
                 config_schema: JSON.stringify({
                     manual_input: { type: 'text', description: 'Entrada manual en formato JSON (opcional)' },
