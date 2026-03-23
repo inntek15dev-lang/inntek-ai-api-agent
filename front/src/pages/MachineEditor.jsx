@@ -16,7 +16,7 @@ import {
     MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Save, ArrowLeft, Cpu, Cog, GripVertical, Workflow, ChevronDown, ChevronRight, Check, Trash2, X, Play, Loader2, Upload, MousePointer2, Eraser, Plus, Minus } from 'lucide-react';
+import { Save, ArrowLeft, Cpu, Cog, GripVertical, Workflow, ChevronDown, ChevronRight, Check, Trash2, X, Play, Loader2, Upload, MousePointer2, Eraser, Plus, Minus, Wand2, FileJson, ArrowRight } from 'lucide-react';
 import PrinterTag from '../components/PrinterTag';
 
 // ═══════════════════════════════════════════════════════════════
@@ -390,6 +390,153 @@ const defaultEdgeOptions = {
 };
 
 // ═══════════════════════════════════════════════════════════════
+// Smart Mapper Components
+// ═══════════════════════════════════════════════════════════════
+const setNestedValue = (obj, path, value) => {
+    const parts = path.split('.');
+    parts.shift(); // remove root '$'
+    if (parts.length === 0) return value;
+    
+    let cloned = typeof obj === 'object' && obj !== null ? { ...obj } : {};
+    let current = cloned;
+    for (let i = 0; i < parts.length - 1; i++) {
+        if (!current[parts[i]] || typeof current[parts[i]] !== 'object') {
+            current[parts[i]] = {};
+        }
+        current[parts[i]] = { ...current[parts[i]] };
+        current = current[parts[i]];
+    }
+    if (value === null) {
+        delete current[parts[parts.length - 1]];
+    } else {
+        current[parts[parts.length - 1]] = value;
+    }
+    return cloned;
+};
+
+const JsonSourceNode = ({ label, value, path }) => {
+    const isObject = typeof value === 'object' && value !== null;
+    const [expanded, setExpanded] = useState(true);
+
+    const handleDragStart = (e) => {
+        e.stopPropagation();
+        e.dataTransfer.setData('application/smart-mapper-source', path);
+        e.dataTransfer.effectAllowed = 'copy';
+    };
+
+    return (
+        <div className="pl-3 border-l border-slate-700/50 mt-1">
+            <div className="flex items-center space-x-1 py-0.5 group relative">
+                {isObject ? (
+                    <button onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }} className="text-slate-500 hover:text-cyan-400">
+                        {expanded ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+                    </button>
+                ) : <span className="w-2.5 inline-block" />}
+                
+                <div 
+                    draggable
+                    onDragStart={handleDragStart}
+                    className="flex items-center space-x-2 cursor-grab active:cursor-grabbing hover:bg-slate-800 rounded px-1 group/drag"
+                    title={`Drag path: ${path}`}
+                >
+                    <span className="text-[10px] font-bold text-slate-300">{label}:</span>
+                    {!isObject && (
+                        <span className="text-[9px] font-mono text-cyan-400/80 truncate max-w-[100px]">
+                            {String(value)}
+                        </span>
+                    )}
+                    <div className="opacity-0 group-hover/drag:opacity-100 text-[8px] text-slate-500 bg-slate-900 px-1 rounded absolute right-0 font-mono pointer-events-none">
+                        {path}
+                    </div>
+                </div>
+            </div>
+            {isObject && expanded && (
+                <div className="ml-2">
+                    {Object.entries(value).map(([k, v]) => (
+                        <JsonSourceNode key={k} label={k} value={v} path={`${path}.${k}`} />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+const JsonTargetNode = ({ label, value, path, currentMapping, onMappingAssign }) => {
+    const isObject = typeof value === 'object' && value !== null;
+    const [expanded, setExpanded] = useState(true);
+    
+    const getMappedVal = (p) => {
+        const parts = p.split('.');
+        parts.shift();
+        let curr = currentMapping;
+        for (let pt of parts) {
+            if (!curr) return null;
+            curr = curr[pt];
+        }
+        return curr;
+    };
+    
+    const mappedVal = getMappedVal(path);
+    const hasMapping = mappedVal !== undefined && mappedVal !== null && mappedVal !== '';
+    const isDragOver = useRef(false);
+    const [dragOverState, setDragOverState] = useState(false);
+
+    const onDragOver = (e) => {
+        e.preventDefault(); e.stopPropagation();
+        e.dataTransfer.dropEffect = 'copy';
+        if (!isDragOver.current) { isDragOver.current = true; setDragOverState(true); }
+    };
+    const onDragLeave = (e) => {
+        e.stopPropagation();
+        isDragOver.current = false; setDragOverState(false);
+    };
+    const onDrop = (e) => {
+        e.preventDefault(); e.stopPropagation();
+        isDragOver.current = false; setDragOverState(false);
+        const sourcePath = e.dataTransfer.getData('application/smart-mapper-source');
+        if (sourcePath) {
+            onMappingAssign(path, sourcePath);
+        }
+    };
+
+    return (
+        <div className="pl-3 border-l border-slate-700/50 mt-1">
+            <div className={`flex items-center space-x-1 py-1 rounded transition-colors ${dragOverState ? 'bg-emerald-500/20 ring-1 ring-emerald-500/50' : 'hover:bg-slate-800/30'}`}
+                 onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}>
+                {isObject ? (
+                    <button onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }} className="text-slate-500 hover:text-emerald-400">
+                        {expanded ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+                    </button>
+                ) : <span className="w-2.5 inline-block" />}
+                
+                <span className="text-[10px] font-bold text-slate-300">{label}:</span>
+                
+                {!isObject && (
+                    <div className="flex-1 min-w-0 pr-2">
+                        {hasMapping ? (
+                            <div className="flex items-center space-x-1 bg-emerald-900/20 border border-emerald-500/30 rounded px-1.5 py-0.5 w-fit">
+                                <Wand2 size={8} className="text-emerald-400" />
+                                <span className="text-[9px] font-mono text-emerald-300">{typeof mappedVal === 'string' ? mappedVal : JSON.stringify(mappedVal)}</span>
+                                <button onClick={() => onMappingAssign(path, null)} className="ml-1 text-slate-500 hover:text-red-400"><X size={8} /></button>
+                            </div>
+                        ) : (
+                            <span className="text-[8px] text-slate-600 font-mono italic">Drop source here...</span>
+                        )}
+                    </div>
+                )}
+            </div>
+            {isObject && expanded && (
+                <div className="ml-2">
+                    {Object.entries(value).map(([k, v]) => (
+                        <JsonTargetNode key={k} label={k} value={v} path={`${path}.${k}`} currentMapping={currentMapping} onMappingAssign={onMappingAssign} />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ═══════════════════════════════════════════════════════════════
 // Main Editor
 // ═══════════════════════════════════════════════════════════════
 const MachineEditor = () => {
@@ -428,6 +575,15 @@ const MachineEditor = () => {
     const [activeInputNodeId, setActiveInputNodeId] = useState(null);
 
     const [pointerMode, setPointerMode] = useState('select'); // 'select' | 'erase'
+
+    // Smart Mapper State
+    const [smartMapperOpen, setSmartMapperOpen] = useState(false);
+    const [smartMapperKey, setSmartMapperKey] = useState(null);
+    const [mapperInputText, setMapperInputText] = useState('{\n  "empresa": {\n    "rut": "12345678-9",\n    "nombre": "Ejemplo"\n  }\n}');
+    const [mapperOutputText, setMapperOutputText] = useState('{\n  "rut_empresa": "",\n  "razon_social": ""\n}');
+    const [mapperInputData, setMapperInputData] = useState(null);
+    const [mapperOutputData, setMapperOutputData] = useState(null);
+    const [currentMapping, setCurrentMapping] = useState({});
 
     const reactFlowWrapper = useRef(null);
 
@@ -1059,6 +1215,26 @@ const MachineEditor = () => {
                                                     className="w-full bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/50 min-h-[60px]"
                                                     placeholder={description}
                                                 />
+                                            ) : fieldType === 'smart-mapper' ? (
+                                                <div className="flex flex-col space-y-2">
+                                                    <textarea
+                                                        disabled
+                                                        value={val || '{}'}
+                                                        className="w-full bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-[9px] font-mono text-slate-400 min-h-[40px] opacity-70 cursor-not-allowed"
+                                                    />
+                                                    <button 
+                                                        onClick={() => {
+                                                            setSmartMapperKey(key);
+                                                            let existing = {};
+                                                            try { existing = val ? JSON.parse(val) : {}; } catch(e){}
+                                                            setCurrentMapping(existing);
+                                                            setSmartMapperOpen(true);
+                                                        }}
+                                                        className="w-full flex items-center justify-center space-x-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded py-1.5 transition-colors">
+                                                        <Wand2 size={12} />
+                                                        <span className="text-[10px] font-black uppercase tracking-widest">{field.description || 'Smart Mapper'}</span>
+                                                    </button>
+                                                </div>
                                             ) : (
                                                 <input
                                                     type="text"
@@ -1191,6 +1367,143 @@ const MachineEditor = () => {
                                         <Check size={16} />
                                         <span className="text-xs font-black uppercase tracking-widest">Confirm Node Inputs</span>
                                     </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Smart Mapper Modal */}
+                    {smartMapperOpen && (
+                        <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-md flex py-10 px-4" style={{ zIndex: 9999 }}>
+                            <div className="m-auto bg-slate-950 border border-emerald-500/30 w-full max-w-6xl h-full max-h-[90vh] rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.1)] flex flex-col overflow-hidden"
+                                style={{ background: 'linear-gradient(180deg, rgba(15,23,42,0.98) 0%, rgba(10,14,26,0.98) 100%)' }}>
+                                <div className="px-6 py-4 flex items-center justify-between border-b border-slate-800">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                                            <Wand2 size={20} className="text-emerald-400" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-sm font-black text-emerald-400 uppercase tracking-widest">Smart Mapper</h2>
+                                            <p className="text-[10px] text-slate-500 uppercase tracking-widest">{selectedNode?.data?.label} - {smartMapperKey}</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => setSmartMapperOpen(false)} className="text-slate-500 hover:text-red-400 p-2 transition-colors">
+                                        <X size={20} />
+                                    </button>
+                                </div>
+
+                                <div className="flex-1 flex overflow-hidden">
+                                    {/* Left Pane - Source Data */}
+                                    <div className="w-1/3 flex flex-col border-r border-slate-800/60 bg-slate-900/30">
+                                        <div className="p-4 border-b border-slate-800/60">
+                                            <label className="flex items-center space-x-2 text-[10px] font-black text-cyan-500 uppercase tracking-widest mb-2">
+                                                <FileJson size={14} />
+                                                <span>Sample Source JSON</span>
+                                            </label>
+                                            <textarea
+                                                value={mapperInputText}
+                                                onChange={e => setMapperInputText(e.target.value)}
+                                                className="w-full bg-slate-950 border border-slate-800 rounded p-3 text-[10px] font-mono text-cyan-200/60 focus:outline-none focus:border-cyan-500/50 h-32 resize-none custom-scrollbar"
+                                                placeholder="Paste a sample JSON representation of the input data here..."
+                                            />
+                                            <button 
+                                                onClick={() => {
+                                                    try { setMapperInputData(JSON.parse(mapperInputText)); }
+                                                    catch(e){ alert('Invalid JSON in Source Sample'); }
+                                                }}
+                                                className="mt-2 w-full py-2 bg-cyan-900/30 hover:bg-cyan-900/50 text-cyan-400 border border-cyan-500/30 rounded text-[9px] font-bold uppercase tracking-widest transition-colors">
+                                                Parse Input Elements
+                                            </button>
+                                        </div>
+                                        <div className="flex-1 p-4 overflow-y-auto custom-scrollbar">
+                                            <h3 className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3 border-b border-slate-800 pb-2">Draggable Source Elements (Drag Values)</h3>
+                                            {mapperInputData ? (
+                                                <div className="text-slate-300 font-mono">
+                                                    <JsonSourceNode label="$" value={mapperInputData} path="$" />
+                                                </div>
+                                            ) : (
+                                                <div className="text-center py-10 opacity-50">
+                                                    <MousePointer2 size={24} className="mx-auto mb-2 text-cyan-500" />
+                                                    <p className="text-[10px] uppercase font-bold text-cyan-400">Parse a sample</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Middle Pane - Mapping Area */}
+                                    <div className="w-1/3 flex flex-col border-r border-slate-800/60 bg-slate-900/50">
+                                        <div className="p-4 border-b border-slate-800/60 shadow-sm">
+                                            <label className="flex items-center space-x-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2">
+                                                <FileJson size={14} />
+                                                <span>Target Structure Template</span>
+                                            </label>
+                                            <textarea
+                                                value={mapperOutputText}
+                                                onChange={e => setMapperOutputText(e.target.value)}
+                                                className="w-full bg-slate-950 border border-slate-800 rounded p-3 text-[10px] font-mono text-emerald-200/60 focus:outline-none focus:border-emerald-500/50 h-32 resize-none custom-scrollbar"
+                                                placeholder="Paste the desired JSON output structure. Empty values are fine."
+                                            />
+                                            <button 
+                                                onClick={() => {
+                                                    try { setMapperOutputData(JSON.parse(mapperOutputText)); }
+                                                    catch(e){ alert('Invalid JSON in Target Template'); }
+                                                }}
+                                                className="mt-2 w-full py-2 bg-emerald-900/30 hover:bg-emerald-900/50 text-emerald-400 border border-emerald-500/30 rounded text-[9px] font-bold uppercase tracking-widest transition-colors">
+                                                Parse Target Structure
+                                            </button>
+                                        </div>
+                                        <div className="flex-1 p-4 overflow-y-auto custom-scrollbar">
+                                            <div className="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
+                                                <h3 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Drop Zones (Target Mapping)</h3>
+                                                <button onClick={() => setCurrentMapping({})} className="text-[9px] text-red-400 hover:text-red-300 uppercase tracking-widest font-bold">Clear All</button>
+                                            </div>
+                                            {mapperOutputData ? (
+                                                <div className="text-slate-300 font-mono">
+                                                    <JsonTargetNode 
+                                                        label="$" 
+                                                        value={mapperOutputData} 
+                                                        path="$" 
+                                                        currentMapping={currentMapping}
+                                                        onMappingAssign={(targetPath, sourceVal) => {
+                                                            setCurrentMapping(prev => setNestedValue(prev, targetPath, sourceVal));
+                                                        }} 
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="text-center py-10 opacity-50">
+                                                    <ArrowRight size={24} className="mx-auto mb-2 text-emerald-500" />
+                                                    <p className="text-[10px] uppercase font-bold text-emerald-400">Parse a template array or object</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Right Pane - Output Preview */}
+                                    <div className="w-1/3 flex flex-col bg-slate-950">
+                                        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                                            <label className="flex items-center space-x-2 text-[10px] font-black text-violet-400 uppercase tracking-widest">
+                                                <Cog size={14} className="animate-spin-slow" />
+                                                <span>Generated Mapping Rule</span>
+                                            </label>
+                                        </div>
+                                        <div className="flex-1 p-4 overflow-y-auto custom-scrollbar relative">
+                                            <div className="absolute inset-0 bg-violet-900/5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#8b5cf6 1px, transparent 1px)', backgroundSize: '15px 15px', opacity: 0.1 }}></div>
+                                            <pre className="text-[10px] font-mono text-violet-300 leading-relaxed whitespace-pre-wrap relative z-10">
+                                                {JSON.stringify(currentMapping, null, 2)}
+                                            </pre>
+                                        </div>
+                                        <div className="p-4 border-t border-slate-800 bg-slate-900/50">
+                                            <button 
+                                                onClick={() => {
+                                                    updateNodeConfig(selectedNode.id, smartMapperKey, JSON.stringify(currentMapping));
+                                                    setSmartMapperOpen(false);
+                                                }}
+                                                className="w-full flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg py-3 shadow-[0_0_20px_rgba(16,185,129,0.2)] transition-colors">
+                                                <Save size={16} />
+                                                <span className="text-xs font-black uppercase tracking-widest">Save Mapping Rule</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
