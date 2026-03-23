@@ -56,8 +56,11 @@ const applyMapping = (source, mappingObj) => {
     };
 
     if (typeof mappingObj === 'string') {
-        const val = getValueByPath(source, mappingObj);
-        return val !== undefined ? val : mappingObj;
+        if (mappingObj.trim().startsWith('$')) {
+            const val = getValueByPath(source, mappingObj.trim());
+            return val !== undefined ? val : null;
+        }
+        return mappingObj;
     }
 
     if (typeof mappingObj === 'object' && !Array.isArray(mappingObj)) {
