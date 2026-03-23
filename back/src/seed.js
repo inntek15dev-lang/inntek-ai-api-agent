@@ -4,8 +4,8 @@ require('dotenv').config();
 
 const seed = async () => {
     try {
-        await sequelize.sync({ alter: true });
-        console.log('Database synced with alter: true');
+        await sequelize.sync();
+        console.log('Database synced successfully');
 
         // 1. Create Roles
         const [superAdminRole] = await Role.findOrCreate({ where: { nombre: 'SuperAdmin' } });
