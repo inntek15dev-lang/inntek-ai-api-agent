@@ -10,7 +10,9 @@ const machineController = require('../controllers/machineController');
 const exhibitionController = require('../controllers/exhibitionController');
 const engineController = require('../controllers/engineController');
 const visorController = require('../controllers/visorController');
+const inputController = require('../controllers/inputController');
 const apiTesterController = require('../controllers/apiTesterController');
+
 const { authMiddleware, requirePrivilege } = require('../middleware/auth');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
@@ -603,6 +605,22 @@ router.get('/engines', authMiddleware, requirePrivilege('Machines', 'read'), eng
  *         description: List of visores
  */
 router.get('/visores', authMiddleware, requirePrivilege('Machines', 'read'), visorController.getVisores);
+
+// Inputs
+/**
+ * @swagger
+ * /inputs:
+ *   get:
+ *     summary: Get all active Inputs
+ *     tags: [Inputs]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of input types
+ */
+router.get('/inputs', authMiddleware, requirePrivilege('Machines', 'read'), inputController.getInputs);
+
 
 // Machines
 /**

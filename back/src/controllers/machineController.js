@@ -1,4 +1,5 @@
-const { Machine, MachineNode, MachineConnection, Tool, Engine, Visor, JsonSchema, AiProvider } = require('../models');
+const { Machine, MachineNode, MachineConnection, Tool, Engine, Visor, JsonSchema, AiProvider, Input } = require('../models');
+
 const { executeSingleTool } = require('../utils/aiExecutor');
 const { executeEngine } = require('../utils/engineExecutor');
 const fs = require('fs');
@@ -28,8 +29,10 @@ exports.getMachine = async (req, res) => {
                     include: [
                         { model: Tool, attributes: ['id', 'nombre', 'logo_herramienta', 'descripcion'] },
                         { model: Engine, attributes: ['id', 'nombre', 'icono', 'tipo', 'descripcion'] },
-                        { model: Visor, attributes: ['id', 'nombre', 'icono', 'descripcion'] }
+                        { model: Visor, attributes: ['id', 'nombre', 'icono', 'descripcion'] },
+                        { model: Input, attributes: ['id', 'nombre', 'icono', 'descripcion'] }
                     ]
+
                 },
                 {
                     model: MachineConnection,
@@ -85,10 +88,12 @@ exports.updateMachine = async (req, res) => {
                     tool_id: node.tool_id || null,
                     engine_id: node.engine_id || null,
                     visor_id: node.visor_id || null,
+                    input_id: node.input_id || null,
                     position_x: node.position_x,
                     position_y: node.position_y,
                     config: node.config ? JSON.stringify(node.config) : null
                 });
+
                 nodeIdMap[node.id] = created.id;
             }
 
@@ -112,8 +117,10 @@ exports.updateMachine = async (req, res) => {
                     include: [
                         { model: Tool, attributes: ['id', 'nombre', 'logo_herramienta', 'descripcion'] },
                         { model: Engine, attributes: ['id', 'nombre', 'icono', 'tipo', 'descripcion'] },
-                        { model: Visor, attributes: ['id', 'nombre', 'icono', 'descripcion'] }
+                        { model: Visor, attributes: ['id', 'nombre', 'icono', 'descripcion'] },
+                        { model: Input, attributes: ['id', 'nombre', 'icono', 'descripcion'] }
                     ]
+
                 },
                 { model: MachineConnection }
             ]
@@ -186,8 +193,10 @@ exports.executeMachine = async (req, res) => {
                             ]
                         },
                         { model: Engine },
-                        { model: Visor }
+                        { model: Visor },
+                        { model: Input }
                     ]
+
                 },
                 { model: MachineConnection }
             ]
@@ -259,8 +268,9 @@ exports.executeMachine = async (req, res) => {
                 res.write(`data: ${JSON.stringify({ type: 'node-start', nodeId })}\n\n`);
             }
 
-            const nodeName = node.Tool?.nombre || node.Engine?.nombre || node.Visor?.nombre || 'Unknown';
-            const nodeIcon = node.Tool?.logo_herramienta || node.Engine?.icono || node.Visor?.icono || '❓';
+            const nodeName = node.Tool?.nombre || node.Engine?.nombre || node.Visor?.nombre || node.Input?.nombre || 'Unknown';
+            const nodeIcon = node.Tool?.logo_herramienta || node.Engine?.icono || node.Visor?.icono || node.Input?.icono || '❓';
+
 
             const step = {
                 nodeId: node.id,
@@ -326,13 +336,17 @@ exports.executeMachine = async (req, res) => {
                         nodeOutputs[engineResult.consumedNodeId] = engineResult.consumedOutput;
                     }
 
-                } else if (node.node_type === 'visor' && node.Visor) {
-                    // ── Visor Node: passthrough for visual feedback ──
-                    console.log(`[PARKO] Visor ${node.Visor.slug} receiving:`, Array.isArray(rawInput) ? `Array(${rawInput.length})` : typeof rawInput);
                     nodeOutputs[nodeId] = rawInput;
                     step.output = rawInput;
                     step.visorSlug = node.Visor.slug;
+                } else if (node.node_type === 'input' && node.Input) {
+                    // ── Input Node: return the manually entered config value ──
+                    const config = node.config ? (typeof node.config === 'string' ? JSON.parse(node.config) : node.config) : {};
+                    const value = config.value !== undefined ? config.value : null;
+                    nodeOutputs[nodeId] = value;
+                    step.output = value;
                 } else {
+
                     // Node with missing Tool/Engine/Visor reference — pass through
                     nodeOutputs[nodeId] = rawInput;
                     step.output = rawInput;
