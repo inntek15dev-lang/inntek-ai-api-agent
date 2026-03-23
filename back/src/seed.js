@@ -1038,6 +1038,15 @@ const seed = async () => {
                 activo: true
             }
         });
+        // Force update to ensure existing databases (localhost/render) pick up schema changes
+        await engineCore.update({
+            tipo: 'mapper',
+            config_schema: JSON.stringify({
+                manual_input: { type: 'textarea', description: 'Entrada manual en formato JSON (opcional base)' },
+                input_mapping: { type: 'smart-mapper', description: 'Abrir Mapeador de Entrada' },
+                output_mapping: { type: 'smart-mapper', description: 'Abrir Mapeador de Salida' }
+            })
+        });
 
         // ═══════════════════════════════════════════════════════════════
         // 9. Visores
