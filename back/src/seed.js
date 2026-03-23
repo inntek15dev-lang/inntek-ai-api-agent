@@ -1,4 +1,5 @@
-const { sequelize, Role, Privilegio, User, Tool, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Visor, Machine, MachineNode, MachineConnection } = require('./models');
+const { sequelize, Role, Privilegio, User, Tool, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Visor, Machine, MachineNode, MachineConnection, Input } = require('./models');
+
 require('dotenv').config();
 
 const seed = async () => {
@@ -1904,8 +1905,27 @@ Responde SOLO con JSON estructurado siguiendo el esquema.`,
         });
 
         // ═══════════════════════════════════════════════════════════════
+        // 15. Inputs — Machine Entry Points
+        // ═══════════════════════════════════════════════════════════════
+
+        const [inputJSON] = await Input.findOrCreate({
+            where: { slug: 'json-input' },
+            defaults: {
+                nombre: 'JSON',
+                descripcion: 'Input manual de texto o JSON estructurado para alimentar el flujo.',
+                icono: '📝',
+                config_schema: JSON.stringify({
+                    value: { type: 'textarea', label: 'Contenido JSON/Texto', placeholder: 'Pega aquí el JSON o texto de entrada...' }
+                }),
+                activo: true
+
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════════
         // 13. Pre-built Machines (seeded with full graph)
         // ═══════════════════════════════════════════════════════════════
+
 
         // ── Machine 1: Verificación Laboral en Lotes ──
         const [machineLotes] = await Machine.findOrCreate({

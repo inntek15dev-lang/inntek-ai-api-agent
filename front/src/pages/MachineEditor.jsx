@@ -341,11 +341,46 @@ const VisorNode = ({ data }) => {
     );
 };
 
+// ═══════════════════════════════════════════════════════════════
+// Custom Node: Input (Amber)
+// ═══════════════════════════════════════════════════════════════
+const InputNode = ({ data, selected }) => {
+    let borderColor = selected ? 'border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.3)] ring-2 ring-amber-400/40' : 'border-slate-600 shadow-2xl';
+    
+    return (
+        <div className={`rounded-xl w-40 h-40 border flex flex-col transition-all duration-300 relative ${borderColor}`}
+            style={{ background: 'linear-gradient(145deg, #2d2010 0%, #1a1208 100%)' }}>
+            <div className="flex-1 p-4 flex flex-col items-center justify-center text-center">
+                <span className="text-4xl mb-3 leading-none drop-shadow-md">{data.icon || '📝'}</span>
+                <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest line-clamp-2 leading-tight w-full drop-shadow-sm">{data.label}</span>
+                <div className="mt-2 w-full flex-1 relative overflow-hidden">
+                    <p className="text-[9px] text-slate-400 line-clamp-3 leading-snug">{data.description || 'Input Node'}</p>
+                </div>
+            </div>
+
+            {data.config?.value && (
+                <div className="absolute top-[105%] left-1/2 -translate-x-1/2 w-64 max-h-48 overflow-y-auto bg-slate-900 border border-slate-700/60 rounded-lg shadow-2xl p-3 z-50 text-left custom-scrollbar pointer-events-auto cursor-text nodrag">
+                    <p className="text-[9px] font-black uppercase mb-2 border-b border-slate-800 pb-1 text-amber-400">
+                        Input Value
+                    </p>
+                    <div className="text-[10px] font-mono leading-relaxed whitespace-pre-wrap break-words text-slate-300">
+                        {typeof data.config.value === 'string' ? data.config.value : JSON.stringify(data.config.value, null, 2)}
+                    </div>
+                </div>
+            )}
+
+            <Handle type="source" position={Position.Right} className="!w-3 !h-3 !bg-amber-400 !border-[2px] !border-slate-900 !-right-[7px]" />
+        </div>
+    );
+};
+
 const nodeTypes = {
     toolNode: ToolNode,
     engineNode: EngineNode,
-    visor: VisorNode
+    visor: VisorNode,
+    inputNode: InputNode
 };
+
 
 const defaultEdgeOptions = {
     type: 'smoothstep',
@@ -365,7 +400,9 @@ const MachineEditor = () => {
     const [tools, setTools] = useState([]);
     const [engines, setEngines] = useState([]);
     const [visores, setVisores] = useState([]);
+    const [inputs, setInputs] = useState([]);
     const [loading, setLoading] = useState(true);
+
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [machineName, setMachineName] = useState('');
@@ -378,6 +415,8 @@ const MachineEditor = () => {
     const [toolsOpen, setToolsOpen] = useState(true);
     const [enginesOpen, setEnginesOpen] = useState(true);
     const [visoresOpen, setVisoresOpen] = useState(true);
+    const [inputsOpen, setInputsOpen] = useState(true);
+
 
     const [executingStream, setExecutingStream] = useState(false);
     const [streamModalOpen, setStreamModalOpen] = useState(false);
@@ -395,12 +434,14 @@ const MachineEditor = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [machineRes, toolsRes, enginesRes, visoresRes] = await Promise.all([
+                const [machineRes, toolsRes, enginesRes, visoresRes, inputsRes] = await Promise.all([
                     axios.get(`${API_URL}/machines/${id}`),
                     axios.get(`${API_URL}/tools`),
                     axios.get(`${API_URL}/engines`),
                     axios.get(`${API_URL}/visores`),
+                    axios.get(`${API_URL}/inputs`),
                 ]);
+
                 const m = machineRes.data.data;
                 setMachine(m);
                 setMachineName(m.nombre);
@@ -408,11 +449,15 @@ const MachineEditor = () => {
                 setTools(toolsRes.data.data || toolsRes.data);
                 setEngines(enginesRes.data.data || enginesRes.data);
                 setVisores(visoresRes.data.data || visoresRes.data);
+                setInputs(inputsRes.data.data || inputsRes.data);
+
 
                 const flowNodes = (m.MachineNodes || []).map(n => {
                     let nodeType = 'toolNode';
                     if (n.node_type === 'engine') nodeType = 'engineNode';
                     if (n.node_type === 'visor') nodeType = 'visor';
+                    if (n.node_type === 'input') nodeType = 'inputNode';
+
 
                     return {
                         id: n.id,
@@ -427,7 +472,9 @@ const MachineEditor = () => {
                             toolId: n.tool_id,
                             engineId: n.engine_id,
                             visorId: n.visor_id,
+                            inputId: n.input_id,
                             slug: n.Visor?.slug || '',
+
                             config: n.config ? (typeof n.config === 'string' ? JSON.parse(n.config) : n.config) : {},
                             configSchema: n.Engine?.config_schema ? (typeof n.Engine.config_schema === 'string' ? JSON.parse(n.Engine.config_schema) : n.Engine.config_schema) : null,
                             execStatus: 'pending',
@@ -485,6 +532,8 @@ const MachineEditor = () => {
         let nodeType = 'toolNode';
         if (type === 'engine') nodeType = 'engineNode';
         if (type === 'visor') nodeType = 'visor';
+        if (type === 'input') nodeType = 'inputNode';
+
 
         setNodes(nds => [...nds, {
             id: generateUUID(),
@@ -499,7 +548,9 @@ const MachineEditor = () => {
                 toolId: type === 'tool' ? item.id : null,
                 engineId: type === 'engine' ? item.id : null,
                 visorId: type === 'visor' ? item.id : null,
+                inputId: type === 'input' ? item.id : null,
                 slug: item.slug || '',
+
                 config: {},
                 configSchema: item.config_schema ? (typeof item.config_schema === 'string' ? JSON.parse(item.config_schema) : item.config_schema) : null,
                 execStatus: 'pending',
@@ -561,9 +612,9 @@ const MachineEditor = () => {
                 descripcion: machineDesc,
                 icono: machine?.icono,
                 nodes: nodes.map(n => ({
-                    id: n.id, node_type: n.data.nodeType, tool_id: n.data.toolId,
-                    engine_id: n.data.engineId, visor_id: n.data.visorId, position_x: n.position.x, position_y: n.position.y, config: n.data.config,
+                    engine_id: n.data.engineId, visor_id: n.data.visorId, input_id: n.data.inputId, position_x: n.position.x, position_y: n.position.y, config: n.data.config,
                 })),
+
                 connections: edges.map(e => ({
                     source_node_id: e.source, target_node_id: e.target,
                     source_handle: e.sourceHandle || null, target_handle: e.targetHandle || null,
@@ -589,9 +640,9 @@ const MachineEditor = () => {
                     descripcion: machineDesc,
                     icono: machine?.icono,
                     nodes: nodes.map(n => ({
-                        id: n.id, node_type: n.data.nodeType, tool_id: n.data.toolId,
-                        engine_id: n.data.engineId, visor_id: n.data.visorId, position_x: n.position.x, position_y: n.position.y, config: n.data.config,
+                        engine_id: n.data.engineId, visor_id: n.data.visorId, input_id: n.data.inputId, position_x: n.position.x, position_y: n.position.y, config: n.data.config,
                     })),
+
                     connections: edges.map(eg => ({
                         source_node_id: eg.source, target_node_id: eg.target,
                         source_handle: eg.sourceHandle || null, target_handle: eg.targetHandle || null,
@@ -748,7 +799,33 @@ const MachineEditor = () => {
 
                 {/* Scrollable items */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    {/* Inputs */}
+                    <div className="border-b border-slate-800/60">
+                        <button onClick={() => setInputsOpen(!inputsOpen)}
+                            className="w-full flex items-center justify-between px-3 py-2 hover:bg-slate-800/30 transition-colors">
+                            <div className="flex items-center space-x-1.5">
+                                <MousePointer2 size={10} className="text-amber-500" />
+                                <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">Inputs</span>
+                                <span className="text-[8px] text-slate-600 ml-1">({inputs.length})</span>
+                            </div>
+                            {inputsOpen ? <ChevronDown size={10} className="text-slate-600" /> : <ChevronRight size={10} className="text-slate-600" />}
+                        </button>
+                        {inputsOpen && (
+                            <div className="px-3 pb-3 grid grid-cols-2 gap-2">
+                                {inputs.map(input => (
+                                    <div key={input.id} draggable onDragStart={e => onDragStart(e, 'input', input)}
+                                        className="flex flex-col items-center justify-center p-3 rounded-lg bg-amber-500/5 border border-amber-500/10 cursor-grab active:cursor-grabbing hover:bg-amber-500/10 hover:border-amber-500/30 transition-all group aspect-square text-center relative overflow-hidden">
+                                        <GripVertical size={10} className="absolute top-1.5 left-1.5 text-slate-700/50 group-hover:text-amber-500/50" />
+                                        <span className="text-2xl mb-2 leading-none">{input.icono}</span>
+                                        <span className="text-[9px] font-bold text-slate-400 line-clamp-3 leading-tight group-hover:text-amber-300 px-1">{input.nombre}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
                     {/* Tools */}
+
                     <div className="border-b border-slate-800/60">
                         <button onClick={() => setToolsOpen(!toolsOpen)}
                             className="w-full flex items-center justify-between px-3 py-2 hover:bg-slate-800/30 transition-colors">
@@ -953,7 +1030,8 @@ const MachineEditor = () => {
 
                                     return (
                                         <div key={key}>
-                                            <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">{key}</label>
+                                            <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">{field.label || key}</label>
+
 
                                             {fieldType === 'select' ? (
                                                 <select

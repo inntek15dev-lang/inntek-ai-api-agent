@@ -203,7 +203,7 @@ const executeSingleTool = async (tool, promptText, files = null) => {
 
     // Build full prompt
     const hasFiles = filesArray.length > 0;
-    const userInstruction = promptText || (hasFiles ? 'Analyze the attached content.' : 'Execute and generate output based on your training and behavior protocols.');
+    const inputData = promptText || (hasFiles ? 'Analyze the attached content.' : 'Execute and generate output based on your training and behavior protocols.');
 
     // Resolve @file/@data markers in training and behavior prompts
     const resolvedTraining = resolveSourceMarkers(tool.training_prompt, promptText, hasFiles);
@@ -216,8 +216,9 @@ ${resolvedTraining}
 BEHAVIOR PROTOCOL:
 ${resolvedBehavior}
 
-User Instruction:
-${userInstruction}
+#inputData#:{
+${inputData}
+}
 `.trim();
 
     if (tool.JsonSchema) {
