@@ -612,8 +612,10 @@ const MachineEditor = () => {
                 descripcion: machineDesc,
                 icono: machine?.icono,
                 nodes: nodes.map(n => ({
+                    id: n.id, node_type: n.data.nodeType, tool_id: n.data.toolId,
                     engine_id: n.data.engineId, visor_id: n.data.visorId, input_id: n.data.inputId, position_x: n.position.x, position_y: n.position.y, config: n.data.config,
                 })),
+
 
                 connections: edges.map(e => ({
                     source_node_id: e.source, target_node_id: e.target,
@@ -640,8 +642,10 @@ const MachineEditor = () => {
                     descripcion: machineDesc,
                     icono: machine?.icono,
                     nodes: nodes.map(n => ({
+                        id: n.id, node_type: n.data.nodeType, tool_id: n.data.toolId,
                         engine_id: n.data.engineId, visor_id: n.data.visorId, input_id: n.data.inputId, position_x: n.position.x, position_y: n.position.y, config: n.data.config,
                     })),
+
 
                     connections: edges.map(eg => ({
                         source_node_id: eg.source, target_node_id: eg.target,
