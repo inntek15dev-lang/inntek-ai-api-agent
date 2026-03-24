@@ -2,15 +2,47 @@ const { sequelize, Role, Privilegio, User, Tool, OutputCategory, OutputFormat, J
 
 require('dotenv').config();
 
+/**
+ * Helper to ensure a core record has a specific static ID.
+ * If found by search criteria but has a different ID, it updates the ID.
+ * Due to ON UPDATE CASCADE, this is safe and homologates environments.
+ */
+const upsertCore = async (Model, searchCriteria, staticId, defaults = {}) => {
+    let instance = await Model.findOne({ where: searchCriteria });
+    if (instance) {
+        if (instance.id !== staticId) {
+            console.log(`[HOMOLOGATION] Mismatched ID for ${Model.name} (${JSON.stringify(searchCriteria)}). Updating ${instance.id} -> ${staticId}`);
+            await instance.update({ id: staticId });
+        }
+        if (Object.keys(defaults).length > 0) {
+            await instance.update(defaults);
+        }
+        return instance;
+    } else {
+        console.log(`[HOMOLOGATION] Creating new ${Model.name} (${JSON.stringify(searchCriteria)}) with static ID: ${staticId}`);
+        return await Model.create({ id: staticId, ...searchCriteria, ...defaults });
+    }
+};
+
 const seed = async () => {
     try {
-        await sequelize.sync({ alter: true });
-        console.log('Database synced successfully');
+        const isSqlite = sequelize.getDialect() === 'sqlite';
+        console.log(`[PARKO] Starting seed on ${sequelize.getDialect()}...`);
 
-        // 1. Create Roles
-        const [superAdminRole] = await Role.findOrCreate({ where: { nombre: 'SuperAdmin' } });
-        const [adminRole] = await Role.findOrCreate({ where: { nombre: 'Admin' } });
-        const [userRole] = await Role.findOrCreate({ where: { nombre: 'User' } });
+        // For SQLite, we only sync if the database is empty or if we really need to.
+        // But for now, we'll keep the sync but handle errors gracefully if needed.
+        try {
+            await sequelize.sync({ alter: !isSqlite }); // Only alter on MySQL
+            console.log('Database synced successfully');
+        } catch (syncErr) {
+            console.warn('⚠️ Database sync warning (ignoring if not critical):', syncErr.message);
+            await sequelize.sync(); // Fallback to safe sync
+        }
+
+        // 1. Create Roles (Static IDs)
+        const superAdminRole = await upsertCore(Role, { nombre: 'SuperAdmin' }, '00000000-0000-4000-a000-000000000001');
+        const adminRole = await upsertCore(Role, { nombre: 'Admin' }, '00000000-0000-4000-a000-000000000002');
+        const userRole = await upsertCore(Role, { nombre: 'User' }, '00000000-0000-4000-a000-000000000003');
 
         // 2. Create Privileges (SuperAdmin wildcard)
         await Privilegio.findOrCreate({
@@ -37,27 +69,17 @@ const seed = async () => {
             defaults: { read: true, exec: true }
         });
 
-        // 3. Create SuperAdmin User
-        const [user] = await User.findOrCreate({
-            where: { email: 'inntek' },
-            defaults: {
-                nombre: 'Inntek System',
-                password: 'admin',
-                role_id: superAdminRole.id
-            }
+        // 3. Create SuperAdmin User (Static ID for System User)
+        const systemUser = await upsertCore(User, { email: 'inntek' }, '11111111-1111-4111-a111-111111111111', {
+            nombre: 'Inntek System',
+            password: 'admin',
+            role_id: superAdminRole.id
         });
 
-        // 4. Create Output Categories
-        const [catIdentidad] = await OutputCategory.findOrCreate({
-            where: { id: '943c7bb0-0b87-455e-843f-c04437b123c8' },
-            defaults: { nombre: 'Identidad y Documentación' }
-        });
-        const [catReportes] = await OutputCategory.findOrCreate({
-            where: { nombre: 'Reportes Ejecutivos' }
-        });
-        const [catRYCE] = await OutputCategory.findOrCreate({
-            where: { nombre: 'RYCE' }
-        });
+        // 4. Create Output Categories (Static IDs)
+        const catIdentidad = await upsertCore(OutputCategory, { nombre: 'Identidad y Documentación' }, '943c7bb0-0b87-455e-843f-c04437b123c8');
+        const catReportes = await upsertCore(OutputCategory, { nombre: 'Reportes Ejecutivos' }, 'c0ffee00-0000-4000-a000-000000000001');
+        const catRYCE = await upsertCore(OutputCategory, { nombre: 'RYCE' }, 'c0ffee00-0000-4000-a000-000000000002');
 
         // ═══════════════════════════════════════════════════════════════
         // 5. Output Formats
@@ -894,217 +916,156 @@ const seed = async () => {
         });
 
         // ═══════════════════════════════════════════════════════════════
-        // 8. Engines (System-level list processors for Machines)
+        // 8. Engines (Core logic nodes)
         // ═══════════════════════════════════════════════════════════════
 
-        const [engineIterator] = await Engine.findOrCreate({
-            where: { slug: 'list-iterator' },
-            defaults: {
-                nombre: 'List Iterator',
-                descripcion: 'Receives an array from a connected Tool output and executes the next connected Tool once per item in the list.',
-                tipo: 'iterator',
-                icono: '🔄',
-                config_schema: JSON.stringify({ input_field: 'string', description: 'Field name from source output that contains the array' }),
-                activo: true
-            }
+        const engineIterator = await upsertCore(Engine, { slug: 'list-iterator' }, 'e2222222-2222-4222-a222-222222222222', {
+            nombre: 'List Iterator',
+            descripcion: 'Receives an array from a connected Tool output and executes the next connected Tool once per item in the list.',
+            tipo: 'iterator',
+            icono: '🔄',
+            config_schema: JSON.stringify({ input_field: 'string', description: 'Field name from source output that contains the array' }),
+            activo: true
         });
 
-        const [engineCollector] = await Engine.findOrCreate({
-            where: { slug: 'list-collector' },
-            defaults: {
-                nombre: 'List Collector',
-                descripcion: 'Aggregates individual outputs from a connected Tool into a single consolidated array.',
-                tipo: 'collector',
-                icono: '📦',
-                config_schema: JSON.stringify({ output_field: 'string', description: 'Field name for the collected array in the output' }),
-                activo: true
-            }
+        const engineCollector = await upsertCore(Engine, { slug: 'list-collector' }, 'e3333333-3333-4333-a333-333333333333', {
+            nombre: 'List Collector',
+            descripcion: 'Aggregates individual outputs from a connected Tool into a single consolidated array.',
+            tipo: 'collector',
+            icono: '📦',
+            config_schema: JSON.stringify({ output_field: 'string', description: 'Field name for the collected array in the output' }),
+            activo: true
         });
 
-        const [engineMapper] = await Engine.findOrCreate({
-            where: { slug: 'data-mapper' },
-            defaults: {
-                nombre: 'Data Mapper',
-                descripcion: 'Transforms and maps fields between Tool inputs and outputs. Define field mappings to reshape data between nodes.',
-                tipo: 'mapper',
-                icono: '🔀',
-                config_schema: JSON.stringify({ mappings: 'array', description: 'Array of {from, to} field mapping objects' }),
-                activo: true
-            }
-        });
-
-        const [engineApiConsumer] = await Engine.findOrCreate({
-            where: { slug: 'api-consumer' },
-            defaults: {
-                nombre: 'API Consumer',
-                descripcion: 'Ejecuta peticiones HTTP a APIs externas. Si es POST/PUT, el input del nodo anterior se enviará como body JSON.',
-                tipo: 'api-consumer',
-                icono: '🌐',
-                config_schema: JSON.stringify({
-                    url: { type: 'string', description: 'URL del endpoint (ej. https://api.ejemplo.com/v1/data)' },
-                    method: { type: 'select', options: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], description: 'Método HTTP' },
-                    headers: { type: 'text', description: 'Headers adicionales en formato JSON (ej. {"Authorization": "Bearer token"})' }
-                }),
-                activo: true
-            }
-        });
-
-        const [enginePrinter] = await Engine.findOrCreate({
-            where: { slug: 'printer' },
-            defaults: {
-                nombre: 'PRINTER',
-                descripcion: 'Engine de salida que pasa los datos como JSON. Úsalo con un VISOR para ver los resultados.',
-                tipo: 'output',
-                icono: '🖨️',
-                config_schema: JSON.stringify({}),
-                activo: true
-            }
-        });
-
-        const [engineConverter] = await Engine.findOrCreate({
-            where: { slug: 'json-converter' },
-            defaults: {
-                nombre: 'JSON Converter',
-                descripcion: 'Convierte bidireccionalmente entre string JSON y objeto. Si recibe string lo convierte a objeto, y viceversa.',
-                tipo: 'converter',
-                icono: '🔄',
-                config_schema: JSON.stringify({}),
-                activo: true
-            }
-        });
-
-        const [engineEntityExtractor] = await Engine.findOrCreate({
-            where: { slug: 'json-entity-extractor' },
-            defaults: {
-                nombre: 'Entity Extractor',
-                descripcion: 'Analiza una estructura JSON para identificar y extraer la colección principal de entidades como un array plano.',
-                tipo: 'extractor',
-                icono: '📂',
-                config_schema: JSON.stringify({}),
-                activo: true
-            }
-        });
-
-        const [engineCsvConverter] = await Engine.findOrCreate({
-            where: { slug: 'csv-converter' },
-            defaults: {
-                nombre: 'CSV Tabulator',
-                descripcion: 'Convierte un listado de objetos en un archivo CSV tabulado (separado por ;) listo para Excel.',
-                tipo: 'output',
-                icono: '📊',
-                config_schema: JSON.stringify({}),
-                activo: true
-            }
-        });
-
-        const [engineComparator] = await Engine.findOrCreate({
-            where: { slug: 'data-comparator' },
-            defaults: {
-                nombre: 'Data Comparator',
-                descripcion: 'Compara dos objetos JSON y genera un reporte detallado columna por columna (data vs doc) con porcentaje de match.',
-                tipo: 'mapper',
-                icono: '⚖️',
-                config_schema: JSON.stringify({}),
-                activo: true
-            }
-        });
-
-        const [engineCherryPick] = await Engine.findOrCreate({
-            where: { slug: 'cherry-pick' },
-            defaults: {
-                nombre: 'Cherry pick',
-                descripcion: 'Selecciona un elemento o ruta específica de un JSON (ej: analisis_deuda.moneda) para entregarlo como salida.',
-                tipo: 'extractor',
-                icono: '🍒',
-                config_schema: JSON.stringify({
-                    field: { type: 'string', description: 'Campo o ruta JSON a extraer (ej: empresa.rut)' }
-                }),
-                activo: true
-            }
-        });
-
-        const [engineCore] = await Engine.findOrCreate({
-            where: { slug: 'core' },
-            defaults: {
-                nombre: 'CORE Engine',
-                descripcion: 'Engine central para mapeo de datos en input y output, soportando entrada manual JSON o datos de herramientas/engines previos.',
-                tipo: 'mapper',
-                icono: '🧠',
-                config_schema: JSON.stringify({
-                    manual_input: { type: 'textarea', description: 'Entrada manual en formato JSON (opcional base)' },
-                    input_mapping: { type: 'smart-mapper', description: 'Abrir Mapeador de Entrada' },
-                    output_mapping: { type: 'smart-mapper', description: 'Abrir Mapeador de Salida' }
-                }),
-                activo: true
-            }
-        });
-        // Force update to ensure existing databases (localhost/render) pick up schema changes
-        await engineCore.update({
+        const engineMapper = await upsertCore(Engine, { slug: 'data-mapper' }, 'e4444444-4444-4444-a444-444444444444', {
+            nombre: 'Data Mapper',
+            descripcion: 'Transforms and maps fields between Tool inputs and outputs. Define field mappings to reshape data between nodes.',
             tipo: 'mapper',
+            icono: '🔀',
+            config_schema: JSON.stringify({ mappings: 'array', description: 'Array of {from, to} field mapping objects' }),
+            activo: true
+        });
+
+        const engineApiConsumer = await upsertCore(Engine, { slug: 'api-consumer' }, 'e5555555-5555-4555-a555-555555555555', {
+            nombre: 'API Consumer',
+            descripcion: 'Ejecuta peticiones HTTP a APIs externas. Si es POST/PUT, el input del nodo anterior se enviará como body JSON.',
+            tipo: 'api-consumer',
+            icono: '🌐',
+            config_schema: JSON.stringify({
+                url: { type: 'string', description: 'URL del endpoint (ej. https://api.ejemplo.com/v1/data)' },
+                method: { type: 'select', options: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], description: 'Método HTTP' },
+                headers: { type: 'text', description: 'Headers adicionales en formato JSON (ej. {"Authorization": "Bearer token"})' }
+            }),
+            activo: true
+        });
+
+        const enginePrinter = await upsertCore(Engine, { slug: 'printer' }, 'e6666666-6666-4666-a666-666666666666', {
+            nombre: 'PRINTER',
+            descripcion: 'Engine de salida que pasa los datos como JSON. Úsalo con un VISOR para ver los resultados.',
+            tipo: 'output',
+            icono: '🖨️',
+            config_schema: JSON.stringify({}),
+            activo: true
+        });
+
+        const engineConverter = await upsertCore(Engine, { slug: 'json-converter' }, 'e7777777-7777-4777-a777-777777777777', {
+            nombre: 'JSON Converter',
+            descripcion: 'Convierte bidireccionalmente entre string JSON y objeto. Si recibe string lo convierte a objeto, y viceversa.',
+            tipo: 'converter',
+            icono: '🔄',
+            config_schema: JSON.stringify({}),
+            activo: true
+        });
+
+        const engineEntityExtractor = await upsertCore(Engine, { slug: 'json-entity-extractor' }, 'e8888888-8888-4888-a888-888888888888', {
+            nombre: 'Entity Extractor',
+            descripcion: 'Analiza una estructura JSON para identificar y extraer la colección principal de entidades como un array plano.',
+            tipo: 'extractor',
+            icono: '📂',
+            config_schema: JSON.stringify({}),
+            activo: true
+        });
+
+        const engineCsvConverter = await upsertCore(Engine, { slug: 'csv-converter' }, 'e9999999-9999-4999-a999-999999999999', {
+            nombre: 'CSV Tabulator',
+            descripcion: 'Convierte un listado de objetos en un archivo CSV tabulado (separado por ;) listo para Excel.',
+            tipo: 'output',
+            icono: '📊',
+            config_schema: JSON.stringify({}),
+            activo: true
+        });
+
+        const engineComparator = await upsertCore(Engine, { slug: 'data-comparator' }, 'ea111111-1111-4111-a111-111111111111', {
+            nombre: 'Data Comparator',
+            descripcion: 'Compara dos objetos JSON y genera un reporte detallado columna por columna (data vs doc) con porcentaje de match.',
+            tipo: 'mapper',
+            icono: '⚖️',
+            config_schema: JSON.stringify({}),
+            activo: true
+        });
+
+        const engineCherryPick = await upsertCore(Engine, { slug: 'cherry-pick' }, 'eb222222-2222-4222-a222-222222222222', {
+            nombre: 'Cherry pick',
+            descripcion: 'Selecciona un elemento o ruta específica de un JSON (ej: analisis_deuda.moneda) para entregarlo como salida.',
+            tipo: 'extractor',
+            icono: '🍒',
+            config_schema: JSON.stringify({
+                field: { type: 'string', description: 'Campo o ruta JSON a extraer (ej: empresa.rut)' }
+            }),
+            activo: true
+        });
+
+        const engineCore = await upsertCore(Engine, { slug: 'core' }, 'ef4f899e-8260-449e-8c54-469600983111', {
+            nombre: 'CORE Engine',
+            descripcion: 'Engine central para mapeo de datos en input y output, soportando entrada manual JSON o datos de herramientas/engines previos.',
+            tipo: 'mapper',
+            icono: '🧠',
             config_schema: JSON.stringify({
                 manual_input: { type: 'textarea', description: 'Entrada manual en formato JSON (opcional base)' },
                 input_mapping: { type: 'smart-mapper', description: 'Abrir Mapeador de Entrada' },
                 output_mapping: { type: 'smart-mapper', description: 'Abrir Mapeador de Salida' }
-            })
+            }),
+            activo: true
         });
 
-        const [engineLinkFile] = await Engine.findOrCreate({
-            where: { slug: 'link-file' },
-            defaults: {
-                id: '13f6a316-6c0e-454d-9693-3cb853fcb107',
-                nombre: 'Descargador Link-File',
-                descripcion: 'Descarga un archivo desde una URL pública y lo provee como archivo de entrada a las Herramientas (Tools) conectadas.',
-                tipo: 'utility',
-                icono: '🔗',
-                config_schema: JSON.stringify({
-                    file_url: { type: 'string', description: 'URL del archivo a descargar (opcional)' },
-                    param: { type: 'string', description: 'Nombre del parámetro en el input que contiene la URL' }
-                }),
-                activo: true
-            }
-        });
-        await engineLinkFile.update({
+        const engineLinkFile = await upsertCore(Engine, { slug: 'link-file' }, '13f6a316-6c0e-454d-9693-3cb853fcb107', {
+            nombre: 'Descargador Link-File',
+            descripcion: 'Descarga un archivo desde una URL pública y lo provee como archivo de entrada a las Herramientas (Tools) conectadas.',
             tipo: 'utility',
+            icono: '🔗',
             config_schema: JSON.stringify({
-                file_url: { type: 'string', description: 'URL del archivo a descargar' }
-            })
+                file_url: { type: 'string', description: 'URL del archivo a descargar (opcional)' },
+                param: { type: 'string', description: 'Nombre del parámetro en el input que contiene la URL' }
+            }),
+            activo: true
         });
 
         // ═══════════════════════════════════════════════════════════════
         // 9. Visores
         // ═══════════════════════════════════════════════════════════════
 
-        const [visorMessage] = await Visor.findOrCreate({
-            where: { slug: 'message-visor' },
-            defaults: {
-                nombre: 'MENSAJE',
-                descripcion: 'Muestra el resultado como un mensaje flotante minimalista.',
-                icono: '💬',
-                config_schema: JSON.stringify({}),
-                activo: true
-            }
+        const visorMessage = await upsertCore(Visor, { slug: 'message-visor' }, '00000000-0000-4000-b000-000000000001', {
+            nombre: 'MENSAJE',
+            descripcion: 'Muestra el resultado como un mensaje flotante minimalista.',
+            icono: '💬',
+            config_schema: JSON.stringify({}),
+            activo: true
         });
 
-        const [visorTable] = await Visor.findOrCreate({
-            where: { slug: 'table-visor' },
-            defaults: {
-                nombre: 'TABLA',
-                descripcion: 'Muestra los datos en un formato de tabla estructurada.',
-                icono: '📊',
-                config_schema: JSON.stringify({}),
-                activo: true
-            }
+        const visorTable = await upsertCore(Visor, { slug: 'table-visor' }, '00000000-0000-4000-b000-000000000002', {
+            nombre: 'TABLA',
+            descripcion: 'Muestra los datos en un formato de tabla estructurada.',
+            icono: '📊',
+            config_schema: JSON.stringify({}),
+            activo: true
         });
 
-        const [visorDocument] = await Visor.findOrCreate({
-            where: { slug: 'document-visor' },
-            defaults: {
-                nombre: 'DOCUMENTO',
-                descripcion: 'Visualizador de documentos con formato HTML canónico.',
-                icono: '📄',
-                config_schema: JSON.stringify({}),
-                activo: true
-            }
+        const visorDocument = await upsertCore(Visor, { slug: 'document-visor' }, '00000000-0000-4000-b000-000000000003', {
+            nombre: 'DOCUMENTO',
+            descripcion: 'Visualizador de documentos con formato HTML canónico.',
+            icono: '📄',
+            config_schema: JSON.stringify({}),
+            activo: true
         });
 
         // 10. AI Tools
