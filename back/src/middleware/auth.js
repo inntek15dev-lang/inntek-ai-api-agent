@@ -20,7 +20,7 @@ const authMiddleware = async (req, res, next) => {
         const roleName = user.Role?.nombre || 'admin';
         const privileges = user.Role?.Privilegios && user.Role.Privilegios.length > 0 
             ? user.Role.Privilegios 
-            : (roleName === 'admin' ? [{ ref_modulo: '*', read: true, write: true, excec: true }] : []);
+            : (roleName === 'admin' ? [{ ref_modulo: '*', read: true, write: true, exec: true }] : []);
 
         const hasPrivilege = (module, action) => {
             const wildcard = privileges.find(p => p.ref_modulo === '*');
@@ -31,7 +31,7 @@ const authMiddleware = async (req, res, next) => {
 
         req.user.canRead = (module) => hasPrivilege(module, 'read');
         req.user.canWrite = (module) => hasPrivilege(module, 'write');
-        req.user.canExec = (module) => hasPrivilege(module, 'excec');
+        req.user.canExec = (module) => hasPrivilege(module, 'exec');
 
         next();
     } catch (error) {
