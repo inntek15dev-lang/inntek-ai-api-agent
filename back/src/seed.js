@@ -4,7 +4,7 @@ require('dotenv').config();
 
 const seed = async () => {
     try {
-        await sequelize.sync();
+        await sequelize.sync({ alter: true });
         console.log('Database synced successfully');
 
         // 1. Create Roles
