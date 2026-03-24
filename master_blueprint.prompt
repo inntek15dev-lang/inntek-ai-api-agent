@@ -217,7 +217,7 @@ front/ (React SPA)                    back/ (Express API)
 | 🔄 JSON Converter | `json-converter` | `converter` | Conversión automática String <-> Object |
 | 📂 Entity Extractor | `json-entity-extractor` | `extractor` | Extrae el array principal de una estructura JSON compleja |
 | 📊 CSV Tabulator | `csv-converter` | `output` | Genera un string CSV (separado por ;) a partir de un listado |
-| 🔗 Link-File | `link-file` | `utility` | Descarga un archivo desde una URL pública |
+| 🔗 Link-File | `link-file` | `utility` | Descarga un archivo desde una URL pública (manual o vía parámetro dinámico) |
 
 ---
 
