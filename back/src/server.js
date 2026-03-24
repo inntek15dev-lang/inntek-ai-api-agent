@@ -69,9 +69,8 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Database Sync
-sequelize.sync({ force: false }).then(() => {
-    console.log('Database connected and synced');
+// Database Sync Logic
+const startServer = () => {
     const server = app.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
         console.log(`Swagger docs at http://localhost:${PORT}/api-docs`);
@@ -86,6 +85,23 @@ sequelize.sync({ force: false }).then(() => {
             process.exit(1);
         }
     });
-}).catch(err => {
-    console.error('Database connection failed:', err);
-});
+};
+
+if (process.env.DB_SYNC_DISABLED === 'true') {
+    console.log('[PARKO] Database sync skipped by DB_SYNC_DISABLED');
+    startServer();
+} else {
+    sequelize.sync({ force: false }).then(() => {
+        console.log('Database connected and synced');
+        startServer();
+    }).catch(err => {
+        console.error('Database connection failed:', err);
+        // On local dev with SQLite, sometimes we want to proceed even if sync fails
+        if (process.env.NODE_ENV === 'development' && sequelize.getDialect() === 'sqlite') {
+            console.warn('⚠️ Proceeding anyway in development mode...');
+            startServer();
+        } else {
+            process.exit(1);
+        }
+    });
+}
