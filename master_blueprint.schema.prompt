@@ -115,7 +115,7 @@ id              UUID        PK, DEFAULT UUIDV4
 nombre          VARCHAR     NOT NULL
 slug            VARCHAR     UNIQUE, NOT NULL
 descripcion     TEXT
-tipo            ENUM('iterator','collector','mapper','api-consumer','output','converter','extractor')  NOT NULL
+tipo            ENUM('iterator','collector','mapper','api-consumer','output','converter','extractor','utility')  NOT NULL
 icono           VARCHAR               -- emoji icon
 config_schema   TEXT                   -- JSON string defining config fields
 activo          BOOLEAN     DEFAULT TRUE
@@ -200,7 +200,7 @@ MachineConnection N ── 1  MachineNode     as TargetNode (target_node_id)
 ### Users: inntek (SuperAdmin role)
 ### Privilege Modules: Auth, AI_Tool_Maker, AI_Tool_Catalog, AI_Tool_Execution, Config, Outputs_Maker, Json_Schemas, AI_Providers, Machines
 ### AiProviders: Google Gemini (google_native), OpenRouter (openai_compatible, DEFAULT)
-### Engines: list-iterator, list-collector, data-mapper, api-consumer, printer, json-converter, json-entity-extractor, csv-converter
+### Engines: list-iterator, list-collector, data-mapper, api-consumer, printer, json-converter, json-entity-extractor, csv-converter, link-file
 ### Visores: message-visor, table-visor, document-visor
 ### OutputCategories: Identidad y Documentación, Laboral, Liquidaciones, TGR
 ### OutputFormats: Reporte Validacion Cedula Chilena, Reporte Check Liquidacion Chile, Matriz de Liquidaciones (Demo)

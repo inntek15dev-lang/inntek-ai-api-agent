@@ -25,6 +25,7 @@
 | Dev Server | Nodemon | 3.1.x |
 | Env | dotenv | 17.3.x |
 | CORS | cors | 2.8.x |
+| HTTP Client | axios | 1.7.x |
 
 ### Frontend
 | Layer | Technology | Version |
@@ -193,6 +194,7 @@ front/ (React SPA)                    back/ (Express API)
      - **Engine: `csv-converter`** → converts a list of objects into a semicolon-separated CSV string, sanitizing data to prevent format breakage.
      - **Engine: `json-converter`** → bidirectional conversion between JSON strings and JavaScript objects.
      - **Engine: `json-entity-extractor`** → automatically identifies and extracts the main entity collection from a complex JSON structure.
+     - **Engine: `link-file`** → downloads a file from a public URL and provides it as a file input for connected tools.
      - **Visor nodes** → renders data using specialized visual components (Table, Message, Document).
   5. Return `{ steps[], finalOutput, totalDuration }` (or stream as Server-Sent Events if `?stream=true` is provided. Frontend must initiate fetch with `Authorization` header).
 - **Step Log Format:** `{ nodeId, nodeName, nodeIcon, nodeType, engineType, status, output, error, duration, provider? }`
@@ -215,6 +217,7 @@ front/ (React SPA)                    back/ (Express API)
 | 🔄 JSON Converter | `json-converter` | `converter` | Conversión automática String <-> Object |
 | 📂 Entity Extractor | `json-entity-extractor` | `extractor` | Extrae el array principal de una estructura JSON compleja |
 | 📊 CSV Tabulator | `csv-converter` | `output` | Genera un string CSV (separado por ;) a partir de un listado |
+| 🔗 Link-File | `link-file` | `utility` | Descarga un archivo desde una URL pública |
 
 ---
 
