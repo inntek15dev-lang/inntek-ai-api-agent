@@ -527,8 +527,32 @@ const engines = {
 
         if (!urlToDownload) {
             const paramName = config.param;
-            if (paramName && inputText && typeof inputText === 'object' && inputText[paramName]) {
-                urlToDownload = inputText[paramName];
+            let data = inputText;
+            
+            // If inputText is a string, try to parse it as JSON to see if it contains parameters
+            if (typeof inputText === 'string') {
+                try {
+                    const parsed = JSON.parse(inputText);
+                    if (parsed && typeof parsed === 'object') {
+                        data = parsed;
+                    }
+                } catch (e) {
+                    // Not JSON, that's fine
+                }
+            }
+
+            if (paramName && data && typeof data === 'object') {
+                // Try exact match first
+                if (data[paramName]) {
+                    urlToDownload = data[paramName];
+                } else {
+                    // Try case-insensitive match
+                    const targetKey = paramName.toLowerCase();
+                    const actualKey = Object.keys(data).find(k => k.toLowerCase() === targetKey);
+                    if (actualKey) {
+                        urlToDownload = data[actualKey];
+                    }
+                }
             } else if (typeof inputText === 'string' && inputText.trim().startsWith('http')) {
                 urlToDownload = inputText.trim();
             }
