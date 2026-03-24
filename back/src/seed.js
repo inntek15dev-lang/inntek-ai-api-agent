@@ -1048,6 +1048,26 @@ const seed = async () => {
             })
         });
 
+        const [engineLinkFile] = await Engine.findOrCreate({
+            where: { slug: 'link-file' },
+            defaults: {
+                nombre: 'Descargador Link-File',
+                descripcion: 'Descarga un archivo desde una URL pública y lo provee como archivo de entrada a las Herramientas (Tools) conectadas.',
+                tipo: 'utility',
+                icono: '🔗',
+                config_schema: JSON.stringify({
+                    file_url: { type: 'string', description: 'URL del archivo a descargar' }
+                }),
+                activo: true
+            }
+        });
+        await engineLinkFile.update({
+            tipo: 'utility',
+            config_schema: JSON.stringify({
+                file_url: { type: 'string', description: 'URL del archivo a descargar' }
+            })
+        });
+
         // ═══════════════════════════════════════════════════════════════
         // 9. Visores
         // ═══════════════════════════════════════════════════════════════

@@ -300,13 +300,25 @@ exports.executeMachine = async (req, res) => {
                     // ── Tool Node: execute AI ──
                     // Resolve specific files for this node
                     let files = [];
+                    // 1. Resolve files from parent Engine output (__isFile mapping)
+                    parentOutputs.forEach(po => {
+                        if (po && typeof po === 'object' && po.__isFile) {
+                            files.push({
+                                path: po.path,
+                                mimetype: po.mimetype,
+                                originalname: po.originalname
+                            });
+                        }
+                    });
+
+                    // 2. Resolve specific files for this node from HTTP UI
                     if (parentOutputs.length === 0) {
-                        // Check for node-specific files (file_${nodeId}) or fallback to 'imagenes' or 'imagen'
-                        files = (req.files || []).filter(f =>
+                        const reqFiles = (req.files || []).filter(f =>
                             f.fieldname === `file_${nodeId}` ||
                             f.fieldname === 'imagenes' ||
                             f.fieldname === 'imagen'
                         );
+                        files = files.concat(reqFiles);
                     }
 
                     const result = await executeSingleTool(node.Tool, inputText, files);
@@ -373,12 +385,19 @@ exports.executeMachine = async (req, res) => {
             }
         }
 
-        // Cleanup temp files
+        // Cleanup temp files from UI
         if (req.files && req.files.length > 0) {
             req.files.forEach(file => {
                 try { fs.unlinkSync(file.path); } catch (e) { /* ignore */ }
             });
         }
+        
+        // Cleanup dynamically generated engine files
+        Object.values(nodeOutputs).forEach(output => {
+            if (output && typeof output === 'object' && output.__isFile && output.path) {
+                try { fs.unlinkSync(output.path); } catch (e) { /* ignore */ }
+            }
+        });
 
         // 6. Determine final output (last node in execution order)
         const lastNodeId = executionOrder[executionOrder.length - 1];
@@ -403,6 +422,13 @@ exports.executeMachine = async (req, res) => {
                 try { fs.unlinkSync(file.path); } catch (e) { /* ignore */ }
             });
         }
+        
+        Object.values(nodeOutputs || {}).forEach(output => {
+            if (output && typeof output === 'object' && output.__isFile && output.path) {
+                try { fs.unlinkSync(output.path); } catch (e) { /* ignore */ }
+            }
+        });
+        
         console.error('Machine Execution Error:', error.message);
         sendError(500, `Machine Execution Failed: ${error.message}`, { steps, totalDuration: Date.now() - globalStart });
     }

@@ -510,6 +510,52 @@ const engines = {
         }
 
         return { output: finalOutput, stepInfo: { core_processed: true, final_keys: Object.keys(finalOutput || {}) } };
+    },
+
+    'link-file': async (node, inputText, parentOutputs, context) => {
+        const axios = require('axios');
+        const fs = require('fs');
+        const path = require('path');
+        const os = require('os');
+
+        let config = {};
+        try { config = node.config ? JSON.parse(node.config) : {}; } catch (e) { }
+
+        // Take URL from config or from inputText
+        const urlToDownload = config.file_url || (typeof inputText === 'string' && inputText.startsWith('http') ? inputText.trim() : null);
+
+        if (!urlToDownload || !urlToDownload.startsWith('http')) {
+            throw new Error('Link-file exige una URL HTTP válida desde la configuración o desde el input de entrada.');
+        }
+
+        const response = await axios({
+            method: 'GET',
+            url: urlToDownload,
+            responseType: 'stream'
+        });
+
+        const contentType = response.headers['content-type'] || 'application/octet-stream';
+        const urlFileName = urlToDownload.split('/').pop().split('?')[0] || 'archivo_descargado';
+        const uniqueId = Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+        const tempFilePath = path.join(os.tmpdir(), `${uniqueId}_${urlFileName}`);
+
+        const writer = fs.createWriteStream(tempFilePath);
+        response.data.pipe(writer);
+
+        await new Promise((resolve, reject) => {
+            writer.on('finish', resolve);
+            writer.on('error', reject);
+        });
+
+        return {
+            output: {
+                __isFile: true,
+                path: tempFilePath,
+                mimetype: contentType,
+                originalname: urlFileName
+            },
+            stepInfo: { status: 'File downloaded', file: urlFileName, type: contentType }
+        };
     }
 };
 

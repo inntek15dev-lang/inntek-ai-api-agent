@@ -16,7 +16,7 @@ import {
     MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Save, ArrowLeft, Cpu, Cog, GripVertical, Workflow, ChevronDown, ChevronRight, Check, Trash2, X, Play, Loader2, Upload, MousePointer2, Eraser, Plus, Minus, Wand2, FileJson, ArrowRight } from 'lucide-react';
+import { Save, ArrowLeft, Cpu, Cog, GripVertical, Workflow, ChevronDown, ChevronRight, Check, Trash2, X, Play, Loader2, Upload, MousePointer2, Eraser, Plus, Minus, Wand2, FileJson, ArrowRight, Link } from 'lucide-react';
 import PrinterTag from '../components/PrinterTag';
 
 // ═══════════════════════════════════════════════════════════════
@@ -630,6 +630,7 @@ const MachineEditor = () => {
                             visorId: n.visor_id,
                             inputId: n.input_id,
                             slug: n.Visor?.slug || '',
+                            engineSlug: n.Engine?.slug || '',
 
                             config: n.config ? (typeof n.config === 'string' ? JSON.parse(n.config) : n.config) : {},
                             configSchema: n.Engine?.config_schema ? (typeof n.Engine.config_schema === 'string' ? JSON.parse(n.Engine.config_schema) : n.Engine.config_schema) : null,
@@ -705,7 +706,8 @@ const MachineEditor = () => {
                 engineId: type === 'engine' ? item.id : null,
                 visorId: type === 'visor' ? item.id : null,
                 inputId: type === 'input' ? item.id : null,
-                slug: item.slug || '',
+                slug: type === 'visor' ? item.slug || '' : '',
+                engineSlug: type === 'engine' ? item.slug || '' : '',
 
                 config: {},
                 configSchema: item.config_schema ? (typeof item.config_schema === 'string' ? JSON.parse(item.config_schema) : item.config_schema) : null,
@@ -1301,34 +1303,54 @@ const MachineEditor = () => {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Reference Assets (Batch Support)</label>
-                                            <div className="border border-dashed border-slate-700 bg-slate-800/30 rounded-lg h-24 flex items-center justify-center relative hover:bg-violet-500/5 hover:border-violet-500/40 transition-colors">
-                                                <input
-                                                    id="nodeFile"
-                                                    name="nodeFile"
-                                                    type="file"
-                                                    multiple
-                                                    onChange={e => setNodeFiles(prev => ({ ...prev, [activeInputNodeId]: Array.from(e.target.files) }))}
-                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                                />
-                                                <div className="text-center pointer-events-none p-2">
-                                                    {nodeFiles[activeInputNodeId] && nodeFiles[activeInputNodeId].length > 0 ? (
-                                                        <div className="flex flex-col">
-                                                            <span className="text-xs font-bold text-violet-400">
-                                                                {nodeFiles[activeInputNodeId].length} {nodeFiles[activeInputNodeId].length === 1 ? 'File' : 'Files'} selected
-                                                            </span>
-                                                            <span className="text-[8px] text-slate-500 truncate max-w-[200px]">
-                                                                {nodeFiles[activeInputNodeId].map(f => f.name).join(', ')}
-                                                            </span>
+                                            {(() => {
+                                                const hasLinkFileEngine = edges.some(e => e.target === activeInputNodeId && nodes.find(n => n.id === e.source)?.data?.engineSlug === 'link-file');
+                                                if (hasLinkFileEngine) {
+                                                    return (
+                                                        <div>
+                                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Reference Assets</label>
+                                                            <div className="border border-dashed border-emerald-500/50 bg-emerald-500/10 rounded-lg h-24 flex items-center justify-center relative cursor-not-allowed">
+                                                                <div className="text-center font-bold text-emerald-400 flex flex-col items-center">
+                                                                    <Link size={18} className="mb-2" />
+                                                                    <span className="text-[11px] uppercase tracking-widest text-center px-4">ARCHIVO CARGADO DESDE ENGINE</span>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    ) : (
-                                                        <>
-                                                            <Upload size={18} className="mx-auto text-slate-500 mb-1" />
-                                                            <span className="text-[10px] text-slate-500 uppercase tracking-widest">Neural Multi-Upload</span>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </div>
+                                                    );
+                                                }
+                                                return (
+                                                    <div>
+                                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Reference Assets (Batch Support)</label>
+                                                        <div className="border border-dashed border-slate-700 bg-slate-800/30 rounded-lg h-24 flex items-center justify-center relative hover:bg-violet-500/5 hover:border-violet-500/40 transition-colors">
+                                                            <input
+                                                                id="nodeFile"
+                                                                name="nodeFile"
+                                                                type="file"
+                                                                multiple
+                                                                onChange={e => setNodeFiles(prev => ({ ...prev, [activeInputNodeId]: Array.from(e.target.files) }))}
+                                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                            />
+                                                            <div className="text-center pointer-events-none p-2">
+                                                                {nodeFiles[activeInputNodeId] && nodeFiles[activeInputNodeId].length > 0 ? (
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-xs font-bold text-violet-400">
+                                                                            {nodeFiles[activeInputNodeId].length} {nodeFiles[activeInputNodeId].length === 1 ? 'File' : 'Files'} selected
+                                                                        </span>
+                                                                        <span className="text-[8px] text-slate-500 truncate max-w-[200px]">
+                                                                            {nodeFiles[activeInputNodeId].map(f => f.name).join(', ')}
+                                                                        </span>
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        <Upload size={18} className="mx-auto text-slate-500 mb-1" />
+                                                                        <span className="text-[10px] text-slate-500 uppercase tracking-widest">Neural Multi-Upload</span>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
 
                                             {nodeFiles[activeInputNodeId]?.length > 0 && (
                                                 <div className="flex flex-wrap gap-2 mt-3">
