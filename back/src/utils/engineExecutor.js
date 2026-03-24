@@ -522,7 +522,17 @@ const engines = {
         try { config = node.config ? JSON.parse(node.config) : {}; } catch (e) { }
 
         // Take URL from config or from inputText
-        const urlToDownload = config.file_url || (typeof inputText === 'string' && inputText.startsWith('http') ? inputText.trim() : null);
+        // Resolve URL: Manual Config -> Dynamic Param -> Direct Input String
+        let urlToDownload = config.file_url;
+
+        if (!urlToDownload) {
+            const paramName = config.param;
+            if (paramName && inputText && typeof inputText === 'object' && inputText[paramName]) {
+                urlToDownload = inputText[paramName];
+            } else if (typeof inputText === 'string' && inputText.trim().startsWith('http')) {
+                urlToDownload = inputText.trim();
+            }
+        }
 
         if (!urlToDownload || !urlToDownload.startsWith('http')) {
             throw new Error('Link-file exige una URL HTTP válida desde la configuración o desde el input de entrada.');
