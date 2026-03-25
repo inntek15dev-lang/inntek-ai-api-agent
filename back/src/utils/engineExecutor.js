@@ -559,7 +559,8 @@ const engines = {
         }
 
         if (!urlToDownload || !urlToDownload.startsWith('http')) {
-            throw new Error('Link-file exige una URL HTTP válida desde la configuración o desde el input de entrada.');
+            const receivedData = typeof inputText === 'string' ? inputText : JSON.stringify(inputText, null, 2);
+            throw new Error(`Link-file exige una URL HTTP válida desde la configuración o desde el input de entrada. Recibí: ${receivedData}`);
         }
 
         const response = await axios({
