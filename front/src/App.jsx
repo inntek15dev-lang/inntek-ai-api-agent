@@ -18,6 +18,7 @@ import MachineCatalog from './pages/MachineCatalog';
 import MachineEditor from './pages/MachineEditor';
 import MachineExecutor from './pages/MachineExecutor';
 import ApiTester from './pages/ApiTester';
+import Downloader from './pages/Downloader';
 
 const ProtectedRoute = ({ children, module, action = 'read' }) => {
   const { isAuthenticated, loading, canRead, isAdmin } = useAuth();
@@ -129,6 +130,11 @@ function App() {
             <Route path="api-tester" element={
               <ProtectedRoute module="AI_Tool_Execution">
                 <ApiTester />
+              </ProtectedRoute>
+            } />
+            <Route path="downloader" element={
+              <ProtectedRoute module="DOWNLOADER">
+                <Downloader />
               </ProtectedRoute>
             } />
           </Route>
