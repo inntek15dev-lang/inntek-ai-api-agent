@@ -20,6 +20,7 @@
 | Database | MySQL 8 (Aiven Cloud) | SSL Required |
 | Authentication | JWT (jsonwebtoken) | 9.0.x |
 | AI — Google | @google/generative-ai | 0.24.x |
+| File Compression | adm-zip | 0.5.x |
 | File Upload | Multer | 2.0.x |
 | API Docs | swagger-jsdoc + swagger-ui-express | 6.2.x / 5.0.x |
 | Dev Server | Nodemon | 3.1.x |
@@ -201,6 +202,18 @@ front/ (React SPA)                    back/ (Express API)
 - **Multimodal:** First root tool node receives uploaded file (if any), subsequent nodes receive text only
 - **Error Handling:** Individual step errors don't halt the pipeline; partial results returned
 
+### 4.12 Downloader
+- **Ref:** `DOWNLOADER`
+- **Backend:** `downloaderController.js` — `GET /downloader/proxy`, `POST /downloader/zip`
+- **Frontend:** `Downloader.jsx` — Form with 3 fields: `list` (CSV), `url` column, `nombre` column.
+- **Workflow:**
+  1. User uploads CSV.
+  2. System parses CSV and allows selecting columns for Download Link and Filename.
+  3. "Execute Sequence" iterates through rows, displaying a list of files with "Ready" status and individual download buttons.
+  4. "Package All (ZIP)" sends the list of URLs and names to the backend.
+  5. Backend downloads each file (sequentially) and streams back a ZIP archive using `adm-zip`.
+- **CORS Mitigation:** Uses `/downloader/proxy` to fetch external files through the backend to avoid browser CORS restrictions.
+
 ### 4.11 Engines
 - **Ref:** (part of `Machines` module)
 - **Backend:** `engineController.js` — read-only `getEngines`
@@ -236,7 +249,7 @@ front/ (React SPA)                    back/ (Express API)
 - **Route guard:** `<ProtectedRoute module="X">` blocks rendering if no read access
 
 ### Modules with privileges:
-`Auth`, `AI_Tool_Maker`, `AI_Tool_Catalog`, `AI_Tool_Execution`, `Config`, `Outputs_Maker`, `Json_Schemas`, `AI_Providers`, `Machines`
+`Auth`, `AI_Tool_Maker`, `AI_Tool_Catalog`, `AI_Tool_Execution`, `Config`, `Outputs_Maker`, `Json_Schemas`, `AI_Providers`, `Machines`, `DOWNLOADER`
 
 ### API Key Security
 - Provider API keys masked on all GET responses (only last 4 chars visible)
@@ -522,6 +535,7 @@ All routes prefixed with `/api`. Protected by `authMiddleware` + `requirePrivile
 | `/tool-maker` | AI Tool Maker | Scissors | AI_Tool_Maker |
 | `/catalog` | Catalogo | Library | AI_Tool_Catalog |
 | `/machines` | Machines | Workflow | Machines |
+| `/downloader` | Downloader | Download | DOWNLOADER |
 | `/outputs-maker` | Outputs Maker | Palette | Outputs_Maker |
 | `/json-schemas` | JSON Schemas | Code | Json_Schemas |
 | `/config` | Configuración | Settings | Config |
@@ -541,6 +555,7 @@ All routes prefixed with `/api`. Protected by `authMiddleware` + `requirePrivile
 | `/machines` | MachineCatalog | Machines |
 | `/machines/:id` | MachineEditor | Machines |
 | `/machines/:id/execute` | MachineExecutor | Machines |
+| `/downloader` | Downloader | DOWNLOADER |
 
 ---
 

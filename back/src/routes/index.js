@@ -12,6 +12,7 @@ const engineController = require('../controllers/engineController');
 const visorController = require('../controllers/visorController');
 const inputController = require('../controllers/inputController');
 const apiTesterController = require('../controllers/apiTesterController');
+const downloaderController = require('../controllers/downloaderController');
 
 const { authMiddleware, requirePrivilege } = require('../middleware/auth');
 const multer = require('multer');
@@ -762,5 +763,60 @@ router.delete('/exhibitions/:id', exhibitionController.deleteExhibition);
 router.post('/exhibitions/:id/slides', exhibitionController.addSlide);
 router.put('/exhibitions/:id/slides/:slideId', exhibitionController.updateSlide);
 router.delete('/exhibitions/:id/slides/:slideId', exhibitionController.deleteSlide);
+
+// Downloader
+/**
+ * @swagger
+ * /downloader/proxy:
+ *   get:
+ *     summary: Proxy a file download to avoid CORS
+ *     tags: [Downloader]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: url
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: filename
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: File stream
+ */
+router.get('/downloader/proxy', authMiddleware, requirePrivilege('DOWNLOADER', 'read'), downloaderController.proxyDownload);
+
+/**
+ * @swagger
+ * /downloader/zip:
+ *   post:
+ *     summary: Create a ZIP archive from multiple URLs
+ *     tags: [Downloader]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               files:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     url:
+ *                       type: string
+ *                     filename:
+ *                       type: string
+ *     responses:
+ *       200:
+ *         description: ZIP file stream
+ */
+router.post('/downloader/zip', authMiddleware, requirePrivilege('DOWNLOADER', 'exec'), downloaderController.createZip);
 
 module.exports = router;
