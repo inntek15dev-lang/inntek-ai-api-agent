@@ -103,10 +103,11 @@ const Downloader = () => {
 
     const downloadIndividual = (url, filename) => {
         const token = localStorage.getItem('token');
-        // Double-check URL encoding to ensure special chars like & don't break the query string
+        // Ensure '+' are encoded but the rest of the proxy logic remains clean
         const cleanUrl = encodeURIComponent(url);
         const proxyUrl = `${API_URL}/downloader/proxy?url=${cleanUrl}&filename=${encodeURIComponent(filename)}&token=${token}`;
         
+        console.log(`[PARKO] Initiating deep-proxy download for: ${url}`);
         window.open(proxyUrl, '_blank');
     };
 
