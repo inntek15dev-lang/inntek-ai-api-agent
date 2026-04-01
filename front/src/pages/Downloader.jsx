@@ -103,7 +103,9 @@ const Downloader = () => {
 
     const downloadIndividual = (url, filename) => {
         const token = localStorage.getItem('token');
-        const proxyUrl = `${API_URL}/downloader/proxy?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}&token=${token}`;
+        // Double-check URL encoding to ensure special chars like & don't break the query string
+        const cleanUrl = encodeURIComponent(url);
+        const proxyUrl = `${API_URL}/downloader/proxy?url=${cleanUrl}&filename=${encodeURIComponent(filename)}&token=${token}`;
         
         window.open(proxyUrl, '_blank');
     };
