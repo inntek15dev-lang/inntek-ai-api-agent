@@ -17,6 +17,22 @@ import {
     RotateCcw
 } from 'lucide-react';
 
+const MIME_EXTENSIONS = {
+    'application/pdf': '.pdf',
+    'application/zip': '.zip',
+    'application/x-zip-compressed': '.zip',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+    'application/vnd.ms-excel': '.xls',
+    'application/msword': '.doc',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+    'image/jpeg': '.jpg',
+    'image/png': '.png',
+    'image/gif': '.gif',
+    'text/csv': '.csv',
+    'text/plain': '.txt',
+    'application/json': '.json'
+};
+
 const Downloader = () => {
     // Form States
     const [file, setFile] = useState(null);
@@ -24,6 +40,7 @@ const Downloader = () => {
     const [headers, setHeaders] = useState([]);
     const [urlCol, setUrlCol] = useState('');
     const [nameCol, setNameCol] = useState('');
+    const [renderKey, setRenderKey] = useState(0);
 
     // Execution States
     const [isProcessing, setIsProcessing] = useState(false);
@@ -50,20 +67,43 @@ const Downloader = () => {
         const selectedFile = e.target.files[0];
         if (!selectedFile) return;
 
+        // --- Deep Flush (Purge previous states) ---
+        setHeaders([]);
+        setCsvData([]);
+        setUrlCol('');
+        setNameCol('');
+        setProgress(0);
+        setResults([]);
+        setLogs([]);
+
         setFile(selectedFile);
-        addLog(`Payload detected: ${selectedFile.name}`, 'info');
+        addLog(`Deep Flush performed. New Payload: ${selectedFile.name}`, 'info');
         
         const reader = new FileReader();
         reader.onload = (event) => {
             const text = event.target.result;
-            const rows = text.split('\n').map(row => row.split(',').map(cell => cell.trim()));
-            if (rows.length > 0) {
-                const headerRow = rows[0];
-                setHeaders(headerRow);
-                const dataRows = rows.slice(1).filter(r => r.length === headerRow.length && r.some(c => c !== ''));
-                setCsvData(dataRows);
+            const rawRows = text.split(/\r?\n/).filter(row => row.trim() !== '');
+            
+            if (rawRows.length > 0) {
+                // --- Auto-Sense Delimiter ---
+                const firstLine = rawRows[0];
+                const commaCount = (firstLine.match(/,/g) || []).length;
+                const semiCount = (firstLine.match(/;/g) || []).length;
+                const delimiter = commaCount >= semiCount ? ',' : ';';
                 
-                addLog(`Parsed ${dataRows.length} potential rows for extraction.`, 'success');
+                addLog(`Auto-Sense Delimiter detected: ${delimiter === ',' ? 'Comma' : 'Semicolon'}`, 'info');
+                addLog(`Diagnostic: Raw Header Row Detected: ${firstLine.substring(0, 80)}...`, 'info');
+
+                // Split cells and clean padding
+                const rows = rawRows.map(row => row.split(delimiter).map(cell => cell.trim()));
+                const headerRow = rows[0].map((h, i) => h || `Column ${i + 1}`);
+                
+                setHeaders([...headerRow]);
+                
+                const dataRows = rows.slice(1);
+                setCsvData([...dataRows]);
+                
+                addLog(`Parsed ${dataRows.length} potential rows from ${selectedFile.name}`, 'success');
 
                 // Auto-select if contains "url" or "link"
                 const urlIdx = headerRow.findIndex(h => h.toLowerCase().includes('url') || h.toLowerCase().includes('link'));
@@ -71,6 +111,8 @@ const Downloader = () => {
                 
                 if (urlIdx !== -1) setUrlCol(headerRow[urlIdx]);
                 if (nameIdx !== -1) setNameCol(headerRow[nameIdx]);
+
+                setRenderKey(prev => prev + 1);
             }
         };
         reader.readAsText(selectedFile);
@@ -128,7 +170,16 @@ const Downloader = () => {
 
                 resEntry.status = 'ready';
                 resEntry.blob = response.data;
-                addLog(`Success: ${filename} fully hydrated.`, 'success');
+                
+                // Refine filename with extension if missing
+                const contentTypeHeader = response.headers['content-type']?.split(';')[0]?.trim().toLowerCase();
+                const expectedExt = MIME_EXTENSIONS[contentTypeHeader];
+                
+                if (expectedExt && !resEntry.filename.toLowerCase().endsWith(expectedExt)) {
+                    resEntry.filename = `${resEntry.filename}${expectedExt}`;
+                }
+
+                addLog(`Success: ${resEntry.filename} fully hydrated.`, 'success');
             } catch (err) {
                 resEntry.status = 'error';
                 resEntry.error = err.message;
@@ -143,7 +194,7 @@ const Downloader = () => {
             if (i < csvData.length - 1) await sleep(500);
         }
 
-        addLog(`Sequence terminated. Final Status: ${currentProgress === 100 ? 'SUCCESS' : 'PARTIAL'}.`, 'info');
+        addLog(`Sequence Alpha-One verified. ZIP container is now ARMED.`, 'success');
         setIsProcessing(false);
     };
 
@@ -175,7 +226,9 @@ const Downloader = () => {
         setLogs([]);
     };
 
-    const allLoaded = progress === 100 && results.length > 0 && !isProcessing;
+    const allLoaded = results.length > 0 && 
+                      !isProcessing && 
+                      results.every(res => res.status === 'ready' || res.status === 'error');
 
     return (
         <div className="space-y-6 max-w-6xl mx-auto p-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -184,10 +237,10 @@ const Downloader = () => {
                 <div className="space-y-1">
                     <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase flex items-center gap-3">
                         <Download className="text-guardian-blue animate-pulse" />
-                        Reactive Downloader <span className="text-guardian-blue">X</span>
+                        Reactive Downloader <span className="text-guardian-blue">X-1.5</span>
                     </h2>
                     <p className="text-[10px] text-guardian-muted font-bold tracking-[0.3em] uppercase italic">
-                        Protocol: Sequential Hyper-Extraction & Client-Side Bundling
+                        Protocol: Sequential Hyper-Extraction • Version: Deep-Flush-1.5
                     </p>
                 </div>
                 {csvData.length > 0 && (
@@ -231,38 +284,40 @@ const Downloader = () => {
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-guardian-muted uppercase tracking-widest italic">2. Mapping link</label>
-                                <select 
-                                    value={urlCol}
-                                    onChange={(e) => setUrlCol(e.target.value)}
-                                    disabled={headers.length === 0 || isProcessing}
-                                    className="w-full bg-black/40 border border-white/10 text-white text-xs font-bold p-3 rounded-lg focus:outline-none focus:border-guardian-blue disabled:opacity-50"
-                                >
+                                    <select 
+                                        key={`link-select-${renderKey}`}
+                                        value={urlCol}
+                                        onChange={(e) => setUrlCol(e.target.value)}
+                                        disabled={headers.length === 0 || isProcessing}
+                                        className="w-full bg-black/40 border border-white/10 text-white text-xs font-bold p-3 rounded-lg focus:outline-none focus:border-guardian-blue disabled:opacity-50"
+                                    >
                                     <option value="">-- Choose Column --</option>
-                                    {headers.map(h => <option key={h} value={h}>{h}</option>)}
+                                    {headers.map((h, i) => <option key={`${h}-${i}`} value={h}>{h}</option>)}
                                 </select>
                             </div>
 
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-guardian-muted uppercase tracking-widest italic">3. Mapping name</label>
-                                <select 
-                                    value={nameCol}
-                                    onChange={(e) => setNameCol(e.target.value)}
-                                    disabled={headers.length === 0 || isProcessing}
-                                    className="w-full bg-black/40 border border-white/10 text-white text-xs font-bold p-3 rounded-lg focus:outline-none focus:border-guardian-blue disabled:opacity-50"
-                                >
+                                    <select 
+                                        key={`name-select-${renderKey}`}
+                                        value={nameCol}
+                                        onChange={(e) => setNameCol(e.target.value)}
+                                        disabled={headers.length === 0 || isProcessing}
+                                        className="w-full bg-black/40 border border-white/10 text-white text-xs font-bold p-3 rounded-lg focus:outline-none focus:border-guardian-blue disabled:opacity-50"
+                                    >
                                     <option value="">-- Choose Column --</option>
-                                    {headers.map(h => <option key={h} value={h}>{h}</option>)}
+                                    {headers.map((h, i) => <option key={`${h}-${i}`} value={h}>{h}</option>)}
                                 </select>
                             </div>
                         </div>
 
-                        <div className="pt-4 space-y-3">
+                        <div className="pt-4 space-y-3 bg-white/[0.02] p-4 rounded-lg border border-white/5">
                             <button
                                 onClick={processList}
                                 disabled={!file || !urlCol || !nameCol || isProcessing}
                                 className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest italic transition-all ${
                                     !file || !urlCol || !nameCol || isProcessing
-                                    ? 'bg-white/5 text-white/20 cursor-not-allowed'
+                                    ? 'bg-white/10 text-white/40 cursor-not-allowed border border-white/5'
                                     : 'bg-guardian-blue text-white hover:bg-guardian-blue/80 hover:shadow-[0_0_15px_rgba(31,105,255,0.4)]'
                                 }`}
                             >
@@ -276,7 +331,7 @@ const Downloader = () => {
                                 className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest italic transition-all shadow-sm ${
                                     allLoaded
                                     ? 'bg-purple-600 text-white hover:bg-purple-500 shadow-[0_0_15px_rgba(147,51,234,0.4)]'
-                                    : 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5'
+                                    : 'bg-white/10 text-white/40 cursor-not-allowed border border-white/5'
                                 }`}
                             >
                                 <Archive size={14} />

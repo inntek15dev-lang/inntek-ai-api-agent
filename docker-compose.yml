@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: inntek-ia-agents-manager_db
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:3376:3306" # Puerto externo para gestión (ej. DBeaver)
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    networks:
+      - abastible_default
+
+  api:
+    image: ghcr.io/inntek15dev-lang/inntek-ai-api-agent-api:latest
+    container_name: inntek-ia-agents-manager_api
+    restart: always
+    environment:
+      - NODE_ENV=preproduction
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - PORT=4048
+    # Forzamos la lectura del .env que está en la raíz del servidor
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:4048:4048"
+    depends_on:
+      - db
+    networks:
+      - abastible_default
+
+  frontend:
+    image: ghcr.io/inntek15dev-lang/inntek-ai-api-agent-front:latest
+    container_name: inntek-ia-agents-manager_front
+    restart: always
+    environment:
+      - VITE_API_URL=https://inntek-ia-agents-manager-api.inntek.cl/api
+    ports:
+      - "127.0.0.1:8088:80"
+    depends_on:
+      - api
+    networks:
+      - abastible_default
+
+networks:
+  abastible_default:
+    driver: bridge
+
