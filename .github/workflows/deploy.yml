@@ -1,4 +1,4 @@
-name: CI/CD Inntek-tools - Preprod
+name: CI/CD AgentiX - Preprod
 
 on:
   push:
