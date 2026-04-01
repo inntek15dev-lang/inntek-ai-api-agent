@@ -57,7 +57,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "docker-compose.yml"
-          target: "/home/DOCKERS-PREPROD/ABASTIBLE/"
+          target: "/home/DOCKERS-PREPROD/INNTEK-TOOLS/"
           overwrite: true
 
       - name: Ejecutar despliegue vía SSH
@@ -67,7 +67,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/DOCKERS-PREPROD/ABASTIBLE
+            cd /home/DOCKERS-PREPROD/INNTEK-TOOLS
             
             # Login en el registro de GitHub
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
@@ -82,11 +82,11 @@ jobs:
             
             # Asegurar consistencia del esquema (Añadir columnas faltantes)
             echo "Verificando consistencia del esquema..."
-            docker exec oiem_abastible_api node scripts/ensure_schema.js
+            docker exec inntek-ia-agents-manager_api node scripts/ensure_schema.js
             
             # Ejecutamos TU script de seed directamente (según tu estructura src/seed.js)
             echo "Poblando base de datos con script personalizado..."
-            docker exec oiem_abastible_api node src/seed.js
+            docker exec inntek-ia-agents-manager_api node src/seed.js
             
             # Limpieza de imágenes antiguas para optimizar espacio
             docker image prune -f
