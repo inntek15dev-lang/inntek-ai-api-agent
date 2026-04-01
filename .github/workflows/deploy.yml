@@ -1,4 +1,4 @@
-name: CI/CD Inntek-ia-agents-manager - Preprod
+name: CI/CD Inntek-tools - Preprod
 
 on:
   push:
