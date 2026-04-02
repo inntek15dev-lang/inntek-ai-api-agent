@@ -3,20 +3,22 @@ version: '3.8'
 services:
   db:
     image: mysql:8.0
-    container_name: agentix_db
+    container_name: inntek-ia-agents-manager_db
+
     restart: always
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - MYSQL_DATABASE=${DB_NAME}
+
     ports:
-      - "3388:3308" # Puerto externo para gestión (ej. DBeaver)
+      - "127.0.0.1:3388:3308" # Puerto externo para gestión (ej. DBeaver)
     volumes:
       - ./mysql_data:/var/lib/mysql
     networks:
       - agentix_default
 
   api:
-    image: ghcr.io/inntek15dev-lang/agentix-api:latest
+    image: ghcr.io/inntek15dev-lang/inntek-ai-api-agent-api:latest
     container_name: agentix_api
     restart: always
     environment:
@@ -25,27 +27,27 @@ services:
       - DB_USER=root
       - DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - DB_NAME=${DB_NAME}
-      - PIZZA_API_URL=${PIZZA_API_URL}
-      - PIZZA_API_KEY=${PIZZA_API_KEY}
-      - PORT=4077
+      - PORT=4048
+
     # Forzamos la lectura del .env que está en la raíz del servidor
     env_file:
       - .env
     ports:
-      - "4088:4088"
+      - "127.0.0.1:4048:4048"
+
     depends_on:
       - db
     networks:
       - abastible_default
 
   frontend:
-    image: ghcr.io/inntek15dev-lang/agentix-front:latest
-    container_name: agentix_front
+    image: ghcr.io/inntek15dev-lang/inntek-ai-api-agent-front:latest
+    container_name: inntek-ia-agents-manager_front
     restart: always
     environment:
-      - VITE_API_URL=http://23.81.206.147:4088/api
+      - VITE_API_URL=https://inntek-ia-agents-manager-api.inntek.cl/api
     ports:
-      - "8088:88"
+      - "8088:80"
     depends_on:
       - api
     networks:
@@ -54,3 +56,4 @@ services:
 networks:
   abastible_default:
     driver: bridge
+

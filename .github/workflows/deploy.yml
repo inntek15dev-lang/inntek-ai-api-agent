@@ -67,6 +67,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+
             cd /home/DOCKERS-PREPROD/AGENTIX
             
             # Login en el registro de GitHub
@@ -82,13 +83,15 @@ jobs:
             
             # Asegurar consistencia del esquema (Añadir columnas faltantes)
             echo "Verificando consistencia del esquema..."
-            docker exec agentix_api node scripts/ensure_schema.js
+            docker exec inntek-ia-agents-manager_api node scripts/ensure_schema.js
             
             # Ejecutamos TU script de seed directamente (según tu estructura src/seed.js)
             echo "Poblando base de datos con script personalizado..."
-            docker exec agentix_api node src/seed.js
+            docker exec inntek-ia-agents-manager_api node src/seed.js
+
             
             # Limpieza de imágenes antiguas para optimizar espacio
             docker image prune -f
             
+
             echo "🚀 Sistema desplegado y base de datos actualizada."
