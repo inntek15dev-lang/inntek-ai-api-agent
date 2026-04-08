@@ -57,9 +57,9 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            sudo mkdir -p /home/DOCKERS-PREPROD/AGENTIX/
-            sudo chown -R ${{ secrets.SERVER_USER }}:${{ secrets.SERVER_USER }} /home/DOCKERS-PREPROD/AGENTIX/
-            sudo chmod -R 755 /home/DOCKERS-PREPROD/AGENTIX/
+            mkdir -p /home/DOCKERS-PREPROD/AGENTIX/
+            chown -R ${{ secrets.SERVER_USER }}:${{ secrets.SERVER_USER }} /home/DOCKERS-PREPROD/AGENTIX/
+            chmod -R 755 /home/DOCKERS-PREPROD/AGENTIX/
 
       - name: Copiar docker-compose al servidor
         uses: appleboy/scp-action@v0.1.7
