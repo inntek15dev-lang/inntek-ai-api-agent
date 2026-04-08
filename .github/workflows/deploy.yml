@@ -50,6 +50,17 @@ jobs:
       - name: Checkout del código
         uses: actions/checkout@v4
 
+      - name: Preparar directorio de despliegue
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            sudo mkdir -p /home/DOCKERS-PREPROD/AGENTIX/
+            sudo chown -R ${{ secrets.SERVER_USER }}:${{ secrets.SERVER_USER }} /home/DOCKERS-PREPROD/AGENTIX/
+            sudo chmod -R 755 /home/DOCKERS-PREPROD/AGENTIX/
+
       - name: Copiar docker-compose al servidor
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -67,8 +78,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-
-            cd /home/DOCKERS-PREPROD/AGENTIX
+            cd /home/DOCKERS-PREPROD/AGENTIX/
             
             # Login en el registro de GitHub
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
@@ -88,10 +98,8 @@ jobs:
             # Ejecutamos TU script de seed directamente (según tu estructura src/seed.js)
             echo "Poblando base de datos con script personalizado..."
             docker exec inntek-ia-agents-manager_api node src/seed.js
-
             
             # Limpieza de imágenes antiguas para optimizar espacio
             docker image prune -f
             
-
             echo "🚀 Sistema desplegado y base de datos actualizada."
