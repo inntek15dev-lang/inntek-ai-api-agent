@@ -19,6 +19,7 @@ const PORT = process.env.PORT || 3333;
 app.use(cors({
     origin: [
         'https://inntek-ai-api-agent-client.onrender.com',
+        'https://preprod-ia-agents-manager.inntek.cl',
         'http://localhost:5173'
     ],
     credentials: true
@@ -36,6 +37,7 @@ const swaggerOptions = {
         },
         servers: [
             { url: 'https://inntek-ai-api-agent-api.onrender.com/api', description: 'Production (Render)' },
+            { url: 'https://preprod-ia-agents-manager-api.inntek.cl/api', description: 'Pre-Production (Inntek)' },
             { url: `http://localhost:${PORT}/api`, description: 'Local Development' }
         ],
         components: {
