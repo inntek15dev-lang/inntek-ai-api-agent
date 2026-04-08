@@ -71,6 +71,16 @@ jobs:
           target: "/home/DOCKERS-PREPROD/AGENTIX/"
           overwrite: true
 
+      - name: Copiar scripts al servidor
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "back/scripts/*"
+          target: "/home/DOCKERS-PREPROD/AGENTIX/"
+          overwrite: true
+
       - name: Ejecutar despliegue vía SSH
         uses: appleboy/ssh-action@v1.0.3
         with:

@@ -11,7 +11,7 @@ services:
       - MYSQL_DATABASE=${DB_NAME}
 
     ports:
-      - "127.0.0.1:3388:3308" # Puerto externo para gestión (ej. DBeaver)
+      - "127.0.0.1:3388:3306" # Puerto externo para gestión (ej. DBeaver)
     volumes:
       - ./mysql_data:/var/lib/mysql
     networks:
@@ -25,13 +25,15 @@ services:
       - NODE_ENV=preproduction
       - DB_HOST=db
       - DB_USER=root
-      - DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - DB_PASS=${DB_ROOT_PASSWORD}
       - DB_NAME=${DB_NAME}
       - PORT=4048
 
     # Forzamos la lectura del .env que está en la raíz del servidor
     env_file:
       - .env
+    volumes:
+      - ./back/scripts:/app/scripts
     ports:
       - "127.0.0.1:4048:4048"
 
