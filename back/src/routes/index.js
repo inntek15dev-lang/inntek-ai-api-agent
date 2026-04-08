@@ -13,6 +13,7 @@ const visorController = require('../controllers/visorController');
 const inputController = require('../controllers/inputController');
 const apiTesterController = require('../controllers/apiTesterController');
 const downloaderController = require('../controllers/downloaderController');
+const deployController = require('../controllers/deployController');
 
 const { authMiddleware, requirePrivilege } = require('../middleware/auth');
 const multer = require('multer');
@@ -144,6 +145,22 @@ const upload = multer({ dest: 'uploads/' });
  *         descripcion:
  *           type: string
  *         icono:
+ *           type: string
+ *         activo:
+ *           type: boolean
+ *     Deploy:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         key:
+ *           type: string
+ *         value:
+ *           type: string
+ *         categoria:
+ *           type: string
+ *         descripcion:
  *           type: string
  *         activo:
  *           type: boolean
@@ -818,5 +835,80 @@ router.get('/downloader/proxy', authMiddleware, requirePrivilege('DOWNLOADER', '
  *         description: ZIP file stream
  */
 router.post('/downloader/zip', authMiddleware, requirePrivilege('DOWNLOADER', 'exec'), downloaderController.createZip);
+
+// Deploys
+/**
+ * @swagger
+ * /deploys:
+ *   get:
+ *     summary: Get all deployment settings
+ *     tags: [Deploys]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of deploy settings
+ */
+router.get('/deploys', authMiddleware, requirePrivilege('DEPLOYS', 'read'), deployController.getDeploys);
+
+/**
+ * @swagger
+ * /deploys:
+ *   post:
+ *     summary: Create a new deployment setting
+ *     tags: [Deploys]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Deploy'
+ *     responses:
+ *       201:
+ *         description: Setting created
+ */
+router.post('/deploys', authMiddleware, requirePrivilege('DEPLOYS', 'write'), deployController.createDeploy);
+
+/**
+ * @swagger
+ * /deploys/{id}:
+ *   put:
+ *     summary: Update a deployment setting
+ *     tags: [Deploys]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Setting updated
+ */
+router.put('/deploys/:id', authMiddleware, requirePrivilege('DEPLOYS', 'write'), deployController.updateDeploy);
+
+/**
+ * @swagger
+ * /deploys/{id}:
+ *   delete:
+ *     summary: Delete a deployment setting
+ *     tags: [Deploys]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Setting deleted
+ */
+router.delete('/deploys/:id', authMiddleware, requirePrivilege('DEPLOYS', 'write'), deployController.deleteDeploy);
 
 module.exports = router;

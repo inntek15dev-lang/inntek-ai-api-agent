@@ -44,6 +44,15 @@ JSON
           "benefit": "Para...",
           "acceptance_criteria": ["AC-01 (Positivo)", "AC-02 (Negativo/Seguridad)"],
           "security_tag": "Public|Internal|Confidential"
+        },
+        {
+          "id": "US-DEP-01",
+          "parent_req_id": "REQ-INFRA",
+          "role": "Como Arquitecto DevOps",
+          "action": "Quiero gestionar settings de deploy centralizados",
+          "benefit": "Para desacoplar la infraestructura del código y permitir despliegues dinámicos en Preprod Linux/Docker",
+          "acceptance_criteria": ["CRUD de settings activo", "Persistencia en tabla Deploys", "Validación contra IEEE 1016"],
+          "security_tag": "Confidential"
         }
       ]
     ],

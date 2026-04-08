@@ -214,6 +214,13 @@ front/ (React SPA)                    back/ (Express API)
   5. Backend downloads each file (sequentially) and streams back a ZIP archive using `adm-zip`.
 - **CORS Mitigation:** Uses `/downloader/proxy` to fetch external files through the backend to avoid browser CORS restrictions.
 
+### 4.13 Deploys
+- **Ref:** `DEPLOYS`
+- **Backend:** `deployController.js` — CRUD for deployment settings
+- **Frontend:** Integrated in Config page or separate module.
+- **Purpose:** Centralized management of parameterizable infrastructure data for pre-production (Docker, SSH, IPs, Deployment Paths).
+- **Automation:** Provides the data source for GitHub Actions and SSH scripts to avoid hardcoded values.
+
 ### 4.11 Engines
 - **Ref:** (part of `Machines` module)
 - **Backend:** `engineController.js` — read-only `getEngines`
@@ -249,7 +256,7 @@ front/ (React SPA)                    back/ (Express API)
 - **Route guard:** `<ProtectedRoute module="X">` blocks rendering if no read access
 
 ### Modules with privileges:
-`Auth`, `AI_Tool_Maker`, `AI_Tool_Catalog`, `AI_Tool_Execution`, `Config`, `Outputs_Maker`, `Json_Schemas`, `AI_Providers`, `Machines`, `DOWNLOADER`
+`Auth`, `AI_Tool_Maker`, `AI_Tool_Catalog`, `AI_Tool_Execution`, `Config`, `Outputs_Maker`, `Json_Schemas`, `AI_Providers`, `Machines`, `DOWNLOADER`, `DEPLOYS`
 
 ### API Key Security
 - Provider API keys masked on all GET responses (only last 4 chars visible)
@@ -397,6 +404,16 @@ front/ (React SPA)                    back/ (Express API)
 | source_handle | STRING | — |
 | target_handle | STRING | — |
 
+### 6.14 Deploys
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | UUID | PK |
+| key | STRING | unique, not null |
+| value | TEXT | — |
+| categoria | STRING | infra / docker / env / script |
+| descripcion | TEXT | — |
+| activo | BOOLEAN | default: true |
+
 ### Associations
 ```
 Role 1──N Privilegio (role_id)
@@ -486,6 +503,14 @@ All routes prefixed with `/api`. Protected by `authMiddleware` + `requirePrivile
 | PUT | `/machines/:id` | Update machine + graph (atomic replace) | Machines.write |
 | POST | `/machines/:id/execute` | Execute machine (DAG traversal, multipart/form-data). Supports `?stream=true` for Server-Sent Events (SSE) real-time execution streaming. | Machines.exec |
 | DELETE | `/machines/:id` | Delete machine (cascade) | Machines.write |
+
+### Deploys
+| Method | Path | Action | Privilege |
+|--------|------|--------|-----------|
+| GET | `/deploys` | List all deploy settings | DEPLOYS.read |
+| POST | `/deploys` | Create setting | DEPLOYS.write |
+| PUT | `/deploys/:id` | Update setting | DEPLOYS.write |
+| DELETE | `/deploys/:id` | Delete setting | DEPLOYS.write |
 
 ---
 
