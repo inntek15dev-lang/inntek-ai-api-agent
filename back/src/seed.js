@@ -1,4 +1,4 @@
-const { sequelize, Role, Privilegio, User, Tool, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Visor, Machine, MachineNode, MachineConnection, Input } = require('./models');
+const { sequelize, Role, Privilegio, User, Tool, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Visor, Machine, MachineNode, MachineConnection, Input, Deploy } = require('./models');
 
 require('dotenv').config();
 
@@ -39,7 +39,7 @@ const seed = async () => {
 
         // 2. Privileges
         await Privilegio.findOrCreate({ where: { role_id: superAdminRole.id, ref_modulo: '*' }, defaults: { read: true, write: true, exec: true } });
-        const modules = ['Auth', 'AI_Tool_Maker', 'AI_Tool_Catalog', 'AI_Tool_Execution', 'Config', 'Outputs_Maker', 'Json_Schemas', 'AI_Providers', 'Machines', 'DOWNLOADER'];
+        const modules = ['Auth', 'AI_Tool_Maker', 'AI_Tool_Catalog', 'AI_Tool_Execution', 'Config', 'Outputs_Maker', 'Json_Schemas', 'AI_Providers', 'Machines', 'DOWNLOADER', 'DEPLOYS'];
         for (const mod of modules) {
             await Privilegio.findOrCreate({ where: { role_id: adminRole.id, ref_modulo: mod }, defaults: { read: true, write: true, exec: true } });
         }
@@ -85,7 +85,17 @@ const seed = async () => {
         await upsertCore(Tool, { id: 'edb84cda-0000-4a2c-8187-000000000050' }, 'edb84cda-0000-4a2c-8187-000000000050', { nombre: 'RYCE Certificado TASAS Lipigas', logo_herramienta: '🛡️', response_format: 'JSON', json_schema_id: schemaRYCETasasLipigas.id });
         await upsertCore(Tool, { id: 'edb84cda-0000-4a2c-8187-000000000051' }, 'edb84cda-0000-4a2c-8187-000000000051', { nombre: 'RYCE Certificado TASAS Blumar', logo_herramienta: '🐟', response_format: 'JSON', json_schema_id: schemaRYCETasasBlumar.id });
 
-        // 12. Machine (Demo only)
+        // 12. Deploys (Initial Settings)
+        await upsertCore(Deploy, { key: 'SERVER_IP' }, 'd0000000-0000-4000-a000-000000000001', { value: '${{ secrets.SERVER_IP }}', categoria: 'infra', descripcion: 'IP del servidor de pre-producción' });
+        await upsertCore(Deploy, { key: 'SERVER_USER' }, 'd0000000-0000-4000-a000-000000000002', { value: '${{ secrets.SERVER_USER }}', categoria: 'infra', descripcion: 'Usuario SSH' });
+        await upsertCore(Deploy, { key: 'DEPLOY_PATH' }, 'd0000000-0000-4000-a000-000000000003', { value: '/home/DOCKERS-PREPROD/AGENTIX/', categoria: 'infra', descripcion: 'Ruta base de despliegue en Linux' });
+        await upsertCore(Deploy, { key: 'IMAGE_API' }, 'd0000000-0000-4000-a000-000000000004', { value: 'ghcr.io/inntek15dev-lang/inntek-ai-api-agent-api', categoria: 'docker', descripcion: 'Imagen Docker del Backend' });
+        await upsertCore(Deploy, { key: 'IMAGE_FRONT' }, 'd0000000-0000-4000-a000-000000000005', { value: 'ghcr.io/inntek15dev-lang/inntek-ai-api-agent-front', categoria: 'docker', descripcion: 'Imagen Docker del Frontend' });
+        await upsertCore(Deploy, { key: 'VITE_API_URL' }, 'd0000000-0000-4000-a000-000000000006', { value: 'https://preprod-ia-agents-manager-api.inntek.cl/api', categoria: 'env', descripcion: 'URL de la API para el Frontend (Vite)' });
+        await upsertCore(Deploy, { key: 'POST_DEPLOY_SCHEMA' }, 'd0000000-0000-4000-a000-000000000007', { value: 'node scripts/ensure_schema.js', categoria: 'script', descripcion: 'Script para asegurar consistencia del esquema post-deploy' });
+        await upsertCore(Deploy, { key: 'POST_DEPLOY_SEED' }, 'd0000000-0000-4000-a000-000000000008', { value: 'node src/seed.js', categoria: 'script', descripcion: 'Script para poblar base de datos post-deploy' });
+
+        // 13. Machine (Demo only)
         // Clean all previous machines, nodes and connections to ensure a fresh state
         await MachineConnection.destroy({ where: {} });
         await MachineNode.destroy({ where: {} });

@@ -23,13 +23,6 @@ const Layout = () => {
 
     const navItems = getVisibleNavItems(canRead, isAdmin);
 
-    const secondaryNav = [
-        { label: 'Documentos', icon: FileText },
-        { label: 'Controles', icon: ShieldCheck },
-        { label: 'Auditorías', icon: ClipboardCheck },
-        { label: 'No Conformidades', icon: AlertTriangle },
-        { label: 'Reportes', icon: FileBarChart },
-    ];
 
     const isLinkActive = (path) => location.pathname === path;
 
@@ -76,13 +69,6 @@ const Layout = () => {
                     </Link>
                 ))}
 
-                {/* Placeholder for visual consistency with image */}
-                {secondaryNav.map((item, i) => (
-                    <div key={i} className="guardian-nav-item opacity-50 cursor-not-allowed hidden lg:flex">
-                        <item.icon size={18} />
-                        <span>{item.label}</span>
-                    </div>
-                ))}
             </nav>
 
             {/* Main Content Area */}

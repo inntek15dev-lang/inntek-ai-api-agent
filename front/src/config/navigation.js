@@ -1,4 +1,4 @@
-import { LayoutDashboard, Scissors, Library, Settings, Palette, Code, LogIn, Workflow, Terminal, Download } from 'lucide-react';
+import { LayoutDashboard, Scissors, Library, Settings, Palette, Code, LogIn, Workflow, Terminal, Download, Rocket } from 'lucide-react';
 
 export const NAV_ITEMS = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard, module: 'Dashboard' },
@@ -7,6 +7,7 @@ export const NAV_ITEMS = [
     { path: '/machines', label: 'Machines', icon: Workflow, module: 'Machines' },
     { path: '/downloader', label: 'Downloader', icon: Download, module: 'DOWNLOADER' },
     { path: '/api-tester', label: 'API Tester', icon: Terminal, module: 'AI_Tool_Execution' },
+    { path: '/deploys', label: 'Deploys', icon: Rocket, module: 'DEPLOYS' },
     { path: '/outputs-maker', label: 'Outputs Maker', icon: Palette, module: 'Outputs_Maker' },
     { path: '/json-schemas', label: 'JSON Schemas', icon: Code, module: 'Json_Schemas' },
     { path: '/exhibitions', label: 'Exhibiciones', icon: Palette, module: 'Outputs_Maker' },

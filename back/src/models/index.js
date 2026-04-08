@@ -176,6 +176,15 @@ Input.hasMany(MachineNode, { foreignKey: 'input_id' });
 MachineConnection.belongsTo(MachineNode, { as: 'SourceNode', foreignKey: 'source_node_id' });
 MachineConnection.belongsTo(MachineNode, { as: 'TargetNode', foreignKey: 'target_node_id' });
 
+const Deploy = sequelize.define('Deploy', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    key: { type: DataTypes.STRING, unique: true, allowNull: false },
+    value: { type: DataTypes.TEXT },
+    categoria: { type: DataTypes.STRING }, // 'infra', 'docker', 'env', 'script'
+    descripcion: { type: DataTypes.TEXT },
+    activo: { type: DataTypes.BOOLEAN, defaultValue: true }
+});
+
 // Exhibition associations
 Exhibition.hasMany(ExhibitionSlide, { foreignKey: 'exhibition_id', onDelete: 'CASCADE' });
 ExhibitionSlide.belongsTo(Exhibition, { foreignKey: 'exhibition_id' });
@@ -183,5 +192,5 @@ ExhibitionSlide.belongsTo(Exhibition, { foreignKey: 'exhibition_id' });
 ExhibitionSlide.belongsTo(Tool, { foreignKey: 'tool_id' });
 Tool.hasMany(ExhibitionSlide, { foreignKey: 'tool_id' });
 
-module.exports = { sequelize, Role, Privilegio, User, Tool, Config, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Visor, Machine, MachineNode, MachineConnection, Exhibition, ExhibitionSlide, Input };
+module.exports = { sequelize, Role, Privilegio, User, Tool, Config, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Visor, Machine, MachineNode, MachineConnection, Exhibition, ExhibitionSlide, Input, Deploy };
 
