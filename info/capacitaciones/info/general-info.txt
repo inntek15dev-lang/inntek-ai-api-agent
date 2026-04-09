@@ -1,0 +1,49 @@
+un dashboard interactivo 
+con estética oscura profesional
+usando la paleta de colores de Grupo OVAL:
+#1F4E79
+azules intermedios
+#375623
+#7030A0
+#70AD47
+
+El dashboard tiene dos paneles:
+- izquierdo con lista de 35 colaboradores agrupados por 6 servicios:
+-Doc. Controlada
+- INNTEK
+-RyCE
+-Transversal
+-Verif. Chile
+-Verif. Uruguay
+
+con buscador, filtros por servicio y mini barra de progreso por persona.
+Al hacer clic en un colaborador, el panel derecho muestra:
+avatar con iniciales, nombre completo, RUT, badge de servicio, 
+4 KPIs (total asignado / completadas / en proceso / por coordinar), 
+barra de progreso general,
+y grilla de capacitaciones filtrable por estado (Completado / En proceso / Por coordinar).
+Cada capacitación muestra número de ID, nombre y pill de estado con color semántico (verde / amarillo / azul).
+El header muestra KPIs globales del plan completo.
+Tipografía DM Serif Display para títulos y DM Sans para cuerpo.
+
+todo dato debe estar en base de datos
+todo dato debe ser mantenido desde un modulo de configuracion general con submodulos de mantenedores de todos los CRUD de setings y datos maestros.
+
+El dashboard debe ser responsive y adaptarse a diferentes tamaños de pantalla.
+
+El dashboard debe ser accesible para personas con discapacidad visual.
+
+El dashboard debe ser seguro y proteger los datos de los usuarios.
+
+El dashboard debe ser rapido y eficiente.
+
+El dashboard debe ser escalable para soportar un mayor número de usuarios y datos.      
+
+todos los datos mencionados deben estar en seeder como base del sistema, 
+para extraer los datos debes sacarlos del ejemplo HTML que te dare a continuacion.
+debes usar el ejemplo HTML como base para la creacion de los seeders.
+debes usar el HTML como base para la extraccion de estructura visual y de datos.
+deberas usar el HTML como base para la extraccion del css. debes replicar exactamente la interfaz del ejemplo
+debes crear componentes con permisos individuales para cada elemento de accion en las vistas.
+debes crear vistas con permisos individuales para cada componente.
+respeta 100% la estetica y estilo y estructura visual del ejemplo.

@@ -1,7 +1,8 @@
-import { LayoutDashboard, Scissors, Library, Settings, Palette, Code, LogIn, Workflow, Terminal, Download, Rocket } from 'lucide-react';
+import { LayoutDashboard, Scissors, Library, Settings, Palette, Code, LogIn, Workflow, Terminal, Download, Rocket, GraduationCap } from 'lucide-react';
 
 export const NAV_ITEMS = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard, module: 'Dashboard' },
+    { path: '/capacitaciones', label: 'Capacitaciones', icon: GraduationCap, module: 'Dashboard' }, // Using Dashboard module for visibility
     { path: '/tool-maker', label: 'AI Tool Maker', icon: Scissors, module: 'AI_Tool_Maker' },
     { path: '/catalog', label: 'Catalogo', icon: Library, module: 'AI_Tool_Catalog' },
     { path: '/machines', label: 'Machines', icon: Workflow, module: 'Machines' },

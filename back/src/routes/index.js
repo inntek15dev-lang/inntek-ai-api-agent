@@ -14,6 +14,7 @@ const inputController = require('../controllers/inputController');
 const apiTesterController = require('../controllers/apiTesterController');
 const downloaderController = require('../controllers/downloaderController');
 const deployController = require('../controllers/deployController');
+const capacitacionesController = require('../controllers/capacitacionesController');
 
 const { authMiddleware, requirePrivilege } = require('../middleware/auth');
 const multer = require('multer');
@@ -910,5 +911,82 @@ router.put('/deploys/:id', authMiddleware, requirePrivilege('DEPLOYS', 'write'),
  *         description: Setting deleted
  */
 router.delete('/deploys/:id', authMiddleware, requirePrivilege('DEPLOYS', 'write'), deployController.deleteDeploy);
+
+// Capacitaciones
+/**
+ * @swagger
+ * /capacitaciones/dashboard:
+ *   get:
+ *     summary: Get consolidated training data for all collaborators
+ *     tags: [Capacitaciones]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Consolidated data for the training dashboard
+ */
+router.get('/capacitaciones/dashboard', authMiddleware, capacitacionesController.getDashboardData);
+
+/**
+ * @swagger
+ * /capacitaciones/servicios:
+ *   get:
+ *     summary: Get all training services
+ *     tags: [Capacitaciones]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of services
+ */
+router.get('/capacitaciones/servicios', authMiddleware, capacitacionesController.getServicios);
+
+/**
+ * @swagger
+ * /capacitaciones/cursos:
+ *   get:
+ *     summary: Get all available training courses
+ *     tags: [Capacitaciones]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of courses
+ */
+router.get('/capacitaciones/cursos', authMiddleware, capacitacionesController.getCursos);
+
+/**
+ * @swagger
+ * /capacitaciones/colaboradores:
+ *   post:
+ *     summary: Create a new training collaborator
+ *     tags: [Capacitaciones]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Collaborator created
+ */
+router.post('/capacitaciones/colaboradores', authMiddleware, requirePrivilege('Config', 'write'), capacitacionesController.createColaborador);
+
+/**
+ * @swagger
+ * /capacitaciones/asignaciones/{id}:
+ *   put:
+ *     summary: Update training assignment status
+ *     tags: [Capacitaciones]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Assignment updated
+ */
+router.put('/capacitaciones/asignaciones/:id', authMiddleware, requirePrivilege('Config', 'write'), capacitacionesController.updateAsignacion);
 
 module.exports = router;

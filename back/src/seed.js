@@ -1,4 +1,5 @@
 const { sequelize, Role, Privilegio, User, Tool, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Visor, Machine, MachineNode, MachineConnection, Input, Deploy } = require('./models');
+const { seedCapacitaciones } = require('./seeders/capacitacionesSeeder');
 
 require('dotenv').config();
 
@@ -39,7 +40,7 @@ const seed = async () => {
 
         // 2. Privileges
         await Privilegio.findOrCreate({ where: { role_id: superAdminRole.id, ref_modulo: '*' }, defaults: { read: true, write: true, exec: true } });
-        const modules = ['Auth', 'AI_Tool_Maker', 'AI_Tool_Catalog', 'AI_Tool_Execution', 'Config', 'Outputs_Maker', 'Json_Schemas', 'AI_Providers', 'Machines', 'DOWNLOADER', 'DEPLOYS'];
+        const modules = ['Auth', 'AI_Tool_Maker', 'AI_Tool_Catalog', 'AI_Tool_Execution', 'Config', 'Outputs_Maker', 'Json_Schemas', 'AI_Providers', 'Machines', 'DOWNLOADER', 'DEPLOYS', 'Capacitaciones'];
         for (const mod of modules) {
             await Privilegio.findOrCreate({ where: { role_id: adminRole.id, ref_modulo: mod }, defaults: { read: true, write: true, exec: true } });
         }
@@ -107,6 +108,9 @@ const seed = async () => {
             icono: '🧪',
             activo: true
         });
+
+        // 14. Capacitaciones (New Module)
+        await seedCapacitaciones();
 
         console.log('Database seeded successfully (Clean State)!');
         process.exit(0);

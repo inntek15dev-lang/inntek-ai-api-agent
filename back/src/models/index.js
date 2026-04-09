@@ -176,6 +176,37 @@ Input.hasMany(MachineNode, { foreignKey: 'input_id' });
 MachineConnection.belongsTo(MachineNode, { as: 'SourceNode', foreignKey: 'source_node_id' });
 MachineConnection.belongsTo(MachineNode, { as: 'TargetNode', foreignKey: 'target_node_id' });
 
+// --- CAPACITACIONES MODELS ---
+
+const CapacitacionServicio = sequelize.define('CapacitacionServicio', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    nombre: { type: DataTypes.STRING, allowNull: false },
+    slug: { type: DataTypes.STRING, unique: true, allowNull: false },
+    color: { type: DataTypes.STRING }
+});
+
+const CapacitacionColaborador = sequelize.define('CapacitacionColaborador', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    nombre: { type: DataTypes.STRING, allowNull: false },
+    rut: { type: DataTypes.STRING },
+    avatar_color: { type: DataTypes.STRING }
+});
+
+const CapacitacionCurso = sequelize.define('CapacitacionCurso', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    nombre: { type: DataTypes.STRING, allowNull: false },
+    descripcion: { type: DataTypes.TEXT }
+});
+
+const CapacitacionAsignacion = sequelize.define('CapacitacionAsignacion', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    estado: { 
+        type: DataTypes.ENUM('Completado', 'En proceso', 'Por coordinar'), 
+        defaultValue: 'Por coordinar' 
+    },
+    fecha_completado: { type: DataTypes.DATE }
+});
+
 const Deploy = sequelize.define('Deploy', {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     key: { type: DataTypes.STRING, unique: true, allowNull: false },
@@ -192,5 +223,15 @@ ExhibitionSlide.belongsTo(Exhibition, { foreignKey: 'exhibition_id' });
 ExhibitionSlide.belongsTo(Tool, { foreignKey: 'tool_id' });
 Tool.hasMany(ExhibitionSlide, { foreignKey: 'tool_id' });
 
-module.exports = { sequelize, Role, Privilegio, User, Tool, Config, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Visor, Machine, MachineNode, MachineConnection, Exhibition, ExhibitionSlide, Input, Deploy };
+// Capacitaciones Associations
+CapacitacionServicio.hasMany(CapacitacionColaborador, { foreignKey: 'servicio_id' });
+CapacitacionColaborador.belongsTo(CapacitacionServicio, { foreignKey: 'servicio_id' });
+
+CapacitacionColaborador.hasMany(CapacitacionAsignacion, { foreignKey: 'colaborador_id', onDelete: 'CASCADE' });
+CapacitacionAsignacion.belongsTo(CapacitacionColaborador, { foreignKey: 'colaborador_id' });
+
+CapacitacionCurso.hasMany(CapacitacionAsignacion, { foreignKey: 'curso_id', onDelete: 'CASCADE' });
+CapacitacionAsignacion.belongsTo(CapacitacionCurso, { foreignKey: 'curso_id' });
+
+module.exports = { sequelize, Role, Privilegio, User, Tool, Config, OutputCategory, OutputFormat, JsonSchema, AiProvider, Engine, Visor, Machine, MachineNode, MachineConnection, Exhibition, ExhibitionSlide, Input, Deploy, CapacitacionServicio, CapacitacionColaborador, CapacitacionCurso, CapacitacionAsignacion };
 
