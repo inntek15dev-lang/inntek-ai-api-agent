@@ -20,6 +20,7 @@ app.use(cors({
     origin: [
         'https://inntek-ai-api-agent-client.onrender.com',
         'https://preprod-ia-agents-manager.inntek.cl',
+        'https://preprod-ia-agents-manager-api.inntek.cl',
         'http://localhost:5173'
     ],
     credentials: true

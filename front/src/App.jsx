@@ -20,6 +20,8 @@ import MachineExecutor from './pages/MachineExecutor';
 import ApiTester from './pages/ApiTester';
 import Downloader from './pages/Downloader';
 import DeploysPage from './pages/DeploysPage';
+import CapacitacionesDashboard from './pages/CapacitacionesDashboard';
+import CapacitacionesManagers from './pages/CapacitacionesManagers';
 
 const ProtectedRoute = ({ children, module, action = 'read' }) => {
   const { isAuthenticated, loading, canRead, isAdmin } = useAuth();
@@ -141,6 +143,12 @@ function App() {
             <Route path="deploys" element={
               <ProtectedRoute module="DEPLOYS">
                 <DeploysPage />
+              </ProtectedRoute>
+            } />
+            <Route path="capacitaciones" element={<CapacitacionesDashboard />} />
+            <Route path="capacitaciones-admin" element={
+              <ProtectedRoute module="Config">
+                <CapacitacionesManagers />
               </ProtectedRoute>
             } />
           </Route>

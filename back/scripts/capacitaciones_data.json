@@ -1,0 +1,2619 @@
+{
+  "personas": [
+    {
+      "nombre": "BUSTOS MANRIQUEZ GUADALUPE DEL CARMEN",
+      "short": "BUSTOS MANRIQUEZ",
+      "servicio": "Doc. Controlada",
+      "rut": "8679012-2",
+      "cursos": [
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 1,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 1
+    },
+    {
+      "nombre": "CARRASCO PEREZ BEATRIZ GERTIE",
+      "short": "CARRASCO PEREZ",
+      "servicio": "Doc. Controlada",
+      "rut": "10639830-5",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 2,
+          "nombre": "Revisión de documentos y criterios",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 3,
+          "nombre": "Uso intermedio de ofimática, gmail, office 365",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 4,
+          "nombre": "Detección de documentos falsos o alterados",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 13,
+          "nombre": "Excel Avanzado – Dashboards corporativos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 14,
+          "nombre": "Excel Básico e Intermedio",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 24,
+          "nombre": "Power BI",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 31,
+          "nombre": "Legislación laboral Chile",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 15,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 15
+    },
+    {
+      "nombre": "CASTILLO MUÑOZ CINTIA ALEJANDRA",
+      "short": "CASTILLO MUÑOZ",
+      "servicio": "Doc. Controlada",
+      "rut": "17542103-3",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 2,
+          "nombre": "Revisión de documentos y criterios",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 3,
+          "nombre": "Uso intermedio de ofimática, gmail, office 365",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 4,
+          "nombre": "Detección de documentos falsos o alterados",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 14,
+          "nombre": "Excel Básico e Intermedio",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 31,
+          "nombre": "Legislación laboral Chile",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 34,
+          "nombre": "Liquidaciones de sueldo Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 35,
+          "nombre": "Legislación laboral Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 15,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 15
+    },
+    {
+      "nombre": "HERRERA QUEZADA MICHELLE STEPHANIA",
+      "short": "HERRERA QUEZADA",
+      "servicio": "Doc. Controlada",
+      "rut": "18419558-5",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 2,
+          "nombre": "Revisión de documentos y criterios",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 4,
+          "nombre": "Detección de documentos falsos o alterados",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 14,
+          "nombre": "Excel Básico e Intermedio",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 31,
+          "nombre": "Legislación laboral Chile",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 12,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 12
+    },
+    {
+      "nombre": "ALARCON LOYOLA MARCOS FERNANDO",
+      "short": "ALARCON LOYOLA",
+      "servicio": "Doc. Controlada",
+      "rut": "11677211-6",
+      "cursos": [
+        {
+          "id": 2,
+          "nombre": "Revisión de documentos y criterios",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 4,
+          "nombre": "Detección de documentos falsos o alterados",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 14,
+          "nombre": "Excel Básico e Intermedio",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 31,
+          "nombre": "Legislación laboral Chile",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 11,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 11
+    },
+    {
+      "nombre": "RODRIGUEZ ANA",
+      "short": "RODRIGUEZ ANA",
+      "servicio": "Doc. Controlada",
+      "rut": "",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 2,
+          "nombre": "Revisión de documentos y criterios",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 4,
+          "nombre": "Detección de documentos falsos o alterados",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 14,
+          "nombre": "Excel Básico e Intermedio",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 31,
+          "nombre": "Legislación laboral Chile",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 12,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 12
+    },
+    {
+      "nombre": "HIDALGO FUENTES FRANCISCO JAVIER",
+      "short": "HIDALGO FUENTES",
+      "servicio": "Doc. Controlada",
+      "rut": "17444569-9",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 2,
+          "nombre": "Revisión de documentos y criterios",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 3,
+          "nombre": "Uso intermedio de ofimática, gmail, office 365",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 4,
+          "nombre": "Detección de documentos falsos o alterados",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 13,
+          "nombre": "Excel Avanzado – Dashboards corporativos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 14,
+          "nombre": "Excel Básico e Intermedio",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 24,
+          "nombre": "Power BI",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 31,
+          "nombre": "Legislación laboral Chile",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 15,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 15
+    },
+    {
+      "nombre": "VALDERRAMA FLORES MICHAEL PATRICIO",
+      "short": "VALDERRAMA FLORES",
+      "servicio": "Doc. Controlada",
+      "rut": "16762264-K",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 2,
+          "nombre": "Revisión de documentos y criterios",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 3,
+          "nombre": "Uso intermedio de ofimática, gmail, office 365",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 4,
+          "nombre": "Detección de documentos falsos o alterados",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 14,
+          "nombre": "Excel Básico e Intermedio",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 31,
+          "nombre": "Legislación laboral Chile",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 34,
+          "nombre": "Liquidaciones de sueldo Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 35,
+          "nombre": "Legislación laboral Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 15,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 15
+    },
+    {
+      "nombre": "TRONCOSO HERNANDEZ SANDRA PAMELA",
+      "short": "TRONCOSO HERNANDEZ",
+      "servicio": "Doc. Controlada",
+      "rut": "10960128-4",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 2,
+          "nombre": "Revisión de documentos y criterios",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 3,
+          "nombre": "Uso intermedio de ofimática, gmail, office 365",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 4,
+          "nombre": "Detección de documentos falsos o alterados",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 13,
+          "nombre": "Excel Avanzado – Dashboards corporativos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 14,
+          "nombre": "Excel Básico e Intermedio",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 24,
+          "nombre": "Power BI",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 25,
+          "nombre": "Curso introductorio IA",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 31,
+          "nombre": "Legislación laboral Chile",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 16,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 16
+    },
+    {
+      "nombre": "NICOLAS CORDOVA",
+      "short": "NICOLAS CORDOVA",
+      "servicio": "Doc. Controlada",
+      "rut": "",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 2,
+          "nombre": "Revisión de documentos y criterios",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 3,
+          "nombre": "Uso intermedio de ofimática, gmail, office 365",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 4,
+          "nombre": "Detección de documentos falsos o alterados",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 8,
+          "nombre": "SQL",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 9,
+          "nombre": "ISO 9001 – Formación avanzada Encargado de Calidad",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 13,
+          "nombre": "Excel Avanzado – Dashboards corporativos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 14,
+          "nombre": "Excel Básico e Intermedio",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 19,
+          "nombre": "ISO 27.001 especificación a jefaturas",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 21,
+          "nombre": "Taller de riesgos legales y compliance",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 24,
+          "nombre": "Power BI",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 31,
+          "nombre": "Legislación laboral Chile",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 34,
+          "nombre": "Liquidaciones de sueldo Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 35,
+          "nombre": "Legislación laboral Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 21,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 21
+    },
+    {
+      "nombre": "ORELLANA MALDONADO RODRIGO ARMANDO",
+      "short": "ORELLANA MALDONADO",
+      "servicio": "INNTEK",
+      "rut": "16239914-4",
+      "cursos": [
+        {
+          "id": 5,
+          "nombre": "GO",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 6,
+          "nombre": "PHP LARAVEL VIEW",
+          "estado": "Completado"
+        },
+        {
+          "id": 7,
+          "nombre": "Actualización de desarrolladores – Programación segura",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 8,
+          "nombre": "SQL",
+          "estado": "Completado"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Completado"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Completado"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 31,
+          "nombre": "Legislación laboral Chile",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 12,
+      "completados": 4,
+      "en_proceso": 0,
+      "por_coordinar": 8
+    },
+    {
+      "nombre": "ILLANES VERA SERGIO VICTOR",
+      "short": "ILLANES VERA",
+      "servicio": "INNTEK",
+      "rut": "17041308-3",
+      "cursos": [
+        {
+          "id": 5,
+          "nombre": "GO",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 6,
+          "nombre": "PHP LARAVEL VIEW",
+          "estado": "Completado"
+        },
+        {
+          "id": 7,
+          "nombre": "Actualización de desarrolladores – Programación segura",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 8,
+          "nombre": "SQL",
+          "estado": "Completado"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Completado"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Completado"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 11,
+      "completados": 4,
+      "en_proceso": 0,
+      "por_coordinar": 7
+    },
+    {
+      "nombre": "PARDO TERAN IGNACIO PABLO",
+      "short": "PARDO TERAN",
+      "servicio": "INNTEK",
+      "rut": "20515807-3",
+      "cursos": [
+        {
+          "id": 5,
+          "nombre": "GO",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 6,
+          "nombre": "PHP LARAVEL VIEW",
+          "estado": "Completado"
+        },
+        {
+          "id": 7,
+          "nombre": "Actualización de desarrolladores – Programación segura",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 8,
+          "nombre": "SQL",
+          "estado": "Completado"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Completado"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Completado"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 11,
+      "completados": 4,
+      "en_proceso": 0,
+      "por_coordinar": 7
+    },
+    {
+      "nombre": "PAREDES SUAZO BRYAN MARCELO",
+      "short": "PAREDES SUAZO",
+      "servicio": "INNTEK",
+      "rut": "19595932-3",
+      "cursos": [
+        {
+          "id": 5,
+          "nombre": "GO",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 6,
+          "nombre": "PHP LARAVEL VIEW",
+          "estado": "Completado"
+        },
+        {
+          "id": 7,
+          "nombre": "Actualización de desarrolladores – Programación segura",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 8,
+          "nombre": "SQL",
+          "estado": "Completado"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Completado"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Completado"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 11,
+      "completados": 4,
+      "en_proceso": 0,
+      "por_coordinar": 7
+    },
+    {
+      "nombre": "VASQUEZ ARANEDA FELIPE ALBERTO",
+      "short": "VASQUEZ ARANEDA",
+      "servicio": "INNTEK",
+      "rut": "20776962-2",
+      "cursos": [
+        {
+          "id": 5,
+          "nombre": "GO",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 6,
+          "nombre": "PHP LARAVEL VIEW",
+          "estado": "Completado"
+        },
+        {
+          "id": 7,
+          "nombre": "Actualización de desarrolladores – Programación segura",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 8,
+          "nombre": "SQL",
+          "estado": "Completado"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Completado"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Completado"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 11,
+      "completados": 4,
+      "en_proceso": 0,
+      "por_coordinar": 7
+    },
+    {
+      "nombre": "ZAPATA PUENTES RODRIGO",
+      "short": "ZAPATA PUENTES",
+      "servicio": "INNTEK",
+      "rut": "15592475-6",
+      "cursos": [
+        {
+          "id": 5,
+          "nombre": "GO",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 6,
+          "nombre": "PHP LARAVEL VIEW",
+          "estado": "Completado"
+        },
+        {
+          "id": 7,
+          "nombre": "Actualización de desarrolladores – Programación segura",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 8,
+          "nombre": "SQL",
+          "estado": "Completado"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Completado"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Completado"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 11,
+      "completados": 4,
+      "en_proceso": 0,
+      "por_coordinar": 7
+    },
+    {
+      "nombre": "PABLO SOLIS",
+      "short": "PABLO SOLIS",
+      "servicio": "INNTEK",
+      "rut": "",
+      "cursos": [
+        {
+          "id": 5,
+          "nombre": "GO",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 7,
+          "nombre": "Actualización de desarrolladores – Programación segura",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 8,
+          "nombre": "SQL",
+          "estado": "Completado"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 10,
+      "completados": 1,
+      "en_proceso": 0,
+      "por_coordinar": 9
+    },
+    {
+      "nombre": "SAN MARTIN NEIRA NADIA JACQUELINE",
+      "short": "SAN MARTIN",
+      "servicio": "RyCE",
+      "rut": "17843677-5",
+      "cursos": [
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 13,
+          "nombre": "Excel Avanzado – Dashboards corporativos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 19,
+          "nombre": "ISO 27.001 especificación a jefaturas",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 21,
+          "nombre": "Taller de riesgos legales y compliance",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 25,
+          "nombre": "Curso introductorio IA",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 26,
+          "nombre": "Documentación legal especial",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 27,
+          "nombre": "Documentación legal y su gestión",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 28,
+          "nombre": "Estados financieros para informes financieros",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 29,
+          "nombre": "Módulo compliance RyCE",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 30,
+          "nombre": "Taller de Indicadores Financieros",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 16,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 16
+    },
+    {
+      "nombre": "TERREU SANTANA CAROLINA ALEJANDRA",
+      "short": "TERREU SANTANA",
+      "servicio": "RyCE",
+      "rut": "16767404-6",
+      "cursos": [
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 14,
+          "nombre": "Excel Básico e Intermedio",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 23,
+          "nombre": "Prompt engineering para Chatgpt",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 26,
+          "nombre": "Documentación legal especial",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 27,
+          "nombre": "Documentación legal y su gestión",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 28,
+          "nombre": "Estados financieros para informes financieros",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 29,
+          "nombre": "Módulo compliance RyCE",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 30,
+          "nombre": "Taller de Indicadores Financieros",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 14,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 14
+    },
+    {
+      "nombre": "ULLOA SILVA LILIAN",
+      "short": "ULLOA SILVA",
+      "servicio": "RyCE",
+      "rut": "12698729-3",
+      "cursos": [
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 14,
+          "nombre": "Excel Básico e Intermedio",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 23,
+          "nombre": "Prompt engineering para Chatgpt",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 26,
+          "nombre": "Documentación legal especial",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 27,
+          "nombre": "Documentación legal y su gestión",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 28,
+          "nombre": "Estados financieros para informes financieros",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 29,
+          "nombre": "Módulo compliance RyCE",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 30,
+          "nombre": "Taller de Indicadores Financieros",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 14,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 14
+    },
+    {
+      "nombre": "JARUFE CID KAMEL SKANDAR",
+      "short": "JARUFE CID",
+      "servicio": "Transversal",
+      "rut": "17199590-6",
+      "cursos": [
+        {
+          "id": 10,
+          "nombre": "NCh-ISO/IEC 17029",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 13,
+          "nombre": "Excel Avanzado – Dashboards corporativos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 17,
+          "nombre": "ISO 9001- Nivel Auditor",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 18,
+          "nombre": "ISO 27.001- Nivel Auditor",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 21,
+          "nombre": "Taller de riesgos legales y compliance",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 24,
+          "nombre": "Power BI",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 29,
+          "nombre": "Módulo compliance RyCE",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 14,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 14
+    },
+    {
+      "nombre": "OLIVA SAGREDO VICTOR MANUEL",
+      "short": "OLIVA SAGREDO",
+      "servicio": "Transversal",
+      "rut": "17222341-9",
+      "cursos": [
+        {
+          "id": 3,
+          "nombre": "Uso intermedio de ofimática, gmail, office 365",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 9,
+          "nombre": "ISO 9001 – Formación avanzada Encargado de Calidad",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 10,
+          "nombre": "NCh-ISO/IEC 17029",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 13,
+          "nombre": "Excel Avanzado – Dashboards corporativos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 18,
+          "nombre": "ISO 27.001- Nivel Auditor",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 19,
+          "nombre": "ISO 27.001 especificación a jefaturas",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 21,
+          "nombre": "Taller de riesgos legales y compliance",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 23,
+          "nombre": "Prompt engineering para Chatgpt",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 24,
+          "nombre": "Power BI",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 25,
+          "nombre": "Curso introductorio IA",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 29,
+          "nombre": "Módulo compliance RyCE",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 31,
+          "nombre": "Legislación laboral Chile",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 34,
+          "nombre": "Liquidaciones de sueldo Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 35,
+          "nombre": "Legislación laboral Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 21,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 21
+    },
+    {
+      "nombre": "FRANCISCO GARCIA",
+      "short": "FRANCISCO GARCIA",
+      "servicio": "Transversal",
+      "rut": "17617620-2",
+      "cursos": [
+        {
+          "id": 9,
+          "nombre": "ISO 9001 – Formación avanzada Encargado de Calidad",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 21,
+          "nombre": "Taller de riesgos legales y compliance",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 9,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 9
+    },
+    {
+      "nombre": "VASQUEZ ALMEIDA MAGNOVI LUCELY",
+      "short": "VASQUEZ ALMEIDA",
+      "servicio": "Verif. Chile",
+      "rut": "27187689-0",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 32,
+          "nombre": "Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 33,
+          "nombre": "uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 10,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 10
+    },
+    {
+      "nombre": "QUIÑONES GARRIDO JACQUELINE BEATRIZ",
+      "short": "QUIÑONES GARRIDO",
+      "servicio": "Verif. Uruguay",
+      "rut": "17510514-k",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 3,
+          "nombre": "Uso intermedio de ofimática, gmail, office 365",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 14,
+          "nombre": "Excel Básico e Intermedio",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 25,
+          "nombre": "Curso introductorio IA",
+          "estado": "En proceso"
+        },
+        {
+          "id": 32,
+          "nombre": "Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 33,
+          "nombre": "uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 34,
+          "nombre": "Liquidaciones de sueldo Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 35,
+          "nombre": "Legislación laboral Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "En proceso"
+        }
+      ],
+      "total": 15,
+      "completados": 0,
+      "en_proceso": 2,
+      "por_coordinar": 13
+    },
+    {
+      "nombre": "STUARDO RAMOS NATALY EDITH",
+      "short": "STUARDO RAMOS",
+      "servicio": "Verif. Chile",
+      "rut": "19380063-7",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 32,
+          "nombre": "Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 33,
+          "nombre": "uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 10,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 10
+    },
+    {
+      "nombre": "QUIÑONES GARRIDO MARCELA ALEJANDRA",
+      "short": "QUIÑONES GARRIDO",
+      "servicio": "Verif. Chile",
+      "rut": "17170164-3",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 3,
+          "nombre": "Uso intermedio de ofimática, gmail, office 365",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 14,
+          "nombre": "Excel Básico e Intermedio",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 25,
+          "nombre": "Curso introductorio IA",
+          "estado": "En proceso"
+        },
+        {
+          "id": 32,
+          "nombre": "Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 33,
+          "nombre": "uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 34,
+          "nombre": "Liquidaciones de sueldo Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 35,
+          "nombre": "Legislación laboral Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "En proceso"
+        }
+      ],
+      "total": 15,
+      "completados": 0,
+      "en_proceso": 2,
+      "por_coordinar": 13
+    },
+    {
+      "nombre": "SANDOVAL SANDOVAL CAROLINA ELISABETH",
+      "short": "SANDOVAL SANDOVAL",
+      "servicio": "Verif. Chile",
+      "rut": "15616135-7",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 32,
+          "nombre": "Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 33,
+          "nombre": "uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 34,
+          "nombre": "Liquidaciones de sueldo Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 11,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 11
+    },
+    {
+      "nombre": "SEGURA VALLEJOS NICOLAS ARMANDO",
+      "short": "SEGURA VALLEJOS",
+      "servicio": "Verif. Chile",
+      "rut": "17899552-9",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 32,
+          "nombre": "Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 33,
+          "nombre": "uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 10,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 10
+    },
+    {
+      "nombre": "CRISOSTO GARCIA TALIHA",
+      "short": "CRISOSTO GARCIA",
+      "servicio": "Verif. Chile",
+      "rut": "18413622-8",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 32,
+          "nombre": "Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 33,
+          "nombre": "uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 10,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 10
+    },
+    {
+      "nombre": "SOTO MUÑOZ DEISY ARELY",
+      "short": "SOTO MUÑOZ",
+      "servicio": "Verif. Chile",
+      "rut": "13572144-1",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 19,
+          "nombre": "ISO 27.001 especificación a jefaturas",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 21,
+          "nombre": "Taller de riesgos legales y compliance",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 32,
+          "nombre": "Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 33,
+          "nombre": "uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 12,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 12
+    },
+    {
+      "nombre": "PEZOA ALVAREZ MACARENA DEL PILAR",
+      "short": "PEZOA ALVAREZ",
+      "servicio": "Verif. Chile",
+      "rut": "10938648-0",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 32,
+          "nombre": "Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 33,
+          "nombre": "uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "Por coordinar"
+        }
+      ],
+      "total": 10,
+      "completados": 0,
+      "en_proceso": 0,
+      "por_coordinar": 10
+    },
+    {
+      "nombre": "HERNANDEZ AJA ALVARO GERARDO",
+      "short": "HERNANDEZ AJA",
+      "servicio": "Verif. Uruguay",
+      "rut": "15671183-7",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 3,
+          "nombre": "Uso intermedio de ofimática, gmail, office 365",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 14,
+          "nombre": "Excel Básico e Intermedio",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 25,
+          "nombre": "Curso introductorio IA",
+          "estado": "En proceso"
+        },
+        {
+          "id": 34,
+          "nombre": "Liquidaciones de sueldo Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 35,
+          "nombre": "Legislación laboral Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "En proceso"
+        }
+      ],
+      "total": 13,
+      "completados": 0,
+      "en_proceso": 2,
+      "por_coordinar": 11
+    },
+    {
+      "nombre": "TAPIA SALINA CAMILA LORETO",
+      "short": "TAPIA SALINA",
+      "servicio": "Verif. Uruguay",
+      "rut": "17045651-3",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 13,
+          "nombre": "Excel Avanzado – Dashboards corporativos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 19,
+          "nombre": "ISO 27.001 especificación a jefaturas",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 25,
+          "nombre": "Curso introductorio IA",
+          "estado": "En proceso"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "En proceso"
+        }
+      ],
+      "total": 11,
+      "completados": 0,
+      "en_proceso": 2,
+      "por_coordinar": 9
+    },
+    {
+      "nombre": "TASSO HENRIQUEZ KARLA JOSSELYN",
+      "short": "TASSO HENRIQUEZ",
+      "servicio": "Verif. Uruguay",
+      "rut": "16896094-8",
+      "cursos": [
+        {
+          "id": 1,
+          "nombre": "Contratos de trabajo Chile, Colombia y Uruguay",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 8,
+          "nombre": "SQL",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 11,
+          "nombre": "Ciberseguridad – Concientización general",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 12,
+          "nombre": "Ergonomía y autocuidado para el trabajo en oficina y teletrabajo",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 13,
+          "nombre": "Excel Avanzado – Dashboards corporativos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 15,
+          "nombre": "Inducción corporativa + Prevención de delitos (20.393)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 16,
+          "nombre": "ISO 9001 – Fundamentos",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 19,
+          "nombre": "ISO 27.001 especificación a jefaturas",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 20,
+          "nombre": "Ley 21.719",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 21,
+          "nombre": "Taller de riesgos legales y compliance",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 22,
+          "nombre": "Taller Seguridad Laboral (IPERC + EPP)",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 24,
+          "nombre": "Power BI",
+          "estado": "Por coordinar"
+        },
+        {
+          "id": 25,
+          "nombre": "Curso introductorio IA",
+          "estado": "En proceso"
+        },
+        {
+          "id": 36,
+          "nombre": "Protocolo Suseso-CEAL: Capacitación a Comité Aplicación",
+          "estado": "En proceso"
+        }
+      ],
+      "total": 14,
+      "completados": 0,
+      "en_proceso": 2,
+      "por_coordinar": 12
+    }
+  ]
+}

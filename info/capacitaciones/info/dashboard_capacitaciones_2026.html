@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan de Capacitaciones 2026 — Grupo OVAL</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --azul:       #1F4E79;
+    --azul2:      #2E75B6;
+    --azul3:      #5B9BD5;
+    --azul4:      #BDD7EE;
+    --verde:      #375623;
+    --verde2:     #70AD47;
+    --morado:     #7030A0;
+    --gris1:      #1a1a2e;
+    --gris2:      #2d2d44;
+    --gris3:      #404060;
+    --gris4:      #888;
+    --bg:         #0f0f1a;
+    --surface:    #181828;
+    --surface2:   #22223a;
+    --text:       #e8e8f0;
+    --text2:      #a0a0b8;
+    --ok:         #4ade80;
+    --proceso:    #facc15;
+    --pendiente:  #60a5fa;
+    --accent:     #5B9BD5;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0d1b2e 0%, #1F4E79 60%, #2E75B6 100%);
+    padding: 28px 40px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid rgba(91,155,213,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .header-left h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+  .header-left h1 span { color: var(--azul4); font-style: italic; }
+  .header-left p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.55);
+    margin-top: 4px;
+    font-weight: 300;
+  }
+  .header-kpis {
+    display: flex;
+    gap: 24px;
+  }
+  .kpi-chip {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 10px 18px;
+    text-align: center;
+    backdrop-filter: blur(8px);
+  }
+  .kpi-chip .val {
+    font-size: 24px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1;
+  }
+  .kpi-chip .lbl {
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 3px;
+  }
+
+  /* ── LAYOUT ── */
+  .app {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: calc(100vh - 90px);
+  }
+
+  /* ── LEFT PANEL ── */
+  .left-panel {
+    background: var(--surface);
+    border-right: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .search-area {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .search-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .search-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 12px 8px 34px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color .2s;
+    position: relative;
+  }
+  .search-wrapper { position: relative; flex: 1; }
+  .search-wrapper::before {
+    content: '⌕';
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gris4);
+    font-size: 16px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .search-input:focus { border-color: var(--azul3); }
+
+  .filter-tabs {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .ftab {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all .15s;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .ftab.active { color: #fff; border-color: transparent; }
+  .ftab:not(.active) {
+    background: var(--surface2);
+    color: var(--text2);
+    border-color: rgba(255,255,255,0.06);
+  }
+  .ftab:not(.active):hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+
+  /* Service colours */
+  .svc-doc    { background: #1F4E79; }
+  .svc-inntek { background: #2E75B6; }
+  .svc-ryce   { background: #5B9BD5; }
+  .svc-trans  { background: #7030A0; }
+  .svc-vcl    { background: #375623; }
+  .svc-vuy    { background: #70AD47; }
+  .svc-all    { background: var(--gris3); }
+
+  .people-list {
+    overflow-y: auto;
+    flex: 1;
+    padding: 8px;
+  }
+  .people-list::-webkit-scrollbar { width: 4px; }
+  .people-list::-webkit-scrollbar-track { background: transparent; }
+  .people-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+  .person-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all .15s;
+    border: 1px solid transparent;
+    margin-bottom: 3px;
+  }
+  .person-card:hover { background: var(--surface2); }
+  .person-card.active {
+    background: rgba(91,155,213,0.12);
+    border-color: rgba(91,155,213,0.3);
+  }
+
+  .avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .person-info { flex: 1; min-width: 0; }
+  .person-name {
+    font-size: 12.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text);
+  }
+  .person-meta {
+    font-size: 11px;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+  }
+  .svc-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .person-count {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.07);
+    color: var(--text2);
+    flex-shrink: 0;
+  }
+
+  /* mini progress */
+  .mini-prog {
+    width: 100%;
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    margin-top: 5px;
+    overflow: hidden;
+    display: flex;
+  }
+  .mini-prog-bar { height: 100%; border-radius: 2px; transition: width .4s; }
+
+  /* ── RIGHT PANEL ── */
+  .right-panel {
+    overflow-y: auto;
+    padding: 28px 32px;
+    background: var(--bg);
+  }
+  .right-panel::-webkit-scrollbar { width: 5px; }
+  .right-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+
+  /* Welcome / empty state */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text2);
+    text-align: center;
+    gap: 16px;
+  }
+  .empty-state .icon {
+    font-size: 64px;
+    opacity: 0.2;
+  }
+  .empty-state h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--text2);
+    font-weight: 400;
+  }
+  .empty-state p { font-size: 14px; max-width: 320px; line-height: 1.6; }
+
+  /* Detail header */
+  .detail-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .detail-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .detail-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .detail-sub {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .svc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.4px;
+  }
+  .rut-badge {
+    font-size: 11px;
+    color: var(--text2);
+    background: var(--surface2);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  /* Stat row */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+  .stat-box.total::before  { background: var(--azul3); }
+  .stat-box.comp::before   { background: var(--ok); }
+  .stat-box.proc::before   { background: var(--proceso); }
+  .stat-box.pend::before   { background: var(--pendiente); }
+  .stat-val {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-box.total .stat-val { color: var(--azul3); }
+  .stat-box.comp  .stat-val { color: var(--ok); }
+  .stat-box.proc  .stat-val { color: var(--proceso); }
+  .stat-box.pend  .stat-val { color: var(--pendiente); }
+  .stat-lbl { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.7px; }
+
+  /* Progress bar */
+  .prog-section {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+  }
+  .prog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .prog-title { font-size: 13px; font-weight: 500; color: var(--text2); }
+  .prog-pct { font-size: 18px; font-weight: 700; color: var(--text); }
+  .prog-bar-outer {
+    height: 10px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 5px;
+    overflow: hidden;
+    display: flex;
+  }
+  .prog-bar-inner {
+    height: 100%;
+    border-radius: 5px;
+    transition: width .6s cubic-bezier(.4,0,.2,1);
+    position: relative;
+  }
+  .prog-bar-inner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+    animation: shimmer 2s infinite;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* Courses section */
+  .courses-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    color: var(--text);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .courses-title .count-badge {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(91,155,213,0.15);
+    color: var(--azul3);
+    padding: 2px 9px;
+    border-radius: 10px;
+  }
+
+  .course-filter-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .cfbtn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: var(--surface);
+    color: var(--text2);
+    transition: all .15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .cfbtn.active-all   { background: rgba(91,155,213,0.2); color: var(--azul3); border-color: var(--azul3); }
+  .cfbtn.active-comp  { background: rgba(74,222,128,0.15); color: var(--ok); border-color: var(--ok); }
+  .cfbtn.active-proc  { background: rgba(250,204,21,0.15); color: var(--proceso); border-color: var(--proceso); }
+  .cfbtn.active-pend  { background: rgba(96,165,250,0.15); color: var(--pendiente); border-color: var(--pendiente); }
+  .cfbtn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+
+  .courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+  }
+
+  .course-item {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 10px;
+    padding: 13px 15px;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    transition: all .15s;
+    animation: fadeIn .25s ease both;
+  }
+  .course-item:hover {
+    background: var(--surface2);
+    border-color: rgba(255,255,255,0.1);
+    transform: translateY(-1px);
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .course-num {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .course-num.comp { background: rgba(74,222,128,0.15); color: var(--ok); }
+  .course-num.proc { background: rgba(250,204,21,0.15); color: var(--proceso); }
+  .course-num.pend { background: rgba(96,165,250,0.1);  color: var(--pendiente); }
+
+  .course-text { flex: 1; }
+  .course-name {
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--text);
+    margin-bottom: 5px;
+  }
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10.5px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .status-pill.comp { background: rgba(74,222,128,0.12); color: var(--ok); }
+  .status-pill.proc { background: rgba(250,204,21,0.12); color: var(--proceso); }
+  .status-pill.pend { background: rgba(96,165,250,0.08); color: var(--pendiente); }
+  .status-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  /* Global overview panel */
+  .global-view { padding: 28px 32px; }
+  .global-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+  }
+  .ov-card {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .ov-card:hover { background: var(--surface2); border-color: rgba(91,155,213,0.3); transform: translateY(-1px); }
+  .ov-avatar {
+    width: 42px; height: 42px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .ov-info { flex: 1; min-width: 0; }
+  .ov-name { font-size: 12.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px; }
+  .ov-prog-outer { height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; display: flex; }
+  .ov-prog-inner { height: 100%; border-radius: 3px; }
+  .ov-stats { font-size: 10px; color: var(--text2); margin-top: 4px; display: flex; gap: 8px; }
+  .ov-stat-c { color: var(--ok); }
+  .ov-stat-p { color: var(--proceso); }
+  .ov-stat-n { color: var(--pendiente); }
+
+  /* No results */
+  .no-results {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text2);
+    font-size: 14px;
+  }
+
+  /* Responsive tweak */
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; height: auto; }
+    .left-panel { height: 50vh; }
+    header { flex-direction: column; gap: 16px; align-items: flex-start; }
+    .header-kpis { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Plan de Capacitaciones <span>2026</span></h1>
+    <p>Grupo OVAL · Panel de seguimiento interactivo por colaborador</p>
+  </div>
+  <div class="header-kpis">
+    <div class="kpi-chip">
+      <div class="val" id="kpi-personas">35</div>
+      <div class="lbl">Colaboradores</div>
+    </div>
+    <div class="kpi-chip">
+      <div class="val" id="kpi-cursos">36</div>
+      <div class="lbl">Capacitaciones</div>
+    </div>
+    <div class="kpi-chip">
+      <div class="val" id="kpi-asig">—</div>
+      <div class="lbl">Asignaciones</div>
+    </div>
+    <div class="kpi-chip">
+      <div class="val" id="kpi-comp">—</div>
+      <div class="lbl">Completadas</div>
+    </div>
+    <div class="kpi-chip">
+      <div class="val" id="kpi-pct">—</div>
+      <div class="lbl">Avance global</div>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+  <!-- LEFT: People list -->
+  <div class="left-panel">
+    <div class="search-area">
+      <div class="search-row">
+        <div class="search-wrapper" style="flex:1">
+          <input class="search-input" id="searchInput" type="text" placeholder="Buscar colaborador…" oninput="filterPeople()">
+        </div>
+      </div>
+      <div class="filter-tabs" id="filterTabs">
+        <div class="ftab active svc-all" data-svc="Todos" onclick="setFilter('Todos', this)">Todos</div>
+        <div class="ftab svc-doc"    data-svc="Doc. Controlada"  onclick="setFilter('Doc. Controlada', this)">Doc. Controlada</div>
+        <div class="ftab svc-inntek" data-svc="INNTEK"           onclick="setFilter('INNTEK', this)">INNTEK</div>
+        <div class="ftab svc-ryce"   data-svc="RyCE"             onclick="setFilter('RyCE', this)">RyCE</div>
+        <div class="ftab svc-trans"  data-svc="Transversal"      onclick="setFilter('Transversal', this)">Transversal</div>
+        <div class="ftab svc-vcl"    data-svc="Verif. Chile"     onclick="setFilter('Verif. Chile', this)">Verif. Chile</div>
+        <div class="ftab svc-vuy"    data-svc="Verif. Uruguay"   onclick="setFilter('Verif. Uruguay', this)">Verif. Uruguay</div>
+      </div>
+    </div>
+    <div class="people-list" id="peopleList"></div>
+  </div>
+
+  <!-- RIGHT: Detail -->
+  <div class="right-panel" id="rightPanel">
+    <div class="empty-state">
+      <div class="icon">👤</div>
+      <h2>Selecciona un colaborador</h2>
+      <p>Haz clic en cualquier persona de la lista para ver sus capacitaciones asignadas y el estado de cada una.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = {"personas":[{"nombre":"BUSTOS MANRIQUEZ GUADALUPE DEL CARMEN","short":"BUSTOS MANRIQUEZ","servicio":"Doc. Controlada","rut":"8679012-2","cursos":[{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":1,"completados":0,"en_proceso":0,"por_coordinar":1},{"nombre":"CARRASCO PEREZ BEATRIZ GERTIE","short":"CARRASCO PEREZ","servicio":"Doc. Controlada","rut":"10639830-5","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":2,"nombre":"Revisión de documentos y criterios","estado":"Por coordinar"},{"id":3,"nombre":"Uso intermedio de ofimática, gmail, office 365","estado":"Por coordinar"},{"id":4,"nombre":"Detección de documentos falsos o alterados","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":13,"nombre":"Excel Avanzado – Dashboards corporativos","estado":"Por coordinar"},{"id":14,"nombre":"Excel Básico e Intermedio","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":24,"nombre":"Power BI","estado":"Por coordinar"},{"id":31,"nombre":"Legislación laboral Chile","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":15,"completados":0,"en_proceso":0,"por_coordinar":15},{"nombre":"CASTILLO MUÑOZ CINTIA ALEJANDRA","short":"CASTILLO MUÑOZ","servicio":"Doc. Controlada","rut":"17542103-3","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":2,"nombre":"Revisión de documentos y criterios","estado":"Por coordinar"},{"id":3,"nombre":"Uso intermedio de ofimática, gmail, office 365","estado":"Por coordinar"},{"id":4,"nombre":"Detección de documentos falsos o alterados","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":14,"nombre":"Excel Básico e Intermedio","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":31,"nombre":"Legislación laboral Chile","estado":"Por coordinar"},{"id":34,"nombre":"Liquidaciones de sueldo Uruguay","estado":"Por coordinar"},{"id":35,"nombre":"Legislación laboral Uruguay","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":15,"completados":0,"en_proceso":0,"por_coordinar":15},{"nombre":"HERRERA QUEZADA MICHELLE STEPHANIA","short":"HERRERA QUEZADA","servicio":"Doc. Controlada","rut":"18419558-5","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":2,"nombre":"Revisión de documentos y criterios","estado":"Por coordinar"},{"id":4,"nombre":"Detección de documentos falsos o alterados","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":14,"nombre":"Excel Básico e Intermedio","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":31,"nombre":"Legislación laboral Chile","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":12,"completados":0,"en_proceso":0,"por_coordinar":12},{"nombre":"ALARCON LOYOLA MARCOS FERNANDO","short":"ALARCON LOYOLA","servicio":"Doc. Controlada","rut":"11677211-6","cursos":[{"id":2,"nombre":"Revisión de documentos y criterios","estado":"Por coordinar"},{"id":4,"nombre":"Detección de documentos falsos o alterados","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":14,"nombre":"Excel Básico e Intermedio","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":31,"nombre":"Legislación laboral Chile","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":11,"completados":0,"en_proceso":0,"por_coordinar":11},{"nombre":"RODRIGUEZ ANA","short":"RODRIGUEZ ANA","servicio":"Doc. Controlada","rut":"","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":2,"nombre":"Revisión de documentos y criterios","estado":"Por coordinar"},{"id":4,"nombre":"Detección de documentos falsos o alterados","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":14,"nombre":"Excel Básico e Intermedio","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":31,"nombre":"Legislación laboral Chile","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":12,"completados":0,"en_proceso":0,"por_coordinar":12},{"nombre":"HIDALGO FUENTES FRANCISCO JAVIER","short":"HIDALGO FUENTES","servicio":"Doc. Controlada","rut":"17444569-9","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":2,"nombre":"Revisión de documentos y criterios","estado":"Por coordinar"},{"id":3,"nombre":"Uso intermedio de ofimática, gmail, office 365","estado":"Por coordinar"},{"id":4,"nombre":"Detección de documentos falsos o alterados","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":13,"nombre":"Excel Avanzado – Dashboards corporativos","estado":"Por coordinar"},{"id":14,"nombre":"Excel Básico e Intermedio","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":24,"nombre":"Power BI","estado":"Por coordinar"},{"id":31,"nombre":"Legislación laboral Chile","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":15,"completados":0,"en_proceso":0,"por_coordinar":15},{"nombre":"VALDERRAMA FLORES MICHAEL PATRICIO","short":"VALDERRAMA FLORES","servicio":"Doc. Controlada","rut":"16762264-K","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":2,"nombre":"Revisión de documentos y criterios","estado":"Por coordinar"},{"id":3,"nombre":"Uso intermedio de ofimática, gmail, office 365","estado":"Por coordinar"},{"id":4,"nombre":"Detección de documentos falsos o alterados","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":14,"nombre":"Excel Básico e Intermedio","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":31,"nombre":"Legislación laboral Chile","estado":"Por coordinar"},{"id":34,"nombre":"Liquidaciones de sueldo Uruguay","estado":"Por coordinar"},{"id":35,"nombre":"Legislación laboral Uruguay","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":15,"completados":0,"en_proceso":0,"por_coordinar":15},{"nombre":"TRONCOSO HERNANDEZ SANDRA PAMELA","short":"TRONCOSO HERNANDEZ","servicio":"Doc. Controlada","rut":"10960128-4","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":2,"nombre":"Revisión de documentos y criterios","estado":"Por coordinar"},{"id":3,"nombre":"Uso intermedio de ofimática, gmail, office 365","estado":"Por coordinar"},{"id":4,"nombre":"Detección de documentos falsos o alterados","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":13,"nombre":"Excel Avanzado – Dashboards corporativos","estado":"Por coordinar"},{"id":14,"nombre":"Excel Básico e Intermedio","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":24,"nombre":"Power BI","estado":"Por coordinar"},{"id":25,"nombre":"Curso introductorio IA","estado":"Por coordinar"},{"id":31,"nombre":"Legislación laboral Chile","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":16,"completados":0,"en_proceso":0,"por_coordinar":16},{"nombre":"NICOLAS CORDOVA","short":"NICOLAS CORDOVA","servicio":"Doc. Controlada","rut":"","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":2,"nombre":"Revisión de documentos y criterios","estado":"Por coordinar"},{"id":3,"nombre":"Uso intermedio de ofimática, gmail, office 365","estado":"Por coordinar"},{"id":4,"nombre":"Detección de documentos falsos o alterados","estado":"Por coordinar"},{"id":8,"nombre":"SQL","estado":"Por coordinar"},{"id":9,"nombre":"ISO 9001 – Formación avanzada Encargado de Calidad","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":13,"nombre":"Excel Avanzado – Dashboards corporativos","estado":"Por coordinar"},{"id":14,"nombre":"Excel Básico e Intermedio","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":19,"nombre":"ISO 27.001 especificación a jefaturas","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":21,"nombre":"Taller de riesgos legales y compliance","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":24,"nombre":"Power BI","estado":"Por coordinar"},{"id":31,"nombre":"Legislación laboral Chile","estado":"Por coordinar"},{"id":34,"nombre":"Liquidaciones de sueldo Uruguay","estado":"Por coordinar"},{"id":35,"nombre":"Legislación laboral Uruguay","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":21,"completados":0,"en_proceso":0,"por_coordinar":21},{"nombre":"ORELLANA MALDONADO RODRIGO ARMANDO","short":"ORELLANA MALDONADO","servicio":"INNTEK","rut":"16239914-4","cursos":[{"id":5,"nombre":"GO","estado":"Por coordinar"},{"id":6,"nombre":"PHP LARAVEL VIEW","estado":"Completado"},{"id":7,"nombre":"Actualización de desarrolladores – Programación segura","estado":"Por coordinar"},{"id":8,"nombre":"SQL","estado":"Completado"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Completado"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Completado"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":31,"nombre":"Legislación laboral Chile","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":12,"completados":4,"en_proceso":0,"por_coordinar":8},{"nombre":"ILLANES VERA SERGIO VICTOR","short":"ILLANES VERA","servicio":"INNTEK","rut":"17041308-3","cursos":[{"id":5,"nombre":"GO","estado":"Por coordinar"},{"id":6,"nombre":"PHP LARAVEL VIEW","estado":"Completado"},{"id":7,"nombre":"Actualización de desarrolladores – Programación segura","estado":"Por coordinar"},{"id":8,"nombre":"SQL","estado":"Completado"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Completado"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Completado"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":11,"completados":4,"en_proceso":0,"por_coordinar":7},{"nombre":"PARDO TERAN IGNACIO PABLO","short":"PARDO TERAN","servicio":"INNTEK","rut":"20515807-3","cursos":[{"id":5,"nombre":"GO","estado":"Por coordinar"},{"id":6,"nombre":"PHP LARAVEL VIEW","estado":"Completado"},{"id":7,"nombre":"Actualización de desarrolladores – Programación segura","estado":"Por coordinar"},{"id":8,"nombre":"SQL","estado":"Completado"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Completado"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Completado"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":11,"completados":4,"en_proceso":0,"por_coordinar":7},{"nombre":"PAREDES SUAZO BRYAN MARCELO","short":"PAREDES SUAZO","servicio":"INNTEK","rut":"19595932-3","cursos":[{"id":5,"nombre":"GO","estado":"Por coordinar"},{"id":6,"nombre":"PHP LARAVEL VIEW","estado":"Completado"},{"id":7,"nombre":"Actualización de desarrolladores – Programación segura","estado":"Por coordinar"},{"id":8,"nombre":"SQL","estado":"Completado"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Completado"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Completado"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":11,"completados":4,"en_proceso":0,"por_coordinar":7},{"nombre":"VASQUEZ ARANEDA FELIPE ALBERTO","short":"VASQUEZ ARANEDA","servicio":"INNTEK","rut":"20776962-2","cursos":[{"id":5,"nombre":"GO","estado":"Por coordinar"},{"id":6,"nombre":"PHP LARAVEL VIEW","estado":"Completado"},{"id":7,"nombre":"Actualización de desarrolladores – Programación segura","estado":"Por coordinar"},{"id":8,"nombre":"SQL","estado":"Completado"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Completado"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Completado"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":11,"completados":4,"en_proceso":0,"por_coordinar":7},{"nombre":"ZAPATA PUENTES RODRIGO","short":"ZAPATA PUENTES","servicio":"INNTEK","rut":"15592475-6","cursos":[{"id":5,"nombre":"GO","estado":"Por coordinar"},{"id":6,"nombre":"PHP LARAVEL VIEW","estado":"Completado"},{"id":7,"nombre":"Actualización de desarrolladores – Programación segura","estado":"Por coordinar"},{"id":8,"nombre":"SQL","estado":"Completado"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Completado"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Completado"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":11,"completados":4,"en_proceso":0,"por_coordinar":7},{"nombre":"PABLO SOLIS","short":"PABLO SOLIS","servicio":"INNTEK","rut":"","cursos":[{"id":5,"nombre":"GO","estado":"Por coordinar"},{"id":7,"nombre":"Actualización de desarrolladores – Programación segura","estado":"Por coordinar"},{"id":8,"nombre":"SQL","estado":"Completado"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":10,"completados":1,"en_proceso":0,"por_coordinar":9},{"nombre":"SAN MARTIN NEIRA NADIA JACQUELINE","short":"SAN MARTIN","servicio":"RyCE","rut":"17843677-5","cursos":[{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":13,"nombre":"Excel Avanzado – Dashboards corporativos","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":19,"nombre":"ISO 27.001 especificación a jefaturas","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":21,"nombre":"Taller de riesgos legales y compliance","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":25,"nombre":"Curso introductorio IA","estado":"Por coordinar"},{"id":26,"nombre":"Documentación legal especial","estado":"Por coordinar"},{"id":27,"nombre":"Documentación legal y su gestión","estado":"Por coordinar"},{"id":28,"nombre":"Estados financieros para informes financieros","estado":"Por coordinar"},{"id":29,"nombre":"Módulo compliance RyCE","estado":"Por coordinar"},{"id":30,"nombre":"Taller de Indicadores Financieros","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":16,"completados":0,"en_proceso":0,"por_coordinar":16},{"nombre":"TERREU SANTANA CAROLINA ALEJANDRA","short":"TERREU SANTANA","servicio":"RyCE","rut":"16767404-6","cursos":[{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":14,"nombre":"Excel Básico e Intermedio","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":23,"nombre":"Prompt engineering para Chatgpt","estado":"Por coordinar"},{"id":26,"nombre":"Documentación legal especial","estado":"Por coordinar"},{"id":27,"nombre":"Documentación legal y su gestión","estado":"Por coordinar"},{"id":28,"nombre":"Estados financieros para informes financieros","estado":"Por coordinar"},{"id":29,"nombre":"Módulo compliance RyCE","estado":"Por coordinar"},{"id":30,"nombre":"Taller de Indicadores Financieros","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":14,"completados":0,"en_proceso":0,"por_coordinar":14},{"nombre":"ULLOA SILVA LILIAN","short":"ULLOA SILVA","servicio":"RyCE","rut":"12698729-3","cursos":[{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":14,"nombre":"Excel Básico e Intermedio","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":23,"nombre":"Prompt engineering para Chatgpt","estado":"Por coordinar"},{"id":26,"nombre":"Documentación legal especial","estado":"Por coordinar"},{"id":27,"nombre":"Documentación legal y su gestión","estado":"Por coordinar"},{"id":28,"nombre":"Estados financieros para informes financieros","estado":"Por coordinar"},{"id":29,"nombre":"Módulo compliance RyCE","estado":"Por coordinar"},{"id":30,"nombre":"Taller de Indicadores Financieros","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":14,"completados":0,"en_proceso":0,"por_coordinar":14},{"nombre":"JARUFE CID KAMEL SKANDAR","short":"JARUFE CID","servicio":"Transversal","rut":"17199590-6","cursos":[{"id":10,"nombre":"NCh-ISO/IEC 17029","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":13,"nombre":"Excel Avanzado – Dashboards corporativos","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":17,"nombre":"ISO 9001- Nivel Auditor","estado":"Por coordinar"},{"id":18,"nombre":"ISO 27.001- Nivel Auditor","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":21,"nombre":"Taller de riesgos legales y compliance","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":24,"nombre":"Power BI","estado":"Por coordinar"},{"id":29,"nombre":"Módulo compliance RyCE","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":14,"completados":0,"en_proceso":0,"por_coordinar":14},{"nombre":"OLIVA SAGREDO VICTOR MANUEL","short":"OLIVA SAGREDO","servicio":"Transversal","rut":"17222341-9","cursos":[{"id":3,"nombre":"Uso intermedio de ofimática, gmail, office 365","estado":"Por coordinar"},{"id":9,"nombre":"ISO 9001 – Formación avanzada Encargado de Calidad","estado":"Por coordinar"},{"id":10,"nombre":"NCh-ISO/IEC 17029","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":13,"nombre":"Excel Avanzado – Dashboards corporativos","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":18,"nombre":"ISO 27.001- Nivel Auditor","estado":"Por coordinar"},{"id":19,"nombre":"ISO 27.001 especificación a jefaturas","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":21,"nombre":"Taller de riesgos legales y compliance","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":23,"nombre":"Prompt engineering para Chatgpt","estado":"Por coordinar"},{"id":24,"nombre":"Power BI","estado":"Por coordinar"},{"id":25,"nombre":"Curso introductorio IA","estado":"Por coordinar"},{"id":29,"nombre":"Módulo compliance RyCE","estado":"Por coordinar"},{"id":31,"nombre":"Legislación laboral Chile","estado":"Por coordinar"},{"id":34,"nombre":"Liquidaciones de sueldo Uruguay","estado":"Por coordinar"},{"id":35,"nombre":"Legislación laboral Uruguay","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":21,"completados":0,"en_proceso":0,"por_coordinar":21},{"nombre":"FRANCISCO GARCIA","short":"FRANCISCO GARCIA","servicio":"Transversal","rut":"17617620-2","cursos":[{"id":9,"nombre":"ISO 9001 – Formación avanzada Encargado de Calidad","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":21,"nombre":"Taller de riesgos legales y compliance","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":9,"completados":0,"en_proceso":0,"por_coordinar":9},{"nombre":"VASQUEZ ALMEIDA MAGNOVI LUCELY","short":"VASQUEZ ALMEIDA","servicio":"Verif. Chile","rut":"27187689-0","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":32,"nombre":"Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)","estado":"Por coordinar"},{"id":33,"nombre":"uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":10,"completados":0,"en_proceso":0,"por_coordinar":10},{"nombre":"QUIÑONES GARRIDO JACQUELINE BEATRIZ","short":"QUIÑONES GARRIDO","servicio":"Verif. Uruguay","rut":"17510514-k","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":3,"nombre":"Uso intermedio de ofimática, gmail, office 365","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":14,"nombre":"Excel Básico e Intermedio","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":25,"nombre":"Curso introductorio IA","estado":"En proceso"},{"id":32,"nombre":"Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)","estado":"Por coordinar"},{"id":33,"nombre":"uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles","estado":"Por coordinar"},{"id":34,"nombre":"Liquidaciones de sueldo Uruguay","estado":"Por coordinar"},{"id":35,"nombre":"Legislación laboral Uruguay","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"En proceso"}],"total":15,"completados":0,"en_proceso":2,"por_coordinar":13},{"nombre":"STUARDO RAMOS NATALY EDITH","short":"STUARDO RAMOS","servicio":"Verif. Chile","rut":"19380063-7","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":32,"nombre":"Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)","estado":"Por coordinar"},{"id":33,"nombre":"uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":10,"completados":0,"en_proceso":0,"por_coordinar":10},{"nombre":"QUIÑONES GARRIDO MARCELA ALEJANDRA","short":"QUIÑONES GARRIDO","servicio":"Verif. Chile","rut":"17170164-3","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":3,"nombre":"Uso intermedio de ofimática, gmail, office 365","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":14,"nombre":"Excel Básico e Intermedio","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":25,"nombre":"Curso introductorio IA","estado":"En proceso"},{"id":32,"nombre":"Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)","estado":"Por coordinar"},{"id":33,"nombre":"uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles","estado":"Por coordinar"},{"id":34,"nombre":"Liquidaciones de sueldo Uruguay","estado":"Por coordinar"},{"id":35,"nombre":"Legislación laboral Uruguay","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"En proceso"}],"total":15,"completados":0,"en_proceso":2,"por_coordinar":13},{"nombre":"SANDOVAL SANDOVAL CAROLINA ELISABETH","short":"SANDOVAL SANDOVAL","servicio":"Verif. Chile","rut":"15616135-7","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":32,"nombre":"Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)","estado":"Por coordinar"},{"id":33,"nombre":"uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles","estado":"Por coordinar"},{"id":34,"nombre":"Liquidaciones de sueldo Uruguay","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":11,"completados":0,"en_proceso":0,"por_coordinar":11},{"nombre":"SEGURA VALLEJOS NICOLAS ARMANDO","short":"SEGURA VALLEJOS","servicio":"Verif. Chile","rut":"17899552-9","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":32,"nombre":"Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)","estado":"Por coordinar"},{"id":33,"nombre":"uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":10,"completados":0,"en_proceso":0,"por_coordinar":10},{"nombre":"CRISOSTO GARCIA TALIHA","short":"CRISOSTO GARCIA","servicio":"Verif. Chile","rut":"18413622-8","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":32,"nombre":"Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)","estado":"Por coordinar"},{"id":33,"nombre":"uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":10,"completados":0,"en_proceso":0,"por_coordinar":10},{"nombre":"SOTO MUÑOZ DEISY ARELY","short":"SOTO MUÑOZ","servicio":"Verif. Chile","rut":"13572144-1","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":19,"nombre":"ISO 27.001 especificación a jefaturas","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":21,"nombre":"Taller de riesgos legales y compliance","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":32,"nombre":"Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)","estado":"Por coordinar"},{"id":33,"nombre":"uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":12,"completados":0,"en_proceso":0,"por_coordinar":12},{"nombre":"PEZOA ALVAREZ MACARENA DEL PILAR","short":"PEZOA ALVAREZ","servicio":"Verif. Chile","rut":"10938648-0","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":32,"nombre":"Curso finiquitos ( actas de conciliación, comparendo, reservas de derecho, etc.)","estado":"Por coordinar"},{"id":33,"nombre":"uso de la planilla, desglose de las liquidaciones, conceptos imponible y no imponibles","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"Por coordinar"}],"total":10,"completados":0,"en_proceso":0,"por_coordinar":10},{"nombre":"HERNANDEZ AJA ALVARO GERARDO","short":"HERNANDEZ AJA","servicio":"Verif. Uruguay","rut":"15671183-7","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":3,"nombre":"Uso intermedio de ofimática, gmail, office 365","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":14,"nombre":"Excel Básico e Intermedio","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":25,"nombre":"Curso introductorio IA","estado":"En proceso"},{"id":34,"nombre":"Liquidaciones de sueldo Uruguay","estado":"Por coordinar"},{"id":35,"nombre":"Legislación laboral Uruguay","estado":"Por coordinar"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"En proceso"}],"total":13,"completados":0,"en_proceso":2,"por_coordinar":11},{"nombre":"TAPIA SALINA CAMILA LORETO","short":"TAPIA SALINA","servicio":"Verif. Uruguay","rut":"17045651-3","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":13,"nombre":"Excel Avanzado – Dashboards corporativos","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":19,"nombre":"ISO 27.001 especificación a jefaturas","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":25,"nombre":"Curso introductorio IA","estado":"En proceso"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"En proceso"}],"total":11,"completados":0,"en_proceso":2,"por_coordinar":9},{"nombre":"TASSO HENRIQUEZ KARLA JOSSELYN","short":"TASSO HENRIQUEZ","servicio":"Verif. Uruguay","rut":"16896094-8","cursos":[{"id":1,"nombre":"Contratos de trabajo Chile, Colombia y Uruguay","estado":"Por coordinar"},{"id":8,"nombre":"SQL","estado":"Por coordinar"},{"id":11,"nombre":"Ciberseguridad – Concientización general","estado":"Por coordinar"},{"id":12,"nombre":"Ergonomía y autocuidado para el trabajo en oficina y teletrabajo","estado":"Por coordinar"},{"id":13,"nombre":"Excel Avanzado – Dashboards corporativos","estado":"Por coordinar"},{"id":15,"nombre":"Inducción corporativa + Prevención de delitos (20.393)","estado":"Por coordinar"},{"id":16,"nombre":"ISO 9001 – Fundamentos","estado":"Por coordinar"},{"id":19,"nombre":"ISO 27.001 especificación a jefaturas","estado":"Por coordinar"},{"id":20,"nombre":"Ley 21.719","estado":"Por coordinar"},{"id":21,"nombre":"Taller de riesgos legales y compliance","estado":"Por coordinar"},{"id":22,"nombre":"Taller Seguridad Laboral (IPERC + EPP)","estado":"Por coordinar"},{"id":24,"nombre":"Power BI","estado":"Por coordinar"},{"id":25,"nombre":"Curso introductorio IA","estado":"En proceso"},{"id":36,"nombre":"Protocolo Suseso-CEAL: Capacitación a Comité Aplicación","estado":"En proceso"}],"total":14,"completados":0,"en_proceso":2,"por_coordinar":12}]};
+
+const SVC_COLORS = {
+  'Doc. Controlada': '#1F4E79',
+  'INNTEK': '#2E75B6',
+  'RyCE': '#5B9BD5',
+  'Transversal': '#7030A0',
+  'Verif. Chile': '#375623',
+  'Verif. Uruguay': '#70AD47',
+};
+
+let currentFilter = 'Todos';
+let currentPerson = null;
+let currentCourseFilter = 'all';
+
+function getInitials(name) {
+  const parts = name.split(' ');
+  return parts.slice(0,2).map(p=>p[0]).join('').toUpperCase();
+}
+
+function svcClass(svc) {
+  return {'Doc. Controlada':'svc-doc','INNTEK':'svc-inntek','RyCE':'svc-ryce','Transversal':'svc-trans','Verif. Chile':'svc-vcl','Verif. Uruguay':'svc-vuy'}[svc] || 'svc-all';
+}
+
+function statusClass(estado) {
+  if (estado === 'Completado') return 'comp';
+  if (estado === 'En proceso') return 'proc';
+  return 'pend';
+}
+
+// Compute global KPIs
+function computeKPIs() {
+  let totalAsig = 0, totalComp = 0;
+  DATA.personas.forEach(p => { totalAsig += p.total; totalComp += p.completados; });
+  document.getElementById('kpi-asig').textContent = totalAsig;
+  document.getElementById('kpi-comp').textContent = totalComp;
+  const pct = totalAsig > 0 ? Math.round(totalComp / totalAsig * 100) : 0;
+  document.getElementById('kpi-pct').textContent = pct + '%';
+}
+
+function setFilter(svc, el) {
+  currentFilter = svc;
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  filterPeople();
+}
+
+function filterPeople() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const list = document.getElementById('peopleList');
+  list.innerHTML = '';
+  let visible = 0;
+  DATA.personas.forEach((p, i) => {
+    if (currentFilter !== 'Todos' && p.servicio !== currentFilter) return;
+    if (q && !p.nombre.toLowerCase().includes(q) && !p.servicio.toLowerCase().includes(q)) return;
+    visible++;
+    const compPct = p.total > 0 ? (p.completados / p.total * 100) : 0;
+    const procPct = p.total > 0 ? (p.en_proceso / p.total * 100) : 0;
+    const color = SVC_COLORS[p.servicio] || '#888';
+    const card = document.createElement('div');
+    card.className = 'person-card' + (currentPerson === i ? ' active' : '');
+    card.onclick = () => selectPerson(i, card);
+    card.innerHTML = `
+      <div class="avatar" style="background:${color}">${getInitials(p.nombre)}</div>
+      <div class="person-info">
+        <div class="person-name">${p.nombre}</div>
+        <div class="person-meta">
+          <div class="svc-dot" style="background:${color}"></div>
+          <span>${p.servicio}</span>
+        </div>
+        <div class="mini-prog">
+          <div class="mini-prog-bar" style="width:${compPct}%;background:#4ade80"></div>
+          <div class="mini-prog-bar" style="width:${procPct}%;background:#facc15"></div>
+        </div>
+      </div>
+      <div class="person-count">${p.total}</div>
+    `;
+    list.appendChild(card);
+  });
+  if (visible === 0) {
+    list.innerHTML = '<div class="no-results">Sin resultados</div>';
+  }
+}
+
+function selectPerson(idx, cardEl) {
+  currentPerson = idx;
+  currentCourseFilter = 'all';
+  document.querySelectorAll('.person-card').forEach(c => c.classList.remove('active'));
+  if (cardEl) cardEl.classList.add('active');
+  renderDetail(DATA.personas[idx]);
+}
+
+function renderDetail(p) {
+  const color = SVC_COLORS[p.servicio] || '#888';
+  const compPct = p.total > 0 ? Math.round(p.completados / p.total * 100) : 0;
+  const panel = document.getElementById('rightPanel');
+
+  panel.innerHTML = `
+    <div class="detail-header">
+      <div class="detail-avatar" style="background:${color}">${getInitials(p.nombre)}</div>
+      <div>
+        <div class="detail-name">${p.nombre}</div>
+        <div class="detail-sub">
+          <span class="svc-badge ${svcClass(p.servicio)}" style="background:${color}">● ${p.servicio}</span>
+          ${p.rut ? `<span class="rut-badge">RUT: ${p.rut}</span>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-box total">
+        <div class="stat-val">${p.total}</div>
+        <div class="stat-lbl">Total asignadas</div>
+      </div>
+      <div class="stat-box comp">
+        <div class="stat-val">${p.completados}</div>
+        <div class="stat-lbl">Completadas</div>
+      </div>
+      <div class="stat-box proc">
+        <div class="stat-val">${p.en_proceso}</div>
+        <div class="stat-lbl">En proceso</div>
+      </div>
+      <div class="stat-box pend">
+        <div class="stat-val">${p.por_coordinar}</div>
+        <div class="stat-lbl">Por coordinar</div>
+      </div>
+    </div>
+
+    <div class="prog-section">
+      <div class="prog-header">
+        <span class="prog-title">Avance general</span>
+        <span class="prog-pct">${compPct}%</span>
+      </div>
+      <div class="prog-bar-outer">
+        <div class="prog-bar-inner" style="width:${compPct}%;background:linear-gradient(90deg,#4ade80,#22c55e)"></div>
+      </div>
+    </div>
+
+    <div class="courses-title">
+      Capacitaciones asignadas
+      <span class="count-badge">${p.total}</span>
+    </div>
+    <div class="course-filter-row">
+      <button class="cfbtn active-all" onclick="filterCourses('all',this)">Todas (${p.total})</button>
+      <button class="cfbtn" onclick="filterCourses('comp',this)">✓ Completadas (${p.completados})</button>
+      <button class="cfbtn" onclick="filterCourses('proc',this)">⟳ En proceso (${p.en_proceso})</button>
+      <button class="cfbtn" onclick="filterCourses('pend',this)">○ Por coordinar (${p.por_coordinar})</button>
+    </div>
+    <div class="courses-grid" id="coursesGrid"></div>
+  `;
+
+  renderCourses(p.cursos, 'all');
+}
+
+function filterCourses(type, btn) {
+  currentCourseFilter = type;
+  document.querySelectorAll('.cfbtn').forEach(b => {
+    b.className = 'cfbtn';
+  });
+  btn.className = `cfbtn active-${type}`;
+  const p = DATA.personas[currentPerson];
+  renderCourses(p.cursos, type);
+}
+
+function renderCourses(cursos, type) {
+  const grid = document.getElementById('coursesGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const filtered = type === 'all' ? cursos :
+    cursos.filter(c => {
+      if (type === 'comp') return c.estado === 'Completado';
+      if (type === 'proc') return c.estado === 'En proceso';
+      if (type === 'pend') return c.estado === 'Por coordinar';
+      return true;
+    });
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="no-results" style="grid-column:1/-1">Sin capacitaciones en esta categoría</div>';
+    return;
+  }
+  filtered.forEach((c, i) => {
+    const sc = statusClass(c.estado);
+    const label = c.estado === 'Completado' ? '✓ Completado' : c.estado === 'En proceso' ? '⟳ En proceso' : '○ Por coordinar';
+    const div = document.createElement('div');
+    div.className = 'course-item';
+    div.style.animationDelay = `${i * 0.03}s`;
+    div.innerHTML = `
+      <div class="course-num ${sc}">${c.id}</div>
+      <div class="course-text">
+        <div class="course-name">${c.nombre}</div>
+        <span class="status-pill ${sc}"><span class="status-dot"></span>${label}</span>
+      </div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+// Init
+computeKPIs();
+filterPeople();
+</script>
+</body>
+</html>

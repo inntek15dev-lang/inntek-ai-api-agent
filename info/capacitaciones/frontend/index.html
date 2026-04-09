@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Kamel Capacitaciones</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div class="header-left">
+        <h1>KAMEL <span>CAPACITACIONES</span></h1>
+        <div class="view-toggles" role="tablist" aria-label="Controles de vista">
+          <button class="vbtn active" id="btnSplitView" role="tab" aria-selected="true" aria-controls="splitView">Vista Detalle</button>
+          <button class="vbtn" id="btnTableView" role="tab" aria-selected="false" aria-controls="tableView">Grilla Global</button>
+        </div>
+      </div>
+        <div class="header-actions">
+          <button class="export-btn" id="btnExportCSV" aria-label="Exportar datos a CSV">Exportar CSV</button>
+          <button class="admin-btn" id="btnAdmin" aria-label="Abrir panel de administración">⚙ Configuración</button>
+        </div>
+        <div class="kpi-chip">
+          <div class="val" id="kpi-asig">0</div>
+          <div class="lbl">Asignadas</div>
+        </div>
+        <div class="kpi-chip">
+          <div class="val" id="kpi-comp">0</div>
+          <div class="lbl">Completadas</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <!-- PANEL DIVIDIDO (SPRINTS 3 & 4) -->
+      <section id="splitView" class="view-container active-view">
+        <div class="split-layout">
+          <aside class="left-panel">
+            <div class="search-area">
+              <div class="search-wrapper">
+                <input type="text" id="searchInput" class="search-input" placeholder="Buscar colaborador o servicio...">
+              </div>
+              <div class="filter-tabs" id="filterTabs">
+                <button class="ftab active" data-svc="Todos">Todos</button>
+                <button class="ftab" data-svc="Doc. Controlada">Doc. Controlada</button>
+                <button class="ftab" data-svc="INNTEK">INNTEK</button>
+                <button class="ftab" data-svc="RyCE">RyCE</button>
+                <button class="ftab" data-svc="Transversal">Transversal</button>
+                <button class="ftab" data-svc="Verif. Chile">V. Chile</button>
+                <button class="ftab" data-svc="Verif. Uruguay">V. Uruguay</button>
+              </div>
+            </div>
+            <div class="people-list" id="peopleList">
+              <div class="loader">Cargando colaboradores...</div>
+            </div>
+          </aside>
+          <section class="right-panel" id="rightPanel">
+            <div class="empty-state">
+              <h3>Seleccione un colaborador</h3>
+              <p>Haga clic en un colaborador de la lista lateral para ver su progreso detallado.</p>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <!-- PANEL GRILLA GLOBAL (SPRINT 6) -->
+      <section id="tableView" class="view-container">
+        <div class="global-table-area">
+          <table class="custom-table" id="globalTable">
+            <thead>
+              <tr id="tableHeaders">
+                <th data-sort="nombre">Colaborador ↕</th>
+                <th data-sort="servicio">Servicio ↕</th>
+                <th data-sort="total">Asignadas ↕</th>
+                <th data-sort="completados">Completas ↕</th>
+                <th data-sort="en_proceso">En Proceso ↕</th>
+                <th data-sort="avance">Avance ↕</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- ADMIN MODAL (SPRINT 7) -->
+    <div id="adminModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div class="bg-surface2 w-full max-w-4xl max-h-[90vh] rounded-2xl border border-white/10 shadow-2xl flex flex-col overflow-hidden text-white">
+        <div class="p-6 border-bottom border-white/10 flex justify-between items-center">
+          <h2 class="text-2xl font-serif text-azul3">Panel de Administración</h2>
+          <button id="btnCloseAdmin" class="text-white/50 hover:text-white transition-colors">✕</button>
+        </div>
+        
+        <div class="flex-1 overflow-hidden flex">
+          <!-- Sidebar Modal -->
+          <div class="w-48 border-r border-white/10 p-4 flex flex-col gap-2">
+            <button class="admin-tab active" data-tab="servicios">Servicios</button>
+            <button class="admin-tab" data-tab="cursos">Cursos</button>
+            <button class="admin-tab" data-tab="colaboradores">Colaboradores</button>
+            <button class="admin-tab" data-tab="asignaciones">Asignaciones</button>
+          </div>
+          
+          <!-- Content Modal -->
+          <div class="flex-1 p-6 overflow-y-auto" id="adminContent">
+            <!-- Dynamic Content -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
