@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, UserCircle, CheckCircle, Clock, Calendar, Users, BookOpen, GraduationCap } from 'lucide-react';
 import axios from 'axios';
-import { API_BASE_URL } from '../config/api';
+import API_URL from '../config/api';
 
 const CapacitacionesDashboard = () => {
     const [data, setData] = useState({ personas: [] });
@@ -18,7 +18,7 @@ const CapacitacionesDashboard = () => {
     const fetchData = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`${API_BASE_URL}/capacitaciones/dashboard`, {
+            const response = await axios.get(`${API_URL}/capacitaciones/dashboard`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setData(response.data);

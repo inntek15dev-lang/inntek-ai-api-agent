@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { API_BASE_URL } from '../config/api';
+import API_URL from '../config/api';
 import { Save, Plus, Trash2, Edit3, GraduationCap, Users, BookOpen, Layers, X, Search } from 'lucide-react';
 
 const CapacitacionesManagers = () => {
@@ -21,9 +21,9 @@ const CapacitacionesManagers = () => {
         try {
             const token = localStorage.getItem('token');
             const [colabs, svcs, courses] = await Promise.all([
-                axios.get(`${API_BASE_URL}/capacitaciones/dashboard`, { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get(`${API_BASE_URL}/capacitaciones/servicios`, { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get(`${API_BASE_URL}/capacitaciones/cursos`, { headers: { Authorization: `Bearer ${token}` } })
+                axios.get(`${API_URL}/capacitaciones/dashboard`, { headers: { Authorization: `Bearer ${token}` } }),
+                axios.get(`${API_URL}/capacitaciones/servicios`, { headers: { Authorization: `Bearer ${token}` } }),
+                axios.get(`${API_URL}/capacitaciones/cursos`, { headers: { Authorization: `Bearer ${token}` } })
             ]);
             setData({
                 colaboradores: colabs.data.personas,
