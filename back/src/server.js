@@ -4,7 +4,8 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const multer = require('multer');
 const path = require('path');
-require('dotenv').config();
+const envPath = process.env.ENV_FILE || '.env';
+require('dotenv').config({ path: envPath });
 
 // Multer storage for temporary processing
 const upload = multer({ dest: 'uploads/' });
@@ -18,10 +19,13 @@ const PORT = process.env.PORT || 4048;
 // Middleware
 app.use(cors({
     origin: [
-        'https://inntek-ai-api-agent-client.onrender.com',
-        'https://preprod-ia-agents-manager.inntek.cl',
-        'https://preprod-ia-agents-manager-api.inntek.cl',
-        'http://localhost:5173'
+        'https://inntek-ai-api-agent-client.onrender.com', // Render
+        'https://preprod-ia-agents-manager.inntek.cl',     // Preprod
+        'https://preprod-ia-agents-manager-api.inntek.cl', // Preprod API
+        'https://ia-agents-manager.inntek.cl',             // Prod
+        'https://ia-agents-manager-api.inntek.cl',         // Prod API
+        'http://localhost:5173',                           // Local
+        'http://localhost:4048'                            // Local API/Docs
     ],
     credentials: true
 }));
@@ -37,7 +41,8 @@ const swaggerOptions = {
             description: 'API for managing AI agents and tools'
         },
         servers: [
-            { url: 'https://inntek-ai-api-agent-api.onrender.com/api', description: 'Production (Render)' },
+            { url: 'https://ia-agents-manager-api.inntek.cl/api', description: 'Production (Inntek Cloud)' },
+            { url: 'https://inntek-ai-api-agent-api.onrender.com/api', description: 'Render (Internal Demo)' },
             { url: 'https://preprod-ia-agents-manager-api.inntek.cl/api', description: 'Pre-Production (Inntek)' },
             { url: `http://localhost:${PORT}/api`, description: 'Local Development' }
         ],
@@ -75,9 +80,10 @@ app.use((err, req, res, next) => {
 // Database Sync Logic
 const startServer = () => {
     const server = app.listen(PORT, () => {
+        const envName = process.env.NODE_ENV || 'development';
         console.log('-------------------------------------------------------');
         console.log(`🚀 [PARKO] AI Agent Server running on port ${PORT}`);
-        console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`🌍 Environment: ${envName.toUpperCase()}`);
         console.log(`🔗 API Base URL: http://localhost:${PORT}/api`);
         console.log(`📖 Swagger Docs: http://localhost:${PORT}/api-docs`);
         console.log('-------------------------------------------------------');

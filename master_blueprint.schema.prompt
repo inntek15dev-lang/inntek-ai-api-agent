@@ -1,6 +1,6 @@
 # INNTEK AI API AGENT — Database Schema Reference
 # Mirror of: master_blueprint.prompt § 6. Database Schema
-# Version: 3.5.0 | Sync: 2026-04-13
+# Version: 3.6.0 | Sync: 2026-04-13
 
 ## ORM: Sequelize 6.37.x | Dialect: MySQL 8 | File: back/src/models/index.js
 

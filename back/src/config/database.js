@@ -26,6 +26,8 @@ if (process.env.DB_SSL === 'true') {
 
 const isSqlite = !process.env.DB_HOST || process.env.DB_DIALECT === 'sqlite';
 
+console.log(`[PARKO] DB Configuration: Dialect=${isSqlite ? 'sqlite' : 'mysql'}, Host=${process.env.DB_HOST || 'local-sqlite'}, SSL=${process.env.DB_SSL || 'false'}`);
+
 const sequelize = isSqlite
   ? new Sequelize({
     dialect: 'sqlite',

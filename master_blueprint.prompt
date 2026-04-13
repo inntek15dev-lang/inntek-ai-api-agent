@@ -1,5 +1,5 @@
 # AgentiX — Universal Software Blueprint
-# Version: 3.6.0 | Last Sync: 2026-04-13
+# Version: 3.7.0 | Last Sync: 2026-04-13
 
 ## 1. Overview
 
@@ -698,17 +698,28 @@ Parallel branching flow for full document audit:
 
 ---
 
-## 11. Environment Management (PARKO)
+## 11. Environment Management (PARKO Skill 2.0)
 
-### 11.1 Deployment Strategies
-- **Local**: Uses Node.js directly. Default port `4048`. Supports SQLite.
-- **OnRender**: Managed via `render.yaml` (Infrastructure as Code). Automatically links Front/Back/DB. Uses SSL.
-- **Preprod**: Dockerized cluster managed via GitHub Actions. Deployed to Linux server via SSH.
+### 11.1 Deployment Scenarios (The 4 Environments)
+| Env | Host Front | Host Back (API) | DB Dialect | SSL |
+| :--- | :--- | :--- | :--- | :--- |
+| **Local** | `localhost:5173` | `localhost:4048` | SQLite / MySQL | No |
+| **OnRender** | `*-client.onrender.com` | `*-api.onrender.com` | MySQL | Yes |
+| **Preprod** | `preprod-ia-agents-manager.inntek.cl` | `preprod-ia-agents-manager-api.inntek.cl` | MySQL | Yes |
+| **Prod** | `ia-agents-manager.inntek.cl` | `ia-agents-manager-api.inntek.cl` | MySQL | Yes |
 
-### 11.2 Data Homologation
-- **Universal Seeder**: `back/src/seed.js` is the single source of truth for initial data.
-- **Schema Sync**: `back/scripts/ensure_schema.js` uses `sequelize.sync({ alter: true })` for non-destructive migrations in preproduction.
-- **Entrypoint**: Containers execute seeding on startup to ensure consistency across all nodes.
+### 11.2 Robust Connectivity
+- **Backend Switcheo**: CORS and Swagger pre-configured for all environments.
+- **Frontend Switcheo**: Robust `getApiUrl()` logic in `api.js` using:
+    1. Runtime `window.ENV`
+    2. Build-time `VITE_API_URL`
+    3. Hostname-based auto-detection (Mapping domains to backend).
+    4. Fallback to Local port 4048.
+
+### 11.3 Data Homologation
+- **Universal Seeder**: `back/src/seed.js` is the single source of truth for initial data across ALL environments.
+- **Schema Auto-Update**: `back/scripts/ensure_schema.js` for safe migrations in production.
+
 
 
 ---
@@ -752,14 +763,17 @@ Parallel branching flow for full document audit:
 ### Backend (`back/`)
 | Script | Command | Purpose |
 |--------|---------|---------|
-| `npm run dev` | `nodemon src/server.js` | Development with auto-reload |
-| `npm start` | `node src/server.js` | Production |
+| `npm run local` | `set ENV_FILE=.env.local && nodemon src/server.js` | Local development with ENV_FILE |
+| `npm run preprod` | `set ENV_FILE=.env.preprod && node src/server.js` | Pre-production testing |
+| `npm run prod` | `set ENV_FILE=.env.prod && node src/server.js` | Production environment |
+| `npm run render` | `node src/server.js` | Render.com hosting |
 | `npm run seed` | `node src/seed.js` | Seed database with base data |
-| `npm run build` | echo (no-op) | Required by Render |
 
 ### Frontend (`front/`)
 | Script | Command | Purpose |
 |--------|---------|---------|
-| `npm run dev` | `vite` | Dev server on :5173 |
-| `npm run build` | `vite build` | Production build |
-| `npm run preview` | `vite preview` | Preview production build |
+| `npm run local` | `vite --mode local` | Local dev server |
+| `npm run preprod` | `vite --mode preprod` | Pre-production mode |
+| `npm run prod` | `vite --mode prod` | Production mode |
+| `npm run render` | `vite build` | Build for Render deployment |
+| `npm run build` | `vite build` | Standard production build |
