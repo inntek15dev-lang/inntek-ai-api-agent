@@ -4,8 +4,8 @@ services:
     name: inntek-ai-api-agent-api
     env: node
     plan: starter
-    buildCommand: npm install && cd ../back && npm install
-    startCommand: cd back && npm start
+    buildCommand: cd back && npm install
+    startCommand: npm run render
     envVars:
       - key: NODE_ENV
         value: production
@@ -36,7 +36,7 @@ services:
   - type: web
     name: inntek-ai-api-agent-front
     env: static
-    buildCommand: cd front && npm install && npm run build
+    buildCommand: cd front && npm install && npm run render
     staticPublishPath: front/dist
     envVars:
       - key: VITE_API_URL
