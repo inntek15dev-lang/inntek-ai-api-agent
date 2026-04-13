@@ -1,6 +1,6 @@
 # INNTEK AI API AGENT — Database Schema Reference
 # Mirror of: master_blueprint.prompt § 6. Database Schema
-# Version: 3.4.0 | Sync: 2026-03-11
+# Version: 3.5.0 | Sync: 2026-04-13
 
 ## ORM: Sequelize 6.37.x | Dialect: MySQL 8 | File: back/src/models/index.js
 
@@ -162,16 +162,51 @@ createdAt   DATETIME    auto
 updatedAt   DATETIME    auto
 ```
 
-### MachineConnections
+### MachinesConnections...
+### Exhibition...
+### ExhibitionSlide...
+
+### Deploy
+```sql
+id          UUID        PK, DEFAULT UUIDV4
+key         VARCHAR     UNIQUE, NOT NULL
+value       TEXT
+categoria   VARCHAR     -- infra / docker / env / script
+descripcion TEXT
+activo      BOOLEAN     DEFAULT TRUE
+```
+
+### CapacitaciónServicio
+```sql
+id          UUID        PK, DEFAULT UUIDV4
+nombre      VARCHAR     NOT NULL
+slug        VARCHAR     UNIQUE, NOT NULL
+color       VARCHAR
+```
+
+### CapacitaciónColaborador
+```sql
+id          UUID        PK, DEFAULT UUIDV4
+nombre      VARCHAR     NOT NULL
+rut         VARCHAR
+servicio_id UUID        FK → CapacitacionServicio.id
+avatar_color VARCHAR
+```
+
+### CapacitaciónCurso
+```sql
+id          UUID        PK, DEFAULT UUIDV4
+nombre      VARCHAR     NOT NULL
+descripcion TEXT
+```
+
+### CapacitaciónAsignacion
 ```sql
 id              UUID        PK, DEFAULT UUIDV4
-machine_id      UUID        FK → Machines.id      (ON DELETE CASCADE)
-source_node_id  UUID        FK → MachineNodes.id   (alias: SourceNode)
-target_node_id  UUID        FK → MachineNodes.id   (alias: TargetNode)
-source_handle   VARCHAR
-target_handle   VARCHAR
-createdAt       DATETIME    auto
-updatedAt       DATETIME    auto
+estado          ENUM        'Completado', 'En proceso', 'Por coordinar'
+fecha_completado DATETIME
+colaborador_id  UUID        FK → CapacitacionColaborador.id
+curso_id        UUID        FK → CapacitacionCurso.id
 ```
 
 ---

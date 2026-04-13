@@ -13,7 +13,7 @@ const { sequelize } = require('./models');
 const routes = require('./routes');
 
 const app = express();
-const PORT = process.env.PORT || 3333;
+const PORT = process.env.PORT || 4048;
 
 // Middleware
 app.use(cors({
@@ -75,8 +75,12 @@ app.use((err, req, res, next) => {
 // Database Sync Logic
 const startServer = () => {
     const server = app.listen(PORT, () => {
-        console.log(`Server running on http://localhost:${PORT}`);
-        console.log(`Swagger docs at http://localhost:${PORT}/api-docs`);
+        console.log('-------------------------------------------------------');
+        console.log(`🚀 [PARKO] AI Agent Server running on port ${PORT}`);
+        console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`🔗 API Base URL: http://localhost:${PORT}/api`);
+        console.log(`📖 Swagger Docs: http://localhost:${PORT}/api-docs`);
+        console.log('-------------------------------------------------------');
     });
 
     server.on('error', (err) => {
