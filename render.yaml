@@ -1,0 +1,57 @@
+services:
+  # Backend: API Node.js
+  - type: web
+    name: inntek-ai-api-agent-api
+    env: node
+    plan: starter
+    buildCommand: npm install && cd ../back && npm install
+    startCommand: cd back && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4048
+      - key: DB_HOST
+        fromDatabase:
+          name: inntek-ai-db
+          property: host
+      - key: DB_USER
+        fromDatabase:
+          name: inntek-ai-db
+          property: user
+      - key: DB_PASS
+        fromDatabase:
+          name: inntek-ai-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: inntek-ai-db
+          property: database
+      - key: DB_SSL
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
+
+  # Frontend: Static Site (React/Vite)
+  - type: web
+    name: inntek-ai-api-agent-front
+    env: static
+    buildCommand: cd front && npm install && npm run build
+    staticPublishPath: front/dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: inntek-ai-api-agent-api
+          property: url
+    routes:
+      - type: rewrite
+        path: /*
+        destination: /index.html
+
+# Database: MySQL
+databases:
+  - name: inntek-ai-db
+    plan: starter
+    databaseName: inntek_ai_agent
+    user: inntek_user

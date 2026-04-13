@@ -17,7 +17,7 @@ done
 
 echo "✅ Base de datos detectada. Ejecutando migraciones y seeds..."
 npx sequelize-cli db:migrate
-npx sequelize-cli db:seed:all
+node src/seed.js
 
 echo "🚀 Iniciando servidor..."
 npm start

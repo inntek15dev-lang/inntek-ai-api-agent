@@ -1,5 +1,5 @@
 # AgentiX — Universal Software Blueprint
-# Version: 3.5.0 | Last Sync: 2026-03-11
+# Version: 3.6.0 | Last Sync: 2026-04-13
 
 ## 1. Overview
 
@@ -43,9 +43,10 @@
 ### Infrastructure
 | Concern | Solution |
 |---------|----------|
-| Backend Hosting | Render (web service) |
-| Frontend Hosting | Render (static site) |
-| Database | Aiven MySQL 8 (SSL, Port 26213) |
+| Backend Hosting | Render (web service) + Docker (Preprod) |
+| Frontend Hosting | Render (static site) + Docker (Preprod) |
+| Database | Aiven MySQL 8 / Render Managed MySQL / SQLite (Local) |
+| Port | 4048 (Unified Default) |
 | API Docs | Swagger UI @ `/api-docs` |
 
 ---
@@ -690,13 +691,25 @@ Parallel branching flow for full document audit:
 |----------|-------------|---------|
 | VITE_API_URL | Backend API base URL | https://inntek-ai-api-agent-api.onrender.com/api |
 
-### CORS Origins
-- `https://inntek-ai-api-agent-client.onrender.com` (production)
-- `http://localhost:5173` (development)
-
 ### Swagger Servers
-- Production: `https://inntek-ai-api-agent-api.onrender.com/api`
-- Development: `http://localhost:3333/api`
+- Production (Render): `https://inntek-ai-api-agent-api.onrender.com/api`
+- Preproduction: `https://preprod-ia-agents-manager-api.inntek.cl/api`
+- Development: `http://localhost:4048/api`
+
+---
+
+## 11. Environment Management (PARKO)
+
+### 11.1 Deployment Strategies
+- **Local**: Uses Node.js directly. Default port `4048`. Supports SQLite.
+- **OnRender**: Managed via `render.yaml` (Infrastructure as Code). Automatically links Front/Back/DB. Uses SSL.
+- **Preprod**: Dockerized cluster managed via GitHub Actions. Deployed to Linux server via SSH.
+
+### 11.2 Data Homologation
+- **Universal Seeder**: `back/src/seed.js` is the single source of truth for initial data.
+- **Schema Sync**: `back/scripts/ensure_schema.js` uses `sequelize.sync({ alter: true })` for non-destructive migrations in preproduction.
+- **Entrypoint**: Containers execute seeding on startup to ensure consistency across all nodes.
+
 
 ---
 

@@ -4,7 +4,6 @@ services:
   db:
     image: mysql:8.0
     container_name: inntek-ia-agents-manager_db
-
     restart: always
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
@@ -15,6 +14,10 @@ services:
       - "127.0.0.1:3388:3306" # Puerto externo para gestión (ej. DBeaver)
     volumes:
       - ./mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 5
     networks:
       - inntek-ai-agent-default
 
@@ -29,17 +32,15 @@ services:
       - DB_PASS=${DB_ROOT_PASSWORD}
       - DB_NAME=${DB_NAME}
       - PORT=4048
-
-    # Forzamos la lectura del .env que está en la raíz del servidor
     env_file:
       - .env
     volumes:
       - ./back/scripts:/app/scripts
     ports:
       - "127.0.0.1:4048:4048"
-
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - inntek-ai-agent-default
 
