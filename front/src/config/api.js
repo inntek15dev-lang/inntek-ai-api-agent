@@ -1,12 +1,19 @@
 // Multi-environment robust detection
 const getApiUrl = () => {
     // 1. Priority: Runtime injection (Docker/Render env-config.js)
-    if (window?.ENV?.VITE_API_URL) return window.ENV.VITE_API_URL;
+    const runtimeUrl = window?.ENV?.VITE_API_URL;
+    if (runtimeUrl && !runtimeUrl.includes('localhost')) return runtimeUrl;
 
     // 2. Build-time environment variable
-    if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+    const buildTimeUrl = import.meta.env.VITE_API_URL;
+    const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-    // 3. Auto-detection based on current hostname (Fallback)
+    // If we have a build-time URL and it's NOT localhost, or if we ARE on localhost, use it.
+    if (buildTimeUrl && (!buildTimeUrl.includes('localhost') || isLocalHost)) {
+        return buildTimeUrl;
+    }
+
+    // 3. Auto-detection based on current hostname (Fallback if baked-in URL is invalid or missing)
     const hostname = window.location.hostname;
     
     if (hostname.includes('ia-agents-manager.inntek.cl')) {
@@ -21,7 +28,7 @@ const getApiUrl = () => {
         return 'https://inntek-ai-api-agent-api.onrender.com/api';
     }
 
-    // 4. Local Default
+    // 4. Local Default (Only if really on localhost)
     return 'http://localhost:4048/api';
 };
 

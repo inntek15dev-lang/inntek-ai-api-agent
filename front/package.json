@@ -7,7 +7,7 @@
     "local": "vite --mode local",
     "preprod": "vite --mode preprod",
     "prod": "vite --mode prod",
-    "render": "vite build",
+    "render": "vite build --mode render",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
