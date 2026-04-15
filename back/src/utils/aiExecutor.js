@@ -84,23 +84,27 @@ const SUPPORTED_MIME_TYPES = [
 // Provider Strategies
 // ═══════════════════════════════════════════════════════════════
 
-const executeGoogleNative = async (provider, fullTextPrompt, promptParts, generationConfig) => {
+const executeGoogleNative = async (provider, fullTextPrompt, promptParts, generationConfig, overrideModel = null, overrideApiKey = null) => {
+    const modelName = overrideModel || provider.modelo;
+    const apiKey = (overrideApiKey || provider.api_key || '').trim();
+
     // Hardening: Ensure we don't send a masked key to the provider
-    const apiKey = provider.api_key ? provider.api_key.trim() : '';
     if (apiKey.includes('•') || apiKey.includes('*')) {
         throw new Error(`Critical Security Fault: Provider "${provider.nombre}" is using a masked API key. Please re-enter the cleartext API key in Config → AI Providers.`);
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: provider.modelo, generationConfig });
+    const model = genAI.getGenerativeModel({ model: modelName, generationConfig });
     const result = await model.generateContent(promptParts);
     const response = await result.response;
     return response.text();
 };
 
-const executeOpenAICompatible = async (provider, fullTextPrompt, filesArray) => {
+const executeOpenAICompatible = async (provider, fullTextPrompt, filesArray, overrideModel = null, overrideApiKey = null) => {
+    const modelName = overrideModel || provider.modelo;
+    const apiKey = (overrideApiKey || provider.api_key || '').trim();
+
     // Hardening: Ensure we don't send a masked key to the provider
-    const apiKey = provider.api_key ? provider.api_key.trim() : '';
     if (apiKey.includes('•') || apiKey.includes('*')) {
         throw new Error(`Critical Security Fault: Provider "${provider.nombre}" is using a masked API key. Please re-enter the cleartext API key in Config → AI Providers.`);
     }
@@ -119,6 +123,8 @@ const executeOpenAICompatible = async (provider, fullTextPrompt, filesArray) => 
 
     const userContent = [{ type: 'text', text: fullTextPrompt }];
 
+    // Handle files if strictly needed (some OpenAI providers don't support this format)
+    let processedPrompt = fullTextPrompt;
     if (filesArray && filesArray.length > 0) {
         filesArray.forEach(file => {
             if (file.mimetype.startsWith('image/')) {
@@ -126,17 +132,14 @@ const executeOpenAICompatible = async (provider, fullTextPrompt, filesArray) => 
                 const dataUrl = `data:${file.mimetype};base64,${base64}`;
                 userContent.push({ type: 'image_url', image_url: { url: dataUrl } });
             } else {
-                // OpenAI standard API doesn't support PDFs directly in chat completions as images
-                // We'll append a note to the text prompt instead.
-                fullTextPrompt += `\n\n[ARCHIVO ADJUNTO ADICIONAL: ${file.originalname} (${file.mimetype})]`;
+                processedPrompt += `\n\n[ARCHIVO ADJUNTO ADICIONAL: ${file.originalname} (${file.mimetype})]`;
             }
         });
-        // Update the first content piece if we changed fullTextPrompt
-        userContent[0].text = fullTextPrompt;
+        userContent[0].text = processedPrompt;
     }
 
     const body = {
-        model: provider.modelo,
+        model: modelName,
         messages: [{ role: 'user', content: userContent }],
     };
 
@@ -145,7 +148,9 @@ const executeOpenAICompatible = async (provider, fullTextPrompt, filesArray) => 
 
     if (!response.ok) {
         const errorData = await response.text();
-        throw new Error(`Provider API error (${response.status}): ${errorData}`);
+        const error = new Error(`Provider API error (${response.status}): ${errorData}`);
+        error.status = response.status;
+        throw error;
     }
 
     const data = await response.json();
@@ -234,29 +239,82 @@ ${inputData}
         }
     });
 
-    let text;
-    if (provider.tipo === 'google_native') {
-        const promptParts = [fullTextPrompt];
-        filesArray.forEach(f => {
-            promptParts.push(fileToGenerativePart(f.path, f.mimetype));
-        });
-        text = await executeGoogleNative(provider, fullTextPrompt, promptParts, generationConfig);
-    } else {
-        text = await executeOpenAICompatible(provider, fullTextPrompt, filesArray);
+    /**
+     * Retry Strategy (1-6)
+     * 1. Primary Model + Primary Key
+     * 2. Secondary Model + Primary Key
+     * 3. Tertiary Model + Primary Key
+     * 4. Primary Model + Retry Key
+     * 5. Secondary Model + Retry Key
+     * 6. Tertiary Model + Retry Key
+     */
+    const retrySteps = [
+        { model: provider.modelo, key: provider.api_key, label: 'Primary Model + Primary Key' },
+        { model: provider.modelo_secundario, key: provider.api_key, label: 'Secondary Model + Primary Key' },
+        { model: provider.modelo_terciario, key: provider.api_key, label: 'Tertiary Model + Primary Key' },
+        { model: provider.modelo, key: provider.api_key_retry, label: 'Primary Model + Retry Key' },
+        { model: provider.modelo_secundario, key: provider.api_key_retry, label: 'Secondary Model + Retry Key' },
+        { model: provider.modelo_terciario, key: provider.api_key_retry, label: 'Tertiary Model + Retry Key' },
+    ];
+
+    let lastError = null;
+    let successfulResult = null;
+    let usedModel = provider.modelo;
+
+    for (const step of retrySteps) {
+        // Skip if model or key is not configured for this step
+        if (!step.model || !step.key) continue;
+
+        console.log(`[AI-EXECUTOR] Attempting with ${step.label} (${step.model})...`);
+
+        try {
+            let text;
+            if (provider.tipo === 'google_native') {
+                const promptParts = [fullTextPrompt];
+                filesArray.forEach(f => {
+                    promptParts.push(fileToGenerativePart(f.path, f.mimetype));
+                });
+                text = await executeGoogleNative(provider, fullTextPrompt, promptParts, generationConfig, step.model, step.key);
+            } else {
+                text = await executeOpenAICompatible(provider, fullTextPrompt, filesArray, step.model, step.key);
+            }
+
+            successfulResult = sanitizeResponse(text);
+            usedModel = step.model;
+            break; // Success!
+        } catch (error) {
+            lastError = error;
+            console.error(`[AI-EXECUTOR] Failed with ${step.label}:`, error.message);
+
+            // Do not retry on Bad Request (400) or other "client" errors
+            if (error.status === 400) {
+                console.warn('[AI-EXECUTOR] Stopping retries due to client error (400).');
+                break;
+            }
+            
+            // If it's the last step, we give up
+            if (step === retrySteps[retrySteps.length - 1]) {
+                console.error('[AI-EXECUTOR] All retry steps exhausted.');
+            } else {
+                console.log('[AI-EXECUTOR] Moving to next retry step...');
+            }
+        }
     }
 
-    text = sanitizeResponse(text);
+    if (!successfulResult) {
+        throw lastError || new Error('AI Execution failed after all retries.');
+    }
 
     let responseData;
     try {
-        responseData = tool.JsonSchema ? JSON.parse(text) : text;
+        responseData = tool.JsonSchema ? JSON.parse(successfulResult) : successfulResult;
     } catch (e) {
-        responseData = text;
+        responseData = successfulResult;
     }
 
     return {
         response: responseData,
-        provider: { nombre: provider.nombre, modelo: provider.modelo }
+        provider: { nombre: provider.nombre, modelo: usedModel }
     };
 };
 

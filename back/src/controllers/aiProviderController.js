@@ -12,7 +12,8 @@ exports.getProviders = async (req, res) => {
         const providers = await AiProvider.findAll({ order: [['is_default', 'DESC'], ['createdAt', 'ASC']] });
         const masked = providers.map(p => ({
             ...p.toJSON(),
-            api_key: maskKey(p.api_key)
+            api_key: maskKey(p.api_key),
+            api_key_retry: maskKey(p.api_key_retry)
         }));
         res.json({ success: true, data: masked });
     } catch (error) {
@@ -26,7 +27,11 @@ exports.getProvider = async (req, res) => {
         if (!provider) return res.status(404).json({ success: false, message: 'Provider not found' });
         res.json({
             success: true,
-            data: { ...provider.toJSON(), api_key: maskKey(provider.api_key) }
+            data: { 
+                ...provider.toJSON(), 
+                api_key: maskKey(provider.api_key),
+                api_key_retry: maskKey(provider.api_key_retry)
+            }
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -39,6 +44,9 @@ exports.createProvider = async (req, res) => {
         // Hardening: Prevent creating a provider with an already masked key
         if (data.api_key && (data.api_key.includes('•') || data.api_key.includes('*'))) {
             return res.status(400).json({ success: false, message: 'Invalid API Key: You cannot save a masked key (bullets or stars). Please enter the full cleartext key.' });
+        }
+        if (data.api_key_retry && (data.api_key_retry.includes('•') || data.api_key_retry.includes('*'))) {
+            return res.status(400).json({ success: false, message: 'Invalid Retry API Key: You cannot save a masked key (bullets or stars). Please enter the full cleartext key.' });
         }
 
         // If this is set as default, unset all others
@@ -59,14 +67,20 @@ exports.updateProvider = async (req, res) => {
 
         const data = { ...req.body };
 
-        // If api_key is masked (unchanged), remove it from update
+        // If keys are masked (unchanged), remove them from update
         if (data.api_key && (data.api_key.includes('•') || data.api_key.includes('*') || data.api_key === maskKey(provider.api_key))) {
             delete data.api_key;
+        }
+        if (data.api_key_retry && (data.api_key_retry.includes('•') || data.api_key_retry.includes('*') || data.api_key_retry === maskKey(provider.api_key_retry))) {
+            delete data.api_key_retry;
         }
 
         // Hardening: If they actually CHANGED it to something that looks masked but isn't the previous mask
         if (data.api_key && (data.api_key.includes('•') || data.api_key.includes('*'))) {
             return res.status(400).json({ success: false, message: 'Invalid API Key: You cannot save a masked key (bullets or stars). Please enter the full cleartext key.' });
+        }
+        if (data.api_key_retry && (data.api_key_retry.includes('•') || data.api_key_retry.includes('*'))) {
+            return res.status(400).json({ success: false, message: 'Invalid Retry API Key: You cannot save a masked key (bullets or stars). Please enter the full cleartext key.' });
         }
 
         // If setting as default, unset all others
@@ -77,7 +91,11 @@ exports.updateProvider = async (req, res) => {
         await provider.update(data);
         res.json({
             success: true,
-            data: { ...provider.toJSON(), api_key: maskKey(provider.api_key) }
+            data: { 
+                ...provider.toJSON(), 
+                api_key: maskKey(provider.api_key),
+                api_key_retry: maskKey(provider.api_key_retry)
+            }
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -112,7 +130,11 @@ exports.setDefault = async (req, res) => {
         res.json({
             success: true,
             message: `"${provider.nombre}" is now the default AI provider.`,
-            data: { ...provider.toJSON(), api_key: maskKey(provider.api_key) }
+            data: { 
+                ...provider.toJSON(), 
+                api_key: maskKey(provider.api_key),
+                api_key_retry: maskKey(provider.api_key_retry)
+            }
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
