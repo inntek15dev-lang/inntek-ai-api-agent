@@ -15,8 +15,8 @@ while ! nc -z $DB_HOST 3306; do
   sleep 1
 done
 
-echo "✅ Base de datos detectada. Ejecutando migraciones y seeds..."
-npx sequelize-cli db:migrate
+echo "✅ Base de datos detectada. Sincronizando esquema y ejecutando seeds..."
+node scripts/ensure_schema.js
 node src/seed.js
 
 echo "🚀 Iniciando servidor..."

@@ -1,5 +1,5 @@
 # AgentiX — Universal Software Blueprint
-# Version: 3.7.1 | Last Sync: 2026-04-13
+# Version: 3.8.0 | Last Sync: 2026-04-15
 
 ## 1. Overview
 
@@ -148,6 +148,15 @@ front/ (React SPA)                    back/ (Express API)
   - Cannot delete the current default provider
   - Two provider types: `google_native` (uses SDK), `openai_compatible` (uses REST API)
   - Extra headers support (JSON string) for provider-specific headers
+  - **Multi-Model Support**: Allows configuring Primary, Secondary, and Tertiary models per provider.
+  - **Failover Strategy**: Implements a 6-step sequential retry logic (1-6):
+    1. Primary Model + Primary Key
+    2. Secondary Model + Primary Key
+    3. Tertiary Model + Primary Key
+    4. Primary Model + Retry Key
+    5. Secondary Model + Retry Key
+    6. Tertiary Model + Retry Key
+  - **Retry Conditions**: Automatic failover triggered by rate limits (429) or provider availability (5xx). Client errors (400) halt the retry sequence.
 
 ### 4.7 JSON Schemas
 - **Ref:** `Json_Schemas`
@@ -343,9 +352,12 @@ front/ (React SPA)                    back/ (Express API)
 | nombre | STRING | not null |
 | slug | STRING | unique, not null |
 | tipo | ENUM | google_native, openai_compatible |
-| api_key | STRING | — (masked on read) |
+| api_key | STRING | Primary API key (masked on read) |
+| api_key_retry | STRING | Retry API key (masked on read) |
 | base_url | STRING | — (null for google_native) |
-| modelo | STRING | not null |
+| modelo | STRING | not null (Primary Model) |
+| modelo_secundario | STRING | Optional failover model |
+| modelo_terciario | STRING | Optional failover model |
 | is_default | BOOLEAN | default: false |
 | activo | BOOLEAN | default: true |
 | extra_headers | TEXT | JSON string for custom HTTP headers |
@@ -718,7 +730,7 @@ Parallel branching flow for full document audit:
 
 ### 11.3 Data Homologation
 - **Universal Seeder**: `back/src/seed.js` is the single source of truth for initial data across ALL environments.
-- **Schema Auto-Update**: `back/scripts/ensure_schema.js` for safe migrations in production.
+- **Auto-Sync Schema**: `back/scripts/ensure_schema.js` runs automatically on every server startup (`npm run db:sync`) across all environments (Local, Docker, Render) using `sequelize.sync({ alter: true })`.
 
 
 
@@ -763,11 +775,12 @@ Parallel branching flow for full document audit:
 ### Backend (`back/`)
 | Script | Command | Purpose |
 |--------|---------|---------|
-| `npm run local` | `set ENV_FILE=.env.local && nodemon src/server.js` | Local development with ENV_FILE |
-| `npm run preprod` | `set ENV_FILE=.env.preprod && node src/server.js` | Pre-production testing |
-| `npm run prod` | `set ENV_FILE=.env.prod && node src/server.js` | Production environment |
-| `npm run render` | `node src/server.js` | Render.com hosting |
-| `npm run seed` | `node src/seed.js` | Seed database with base data |
+| `npm run local` | `npm run db:sync && set ENV_FILE=.env.local && nodemon src/server.js` | Local dev with auto-sync |
+| `npm run preprod` | `npm run db:sync && set ENV_FILE=.env.preprod && node src/server.js` | Pre-prod with auto-sync |
+| `npm run prod` | `npm run db:sync && set ENV_FILE=.env.prod && node src/server.js` | Production with auto-sync |
+| `npm run render` | `npm run db:sync && node src/server.js` | Render.com with auto-sync |
+| `npm run db:sync` | `node scripts/ensure_schema.js` | Runs Sequelize alter-sync |
+| `npm run seed` | `node src/seed.js` | Seed database |
 
 ### Frontend (`front/`)
 | Script | Command | Purpose |
