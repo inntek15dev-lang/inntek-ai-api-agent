@@ -17,7 +17,9 @@ const Config = () => {
     const [showKey, setShowKey] = useState({});
     const [formData, setFormData] = useState({
         nombre: '', slug: '', tipo: 'openai_compatible',
-        api_key: '', base_url: '', modelo: '',
+        api_key: '', api_key_retry: '',
+        base_url: '', 
+        modelo: '', modelo_secundario: '', modelo_terciario: '',
         is_default: false, activo: true, extra_headers: ''
     });
 
@@ -43,7 +45,9 @@ const Config = () => {
         setEditingProvider(null);
         setFormData({
             nombre: '', slug: '', tipo: 'openai_compatible',
-            api_key: '', base_url: '', modelo: '',
+            api_key: '', api_key_retry: '',
+            base_url: '', 
+            modelo: '', modelo_secundario: '', modelo_terciario: '',
             is_default: false, activo: true, extra_headers: ''
         });
         setShowForm(true);
@@ -56,8 +60,11 @@ const Config = () => {
             slug: provider.slug,
             tipo: provider.tipo,
             api_key: provider.api_key || '',
+            api_key_retry: provider.api_key_retry || '',
             base_url: provider.base_url || '',
             modelo: provider.modelo,
+            modelo_secundario: provider.modelo_secundario || '',
+            modelo_terciario: provider.modelo_terciario || '',
             is_default: provider.is_default,
             activo: provider.activo,
             extra_headers: provider.extra_headers || ''
@@ -148,12 +155,24 @@ const Config = () => {
                         </div>
 
                         {/* Details */}
-                        <div className="space-y-3 mb-6">
+                        <div className="space-y-2 mb-6">
                             <div className="flex items-center justify-between">
-                                <span className="guardian-label !mb-0 !text-[9px]">Model</span>
+                                <span className="guardian-label !mb-0 !text-[9px]">Model (Primary)</span>
                                 <span className="text-xs font-bold text-guardian-text truncate max-w-[60%] text-right">{provider.modelo}</span>
                             </div>
-                            <div className="flex items-center justify-between">
+                            {provider.modelo_secundario && (
+                                <div className="flex items-center justify-between">
+                                    <span className="guardian-label !mb-0 !text-[9px]">Model (Secondary)</span>
+                                    <span className="text-[10px] font-bold text-guardian-muted truncate max-w-[60%] text-right">{provider.modelo_secundario}</span>
+                                </div>
+                            )}
+                            {provider.modelo_terciario && (
+                                <div className="flex items-center justify-between">
+                                    <span className="guardian-label !mb-0 !text-[9px]">Model (Tertiary)</span>
+                                    <span className="text-[10px] font-bold text-guardian-muted truncate max-w-[60%] text-right">{provider.modelo_terciario}</span>
+                                </div>
+                            )}
+                            <div className="flex items-center justify-between border-t border-slate-50 pt-2">
                                 <span className="guardian-label !mb-0 !text-[9px]">Type</span>
                                 <span className="guardian-badge guardian-badge--slate !text-[8px]">
                                     {provider.tipo === 'google_native' ? 'Native SDK' : 'OpenAI Compat'}
@@ -163,6 +182,12 @@ const Config = () => {
                                 <span className="guardian-label !mb-0 !text-[9px]">API Key</span>
                                 <span className="text-xs font-mono text-guardian-muted">
                                     {provider.api_key || <span className="text-red-500 font-bold">NOT SET</span>}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="guardian-label !mb-0 !text-[9px]">Retry Key</span>
+                                <span className="text-xs font-mono text-guardian-muted">
+                                    {provider.api_key_retry ? provider.api_key_retry : <span className="text-slate-300 italic">None</span>}
                                 </span>
                             </div>
                             {provider.base_url && (
@@ -249,24 +274,54 @@ const Config = () => {
                                 </select>
                             </div>
 
-                            <div className="guardian-input-group !mb-0">
-                                <label className="guardian-label">Model</label>
-                                <input name="modelo" value={formData.modelo} onChange={handleChange}
-                                    className="guardian-input !pl-4 font-mono text-xs" placeholder="gemini-2.0-flash" required />
+                            <div className="space-y-4 p-4 bg-slate-50/50 rounded-xl border border-slate-100">
+                                <div className="guardian-input-group !mb-0">
+                                    <label className="guardian-label">Primary Model</label>
+                                    <input name="modelo" value={formData.modelo} onChange={handleChange}
+                                        className="guardian-input !pl-4 font-mono text-xs" placeholder="gemini-2.0-flash" required />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="guardian-input-group !mb-0">
+                                        <label className="guardian-label">Secondary Model</label>
+                                        <input name="modelo_secundario" value={formData.modelo_secundario} onChange={handleChange}
+                                            className="guardian-input !pl-4 font-mono text-xs" placeholder="(Optional)" />
+                                    </div>
+                                    <div className="guardian-input-group !mb-0">
+                                        <label className="guardian-label">Tertiary Model</label>
+                                        <input name="modelo_terciario" value={formData.modelo_terciario} onChange={handleChange}
+                                            className="guardian-input !pl-4 font-mono text-xs" placeholder="(Optional)" />
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="guardian-input-group !mb-0">
-                                <div className="flex items-center justify-between mb-2">
-                                    <label className="guardian-label !mb-0">API Key</label>
-                                    <button type="button" onClick={() => setShowKey(prev => ({ ...prev, form: !prev.form }))}
-                                        className="text-guardian-muted hover:text-guardian-blue">
-                                        {showKey.form ? <EyeOff size={14} /> : <Eye size={14} />}
-                                    </button>
+                            <div className="space-y-4 p-4 bg-blue-50/30 rounded-xl border border-blue-100/50">
+                                <div className="guardian-input-group !mb-0">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="guardian-label !mb-0">Main API Key</label>
+                                        <button type="button" onClick={() => setShowKey(prev => ({ ...prev, p: !prev.p }))}
+                                            className="text-guardian-muted hover:text-guardian-blue">
+                                            {showKey.p ? <EyeOff size={14} /> : <Eye size={14} />}
+                                        </button>
+                                    </div>
+                                    <input name="api_key" value={formData.api_key} onChange={handleChange}
+                                        type={showKey.p ? 'text' : 'password'}
+                                        className="guardian-input !pl-4 font-mono text-xs tracking-wider"
+                                        placeholder="sk-..." />
                                 </div>
-                                <input name="api_key" value={formData.api_key} onChange={handleChange}
-                                    type={showKey.form ? 'text' : 'password'}
-                                    className="guardian-input !pl-4 font-mono text-xs tracking-wider"
-                                    placeholder="sk-..." />
+
+                                <div className="guardian-input-group !mb-0">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="guardian-label !mb-0">Retry API Key</label>
+                                        <button type="button" onClick={() => setShowKey(prev => ({ ...prev, r: !prev.r }))}
+                                            className="text-guardian-muted hover:text-guardian-blue">
+                                            {showKey.r ? <EyeOff size={14} /> : <Eye size={14} />}
+                                        </button>
+                                    </div>
+                                    <input name="api_key_retry" value={formData.api_key_retry} onChange={handleChange}
+                                        type={showKey.r ? 'text' : 'password'}
+                                        className="guardian-input !pl-4 font-mono text-xs tracking-wider"
+                                        placeholder="sk-..." />
+                                </div>
                             </div>
 
                             {formData.tipo === 'openai_compatible' && (

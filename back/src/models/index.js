@@ -63,8 +63,11 @@ const AiProvider = sequelize.define('AiProvider', {
     slug: { type: DataTypes.STRING, unique: true, allowNull: false },
     tipo: { type: DataTypes.ENUM('google_native', 'openai_compatible'), allowNull: false },
     api_key: { type: DataTypes.STRING },
+    api_key_retry: { type: DataTypes.STRING }, // [NEW] Retry API Key
     base_url: { type: DataTypes.STRING }, // null for google_native
-    modelo: { type: DataTypes.STRING, allowNull: false },
+    modelo: { type: DataTypes.STRING, allowNull: false }, // Primary model
+    modelo_secundario: { type: DataTypes.STRING }, // [NEW]
+    modelo_terciario: { type: DataTypes.STRING }, // [NEW]
     is_default: { type: DataTypes.BOOLEAN, defaultValue: false },
     activo: { type: DataTypes.BOOLEAN, defaultValue: true },
     extra_headers: { type: DataTypes.TEXT } // JSON string for additional headers
