@@ -5,12 +5,13 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/server.js",
+    "db:sync": "node scripts/ensure_schema.js",
     "build": "echo 'No build step required'",
     "seed": "node src/seed.js",
-    "local": "set ENV_FILE=../.env.local&& nodemon src/server.js",
-    "preprod": "set ENV_FILE=../.env.preprod&& node src/server.js",
-    "prod": "set ENV_FILE=../.env.prod&& node src/server.js",
-    "render": "node src/server.js",
+    "local": "npm run db:sync && set ENV_FILE=../.env.local&& nodemon src/server.js",
+    "preprod": "npm run db:sync && set ENV_FILE=../.env.preprod&& node src/server.js",
+    "prod": "npm run db:sync && set ENV_FILE=../.env.prod&& node src/server.js",
+    "render": "npm run db:sync && node src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
