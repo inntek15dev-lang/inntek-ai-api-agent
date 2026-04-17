@@ -1,5 +1,5 @@
 # AgentiX — Universal Software Blueprint
-# Version: 3.8.0 | Last Sync: 2026-04-15
+# Version: 3.8.1 | Last Sync: 2026-04-17 (PARKO)
 
 ## 1. Overview
 
@@ -730,7 +730,7 @@ Parallel branching flow for full document audit:
 
 ### 11.3 Data Homologation
 - **Universal Seeder**: `back/src/seed.js` is the single source of truth for initial data across ALL environments.
-- **Auto-Sync Schema**: `back/scripts/ensure_schema.js` runs automatically on every server startup (`npm run db:sync`) across all environments (Local, Docker, Render) using `sequelize.sync({ alter: true })`.
+- **Auto-Sync Schema**: `back/scripts/ensure_schema.js` runs automatically on every server startup (`npm run db:sync`). Uses a conservative sync strategy (`alter: false` by default in MySQL) to prevent `ER_TOO_MANY_KEYS` on Render/Aiven. `alter: true` is only triggered if `DB_ALTER_SCHEMA=true` or in SQLite environments.
 
 
 

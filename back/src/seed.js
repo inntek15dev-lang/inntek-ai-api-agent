@@ -25,13 +25,9 @@ const seed = async () => {
         const isSqlite = sequelize.getDialect() === 'sqlite';
         console.log(`[PARKO] Starting seed on ${sequelize.getDialect()}...`);
 
-        try {
-            await sequelize.sync({ alter: !isSqlite });
-            console.log('Database synced successfully');
-        } catch (syncErr) {
-            console.warn('⚠️ Database sync warning:', syncErr.message);
-            await sequelize.sync();
-        }
+        // No individual sync here, ensure_schema.js takes care of it before running the seed
+        // in the deploy pipeline. This prevents redundant alter:true calls.
+
 
         // 1. Roles
         const superAdminRole = await upsertCore(Role, { nombre: 'SuperAdmin' }, '00000000-0000-4000-a000-000000000001');
